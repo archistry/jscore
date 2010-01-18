@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ame:ProxyList xmlns:ame="http://www.archistry.com/schema/ame/v1">
+  <ame:SubjectProxy href="bart">
+    <ame:ProxyTypeList>
+      <ame:ProxyRef id="a4c4842c5315904e7a30a61126f0b8dc2" href="person">person</ame:ProxyRef>
+    </ame:ProxyTypeList>
+    <ame:ProxyPropertyList>
+      <ame:ProxyProperty href="a9419407d30d9eefbea1e3dfcdc1f2c4e" khref="age">8</ame:ProxyProperty>
+      <ame:ProxyProperty href="af77733cd30fa8316a3e6419b6c26f738" khref="name">Simpson, Bart</ame:ProxyProperty>
+      <ame:ProxyProperty href="af77733cd30fa8316a3e6419b6c26f739" khref="name">Bart Simpson</ame:ProxyProperty>
+      <ame:ProxyProperty href="aa923fe273e739d6413276ba27c8a7b5b" khref="sample_link">
+        <ame:ProxyRef href="lisa">Simpson, Lisa</ame:ProxyRef>
+      </ame:ProxyProperty>
+      <ame:ProxyProperty href="afc8c3d79c2446768978409417f9ed6cf" khref="x-ame-modifier">
+        <ame:ProxyRef href="ast">ast</ame:ProxyRef>
+      </ame:ProxyProperty>
+      <ame:ProxyProperty href="a010254c4a26107b51c3b6cf934b6251b" khref="x-ame-updated">2009-11-20T17:23:34.432Z</ame:ProxyProperty>
+      <ame:ProxyProperty href="a88cd7470f654e3a63cd6bff39b57a64d" khref="x-ame-version">1</ame:ProxyProperty>
+    </ame:ProxyPropertyList>
+  </ame:SubjectProxy>
+</ame:ProxyList>

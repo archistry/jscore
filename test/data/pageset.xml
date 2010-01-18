@@ -1,0 +1,77 @@
+<?xml version="1.0" ?>
+<ps:PageSet page="2" total-pages="3" results-per-page="11"
+    xmlns:ps="http://www.archistry.com/schema/pageset/v1"
+    xmlns:ame="http://www.archistry.com/schema/ame/v1">
+  <ps:Head>
+    <ps:Description>
+      This element can contain any text or markup that could be
+      possibly interpreted by the client to better understand
+      the semantics of the content displayed in the list.
+    </ps:Description>
+    <ps:Navigation>
+      <ps:NavAction id="#first-page" href="http://example.com/map1/#ontology?page=1&amp;count=11">|&lt; First</ps:NavAction>
+      <ps:NavAction id="#prev-page" href="http://example.com/map1/#ontology?page=1&amp;count=11">&lt; Previous</ps:NavAction>
+      <ps:NavAction id="#next-page" href="http://example.com/map1/#ontology?page=3&amp;count=11">Next &gt;</ps:NavAction>
+      <ps:NavAction id="#last-page" href="http://example.com/map1/#ontology?page=3&amp;count=11">Last &gt;|</ps:NavAction>
+    </ps:Navigation>
+  </ps:Head>
+  <ps:Body>
+    <ame:ProxyList>
+      <ame:SubjectProxy href="ame:attribute-of-type">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="ame:type-attribute">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="ame:type-link">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="assertion">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="association">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="concept">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="note">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="superclass-subclass">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="topic">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="topic-annotation">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="type">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+      <ame:SubjectProxy href="type">
+        <ame:ProxyTypeList>
+          <ame:ProxyRef href="topic">type</ame:ProxyRef>
+        </ame:ProxyTypeList>
+      </ame:SubjectProxy>
+    </ame:ProxyList>
+  </ps:Body>
+</ps:PageSet>
