@@ -159,6 +159,57 @@ archistry.ui.Helpers = {
 	},
 
 	/**
+	 * This method is used to append the specified value to
+	 * the given attribute.  It makes sure that it isn't
+	 * already there, and it also makes sure that it is
+	 * appropriately separated by whitespace.
+	 *
+	 * @param elt the element
+	 * @param attr the attribute key
+	 * @param val the value to add
+	 * @return the element
+	 */
+
+	appendAttr: function(elt, attr, val)
+	{
+		var regex = new RegExp(val.trim());
+		var s = elt.getAttribute(attr);
+		if(s && s.length > 0)
+		{
+			var rc = s.match(regex);
+			if(!rc || rc.length == 0)
+			{
+				s = s.trim() + " " + val;
+				elt.setAttribute(attr, s);
+			}
+		}
+		else
+		{
+			elt.setAttribute(attr, val);
+		}
+
+		return elt;
+	},
+
+	/**
+	 * This method removes the value from the specified
+	 * attribute.
+	 *
+	 * @param elt the element
+	 * @param attr the attribute
+	 * @param val the value
+	 * @return the element
+	 */
+
+	removeAttr: function(elt, attr, value)
+	{
+		var s = elt.getAttribute(attr);
+		var regex = new RegExp(val.trim());
+		elt.setAttribute(attr, s.replace(regex, ""));
+		return elt;
+	},
+
+	/**
 	 * This method finds the first parent element from the
 	 * start element with the specified tag.
 	 *
@@ -177,5 +228,14 @@ archistry.ui.Helpers = {
 		}
 
 		return p;
+	},
+
+	/**
+	 * This is a short version of the println call
+	 */
+
+	println: function(fmt, args)
+	{
+		archistry.ui.Console.println(fmt, args);
 	}
 };

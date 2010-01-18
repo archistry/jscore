@@ -46,14 +46,15 @@ namespace("archistry.ui");
  */
 
 archistry.ui.GridStyles = {
-	GRID				: "aui-grid ",
-	CELL				: "aui-grid-cell ",
-	CELL_SELECTED		: "aui-grid-cell-selected ",
-	CELL_DIRTY			: "aui-grid-cell-dirty ",
-	ROW					: "aui-grid-row ",
-	ROW_HEADER			: "aui-grid-header ",
-	ROW_SELECTED		: "aui-grid-row-selected ",
-	ROW_DIRTY			: "aui-grid-row-dirty ",
+	GRID				: "aui-grid",
+	CELL				: "aui-grid-cell",
+	CELL_SELECTED		: "aui-grid-cell-selected",
+	CELL_DIRTY			: "aui-grid-cell-dirty",
+	ROW					: "aui-grid-row",
+	ROW_HEADER			: "aui-grid-header",
+	ROW_SELECTED		: "aui-grid-row-selected",
+	ROW_DIRTY			: "aui-grid-row-dirty",
+	ROW_SENTINAL		: "aui-grid-row-sentinal",
 	COLUMN_BASE			: "aui-grid-col-"
 };
 
@@ -224,6 +225,10 @@ archistry.ui.DefaultGridCellRenderer = function()
  * This class provides a RowModel implementation based on
  * using an array of JavaScript objects.
  *
+ * To make this model mutable, supply the constructor with a
+ * createRow property that will create a new row in the
+ * model.
+ *
  * @param data the array containing the data to display
  * @param options the options to initialize the model
  */
@@ -254,6 +259,16 @@ archistry.ui.ArrayRowModel = function(data, options)
 	{
 		return ( (startIdx + count) < _data.length ? count : _data.length - startIdx);
 	};
+
+	this.dump = function()
+	{
+		var s = "";
+		for(var i = 0; i < _data.length; ++i)
+		{
+			s += String.format("_data[{0}] = {1}\n", [i, _data[i].inspect()]);
+		}
+		return s;
+	}
 };
 
 /**
@@ -333,7 +348,7 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 	function findNextCell(cell, forward, down)
 	{
 		var row = cell.parentNode;
-//		alert("row: " + row.innerHTML);
+		println("row: " + row.innerHTML);
 
 		if(forward)
 		{
@@ -366,11 +381,6 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
 	function onKeyDown(event)
 	{
-//		if(!_grid.editing)
-//		{
-//			return true;
-//		}
-
 		var down = null;
 		switch(event.keyCode)
 		{
@@ -385,7 +395,7 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
 		var thisCell = parentWithTag(eventTarget(event), "td");
 		var nextCell = findNextCell(thisCell, !event.shiftKey, down)
-//		alert(nextCell.tagName + ": " + nextCell.innerHTML);
+		println(nextCell.tagName + ": " + nextCell.innerHTML);
 		if(nextCell)
 		{
 			var row = parseInt(nextCell.getAttribute("row"));
@@ -433,6 +443,8 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	var _grid = grid;
 	var _table = null;
     var _columns = {};
+	var _datarows = 0;
+	var _sentinal = null;
 
     /**
      * This method takes care of returning the proper table
@@ -453,11 +465,16 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 		{
 			index = _table.rows.length;
 		}
+		else if(index == -1)
+		{
+			index = ( _sentinal ? _table.rows.length - 1 : _table.rows.length );
+		}
 		else if(index && _grid.showHeader)
 		{
 			index += 1;
 		}
 
+		println("actual row insert point is: {0}", [ index ]);
 		var row = _table.insertRow(index);
 		row.setAttribute("class", _grid.styleClass.ROW);
 		return row;
@@ -470,13 +487,12 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	function renderHeaders()
 	{
 		var row = newRow();
-		row.setAttribute("class", row.getAttribute("class") + " " + _grid.styleClass.ROW_HEADER);
+		appendAttr(row, "class", _grid.styleClass.ROW_HEADER);
 		for(var i = 0; i< _grid.columnModel.length; ++i)
 		{
 			var col = _grid.columnModel.col(i);
 			var cell = ne("th");
-			var style = _grid.styleClass.CELL;
-			style += col.style
+			var style = [ _grid.styleClass.CELL, col.style ].join(" ");
 			cell.setAttribute("class", style);
 			disableSelect(cell);
 
@@ -502,6 +518,12 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 		}
 	}
 
+	function bindEdit(cell, func)
+	{
+		var signal = (_grid.clicksToEdit == 2 ? "dblclick" : "click");
+		cell.addEventListener(signal, func, true);
+	}
+
 	/**
 	 * This method is used to render an individual data row in
 	 * the table.
@@ -510,24 +532,113 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	function renderRow(idx, data)
 	{
 		var row = newRow(idx);
+		// FIXME:  this check should be made cleaner--and in
+		// one place!!!!
+		if(idx == -1)
+		{
+			idx = _datarows;
+		}
 
+		println("rendering row using idx: {0} (data: {1})", [ idx, data.inspect() ]);
 		for(var i = 0; i < _grid.columnModel.length; ++i)
 		{
 			var col = _grid.columnModel.col(i);
 			var cell = row.insertCell(i);
-			var style = _grid.styleClass.CELL;
-			style += col.style;
+			var style = [ _grid.styleClass.CELL, col.style ].join(" ");
 			cell.setAttribute("class", style);
 			cell.setAttribute("row", idx);
 			cell.setAttribute("col", i);
 			col.renderer.render(_grid, idx, data, col, cell);
 			if(_grid.editable && col.editable !== false && col.editor !== null)
 			{
-				var signal = (_grid.clicksToEdit == 2 ? "dblclick" : "click");
-				cell.addEventListener(signal, function(event) {
-						_grid.onStartCellEdit(event); }, true);
+				bindEdit(cell, _grid.onStartCellEdit);
 			}
 			_grid.nav.onCellAdded(cell);
+		}
+		_datarows += 1;
+	}
+
+	/**
+	 * This method is used to add a "sentinal" row to the
+	 * bottom of the table that can be used to create new
+	 * values in the model.
+	 */
+
+	function addSentinal()
+	{
+		var row = newRow();
+		var trigger = false;
+		appendAttr(row, "class", _grid.styleClass.ROW_SENTINAL);
+
+		for(var i = 0; i < _grid.columnModel.length; ++i)
+		{
+			var col = _grid.columnModel.col(i);
+			var cell = row.insertCell(i);
+			var style = [ _grid.styleClass.CELL, col.style ].join(" ");
+			cell.setAttribute("class", style);
+			cell.setAttribute("row", _datarows);
+			cell.setAttribute("col", i);
+			if(!trigger && col.editable !== false && col.editor !== null)
+			{
+				if(_grid.sentinalRowText)
+				{
+					cell.innerHTML = _grid.sentinalRowText;
+				}
+				else
+				{
+					cell.innerHTML = "Edit to add a new row";
+				}
+				bindEdit(cell, _grid.onCreateNewRow);
+				trigger = true;
+			}
+			_grid.nav.onCellAdded(cell);
+		}
+		_sentinal = row;
+	};
+
+	/**
+	 * This method is used to update the sentinal row values
+	 * as rows are added or deleted from the table.
+	 */
+
+	function updateSentinal()
+	{
+		if(_sentinal)
+		{
+			var cells = etn(_sentinal, "td");
+			for(var i = 0; i < cells.length; ++i)
+			{
+				cells[i].setAttribute("row", _datarows);
+			}
+		}
+	}
+
+	/**
+	 * This method is used to update all of the row values
+	 * that are currently displayed in the table after rows
+	 * have been added, deleted or reordered.
+	 */
+
+	function updateRows(start, end)
+	{
+		println("\nupdateRows({0}, {1})", [ start, end ]);
+		if(dataRowIndex(start) >= _table.rows.length)
+			return;
+		
+		if(end == -1)
+			end = _table.rows.length - 1;
+
+		for(var i = start; i < end; ++i)
+		{
+			var row = _table.rows[dataRowIndex(i)];
+			println("updating row using idx: {0} (data: {1})", [ i, row.innerHTML ]);
+			var cells = etn(row, "td");
+			for(var j = 0; j < cells.length; ++j)
+			{
+				cells[j].setAttribute("row", i);
+			}
+
+			println("updated row: " + row.innerHTML);
 		}
 	}
 
@@ -538,9 +649,10 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 
 	function init()
 	{
-		_root.setAttribute("class", _grid.styleClass.GRID);
+		appendAttr(_root, "class", _grid.styleClass.GRID);
 		_table = ne("table");
 		_table.id = _tabid;
+		_datarows = 0;
         
         for(var i = 0; i < _grid.columnModel.length; ++i)
         {
@@ -552,6 +664,11 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 			renderHeaders();
 
 		renderBody();
+
+		if(_grid.editable && _grid.showSentinalRow && _grid.data.createRow)
+		{
+			addSentinal();
+		}
 		_root.appendChild(_table);
 	}
 
@@ -575,6 +692,40 @@ archistry.ui.BrowserGridLayout = function(id, grid)
         return _table.rows[dataRowIndex(rowIndex)];
     };
 
+	/**
+	 * This method is used to insert a new row into the
+	 * layout.
+	 *
+	 * @param idx the index into the data model
+	 * @param data the data to be displayed
+	 * @return the actual location where the row was inserted
+	 */
+
+	this.insertRow = function(idx, data)
+	{
+		renderRow(idx, data);
+		if(idx == -1)
+		{
+			idx = _datarows - 1;
+		}
+		updateRows(idx + 1, -1);
+		
+		return idx;
+	};
+
+	/**
+	 * This method is used to determine if the specified index
+	 * represents the sentinal row.
+	 * 
+	 * @param idx the data row index
+	 */
+
+	this.isSentinalRow = function(idx)
+	{
+		// FIXME:  this is a cheat that I'm not sure is right!
+		return idx == _datarows;
+	};
+
 	init();
 };
 
@@ -597,6 +748,32 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	this.columnModel = columnModel;
 	this.data = rowModel;
 
+	////// Cell Rendering/Editing API //////
+	
+	/**
+	 * This method is called to render the specific cell
+	 * identified by the rowIndex and column definition.
+	 *
+	 * @param rowIndex the row index of the cell
+	 * @param col the column definition of the cell
+	 * @param dirty if true then the cell should be rendered
+	 *      as "dirty" according to the CSS style rules.
+	 */
+
+	this.renderCell = function(rowIndex, col, dirty)
+	{
+		var cell = this.layout.cell(rowIndex, col);
+		var row = this.layout.row(rowIndex);
+
+		if(dirty)
+		{
+			appendAttr(cell, "class", this.styleClass.CELL_DIRTY);
+			appendAttr(row, "class", this.styleClass.ROW_DIRTY);
+		}
+		col.renderer.render(this, rowIndex, this.data.row(rowIndex),
+							col, cell);
+	};
+	
 	/**
 	 * This method is called from cell editors when the user
 	 * cancels the edit.
@@ -636,45 +813,6 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	};
 
 	/**
-	 * This method is called to render the specific cell
-	 * identified by the rowIndex and column definition.
-	 *
-	 * @param rowIndex the row index of the cell
-	 * @param col the column definition of the cell
-	 * @param dirty if true then the cell should be rendered
-	 *      as "dirty" according to the CSS style rules.
-	 */
-
-	this.renderCell = function(rowIndex, col, dirty)
-	{
-		var cell = this.layout.cell(rowIndex, col);
-		var row = this.layout.row(rowIndex);
-
-		if(dirty)
-		{
-			var classes = cell.getAttribute("class");
-			var rx = new RegExp(this.styleClass.CELL_DIRTY.trim());
-			var rc = classes.match(rx);
-			if(!rc || rc.length == 0)
-			{
-				classes += " " + this.styleClass.CELL_DIRTY;
-				cell.setAttribute("class", classes);
-			}
-			
-			classes = row.getAttribute("class");
-			rx = new RegExp(this.styleClass.ROW_DIRTY.trim());
-			rc = classes.match(rx);
-			if(!rc || rc.length == 0)
-			{
-				classes += " " + this.styleClass.ROW_DIRTY;
-				row.setAttribute("class", classes);
-			}
-		}
-		col.renderer.render(this, rowIndex, this.data.row(rowIndex),
-							col, cell);
-	};
-
-	/**
 	 * This method is used to start editing a cell based on
 	 * the row and column indices.
 	 *
@@ -684,10 +822,23 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 
 	this.editCell = function(row, col)
 	{
-//		alert("start edit for: " + row + ", " + col);
-		var cdef = this.columnModel.col(col);
-		var data = this.data.row(row);
-		var cell = this.layout.cell(row, cdef);
+		if(_self.editing)
+		{
+			return;
+		}
+
+		if(_self.layout.isSentinalRow(row))
+		{
+			this.appendNewRow();
+			return;
+		}
+
+		println("start edit for: ({0}, {1})", [row, col]);
+		var cdef = _self.columnModel.col(col);
+		var data = _self.data.row(row);
+//		println("_self.data: {0}", [ _self.data.dump() ]);
+//		println("data: {0}", [ data.inspect() ]);
+		var cell = _self.layout.cell(row, cdef);
 
 		if(cdef.editor)
 		{
@@ -717,7 +868,7 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 
 		event.stopPropagation();
 		event.preventDefault();
-		this.editCell(row, col);
+		_self.editCell(row, col);
 		return false;
 	};
 
@@ -740,7 +891,55 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 		return true;
 	};
 
-//	alert(this.inspect());
+	////// Row Manipulation API //////
+	
+	/**
+	 * This method is used to allow the sential row to create
+	 * a new empty row in the model.  It is called when the
+	 * user attempts to edit the first editable cell in the
+	 * sentinal row.
+	 */
+
+	this.onCreateNewRow = function(event)
+	{
+		var cell = parentWithTag(eventTarget(event), "td");
+		var row = parseInt(cell.getAttribute("row"));
+		if(_self.layout.isSentinalRow(row))
+		{
+			_self.appendNewRow();
+		}
+	};
+
+	/**
+	 * This is separate so we can trigger it from either
+	 * keyboard or mouse events.
+	 */
+
+	this.appendNewRow = function()
+	{
+		var data = _self.data.createRow();
+		var idx = _self.insertRow(-1, data);
+		_self.editCell(idx, 0);
+	}
+
+	/**
+	 * This method is used to insert a new data row at the
+	 * given index.  If the index is negative, it is relative
+	 * to the end of the rows currently displayed in the
+	 * table.
+	 *
+	 * @param idx the index of where to create the new row
+	 * @param data the row data to display
+	 * @param returns the actual data index of the row
+	 *		inserted
+	 */
+
+	this.insertRow = function(idx, data)
+	{
+		println("Need to insert new row at data index {0}", [ idx ]);
+		return this.layout.insertRow(idx, data);
+	};
+
 	this.editing = null;
 	this.nav = new archistry.ui.DefaultKeyNavStrategy(this);
 	this.layout = new archistry.ui.BrowserGridLayout(id, this);
