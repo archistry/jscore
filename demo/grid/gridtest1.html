@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>ArchistryJS Grid Test #1</title>
+  <style type="text/css" media="screen">
+    #console
+    {
+      margin-top: 1em;
+      border: 1px solid #002654;
+      padding: 5px;
+    }
+
+    #console textarea
+    {
+      border: 1px solid #002654;
+    }
+    
+    .aui-grid 
+    {
+      font-family: sans-serif;
+      border: 1px solid red;
+      padding: 2px;
+    }
+
+    .aui-grid > table
+    {
+      border: 1px solid green;
+      margin: 3px;
+    }
+
+    .aui-grid td
+    {
+      vertical-align: top;
+    }
+
+    .aui-grid td input
+    {
+      border: 1px solid #e0aa0f;
+      padding: 0;
+      margin: 0;
+    }
+
+    .aui-grid > table th
+    {
+      color: white;
+      text-align: left;
+      background: green;
+    }
+
+    .aui-grid > table td, .aui-grid > table th
+    {
+      padding: 3px;
+    }
+
+/*    .aui-grid > table th.aui-grid-col-key
+    {
+      background: blue;
+      color: white;
+    }
+
+    .aui-grid > table th.aui-grid-col-value
+    {
+      background: yellow;
+    }
+*/
+    td.aui-grid-cell
+    {
+      border: 1px solid #002654;
+    }
+
+    .aui-grid tr.aui-grid-row-dirty
+    {
+      background: #f0e7f3;
+      font-style: italic;
+    }
+
+    td.aui-grid-cell-dirty
+    {
+      background: url(changed-red.gif) top right no-repeat;
+    }
+
+    td.aui-grid-col-value
+    {
+      width: 250px;
+    }
+
+    .aui-grid tr.aui-grid-header:hover
+    {
+      background: lightgreen;
+    }
+
+    .aui-grid tr.aui-grid-row:hover
+    {
+      background: #dabf72;
+    }
+
+    .aui-grid tr.aui-grid-row:hover > td
+    {
+      border: 1px solid #e0aa0f;
+    }
+
+    .aui-grid td.aui-grid-cell:hover
+    {
+      background: #f7eac3;
+    }
+
+    .aui-grid td.aui-grid-cell-dirty:hover
+    {
+      background: #f7eac3 url(changed-red.gif) top right no-repeat;
+    }
+
+    .aui-grid th.aui-grid-cell:hover
+    {
+      background: rgb(0,113,141);
+    }
+  </style>
+  <script type="text/javascript" src="js/core/core.js"></script>
+  <script type="text/javascript" src="js/core/version.js"></script>
+  <script type="text/javascript" src="js/ui/helpers.js"></script>
+  <script type="text/javascript" src="js/ui/console.js"></script>
+  <script type="text/javascript" src="js/ui/grid.js"></script>
+  <script type="text/javascript" src="js/ui/grid_controls.js"></script>
+  <script type="text/javascript" src="js/jquery/jquery-1.3.2.js"></script>
+</head>
+ 
+<body>
+  <div id="testgrid"></div>
+  <div id="console"></div>
+
+  <script type="text/javascript">
+    $(function()
+    {
+      var darray = [];
+//      for(var i = 0; i < 20; ++i)
+      for(var i = 0; i < 2; ++i)
+      {
+        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
+//        darray.add({ key: "Key " + i, value: "Value " + i });
+      }
+
+      archistry.ui.Console.attach("console");
+      var console = archistry.ui.Console;
+
+      var editor = new archistry.ui.grid.TextCellEditor();
+      var cols = new archistry.ui.ArrayColumnModel([
+        { key: "key", label: "Key", editor: editor },
+        { key: "value", label: "Value", editor: editor }
+      ]);
+      var data = new archistry.ui.ArrayRowModel(darray);
+      var grid = new archistry.ui.Grid("testgrid", cols, data,
+                  { showHeader: true, editable: true, clicksToEdit: 2 });
+    });
+  </script>
+</body>
+</html>
