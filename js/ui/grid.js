@@ -446,18 +446,71 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	var _datarows = 0;
 	var _sentinal = null;
 
-    /**
-     * This method takes care of returning the proper table
-     * row index for the given data row offset.
-     *
-     * @param the index into the data rows
-     * @return the actual table row index
-     */
+	/**
+	 * This method is used to translate "client" row indices
+	 * to actual table row indices.
+	 *
+	 * @param idx
+	 * @return the index in the HTML table
+	 */
 
-    function dataRowIndex(index)
-    {
-        return (_grid.showHeader ? index + 1: index);
-    }
+	function c2h(idx)
+	{
+		var hidx = idx;
+
+		if(idx < 0)
+		{
+			hidx = _datarows - idx;
+			{
+				hidx -= 1;
+			}
+		}
+		if(_grid.showHeader)
+		{
+			hidx += 1;
+		}
+
+		return hidx;
+	}
+
+	/**
+	 * This method is used to translate html table row indices
+	 * to actual client data model indices.
+	 *
+	 * @param hidx the HTML table row index
+	 * @return the client data model index
+	 */
+
+	function h2c(idx)
+	{
+		var cidx = idx;
+
+		if(idx < 0)
+		{
+			cidx = _table.rows.length - idx;
+			if(_sentinal)
+			{
+				cidx -= 1;
+			}
+			if(_grid.showHeader)
+			{
+				cidx -= 1;
+			}
+		}
+		else
+		{
+			if(_grid.showHeader && idx != 0)
+			{
+				cidx -= 1;
+			}
+			else if(_grid.showHeader && idx == 0)
+			{
+				cidx = null;
+			}
+		}
+
+		return cidx;
+	}
 
 	function newRow(index)
 	{
@@ -529,14 +582,17 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	 * the table.
 	 */
 
-	function renderRow(idx, data)
+	function renderRow(idx, data, dirty)
 	{
+		println("\nrenderRow({0}, {1}, {2})", [idx, data, dirty]);
 		var row = newRow(idx);
-		// FIXME:  this check should be made cleaner--and in
-		// one place!!!!
 		if(idx == -1)
 		{
-			idx = _datarows;
+			idx = _datarows; // because we're inserting a new row
+		}
+		if(dirty)
+		{
+			appendAttr(row, "class", _grid.styleClass.ROW_DIRTY);
 		}
 
 		println("rendering row using idx: {0} (data: {1})", [ idx, data.inspect() ]);
@@ -544,10 +600,16 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 		{
 			var col = _grid.columnModel.col(i);
 			var cell = row.insertCell(i);
-			var style = [ _grid.styleClass.CELL, col.style ].join(" ");
-			cell.setAttribute("class", style);
+			var style = [ _grid.styleClass.CELL, col.style ];
+			if(dirty)
+			{
+				style.add(_grid.styleClass.CELL_DIRTY);
+			}
+
+			cell.setAttribute("class", style.join(" "));
 			cell.setAttribute("row", idx);
 			cell.setAttribute("col", i);
+
 			col.renderer.render(_grid, idx, data, col, cell);
 			if(_grid.editable && col.editable !== false && col.editor !== null)
 			{
@@ -622,20 +684,16 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	function updateRows(start, end)
 	{
 		println("\nupdateRows({0}, {1})", [ start, end ]);
-		if(dataRowIndex(start) >= _table.rows.length)
-			return;
-		
-		if(end == -1)
-			end = _table.rows.length - 1;
+		println("real start: {0}; real end: {1}", [ c2h(start), c2h(end) ]);
 
-		for(var i = start; i < end; ++i)
+		for(var i = c2h(start); i <= c2h(end); ++i)
 		{
-			var row = _table.rows[dataRowIndex(i)];
+			var row = _table.rows[i];
 			println("updating row using idx: {0} (data: {1})", [ i, row.innerHTML ]);
 			var cells = etn(row, "td");
 			for(var j = 0; j < cells.length; ++j)
 			{
-				cells[j].setAttribute("row", i);
+				cells[j].setAttribute("row", h2c(i));
 			}
 
 			println("updated row: " + row.innerHTML);
@@ -689,7 +747,7 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 
     this.row = function(rowIndex)
     {
-        return _table.rows[dataRowIndex(rowIndex)];
+        return _table.rows[c2h(rowIndex)];
     };
 
 	/**
@@ -698,12 +756,13 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	 *
 	 * @param idx the index into the data model
 	 * @param data the data to be displayed
+	 * @param dirty whether the row is dirty or not
 	 * @return the actual location where the row was inserted
 	 */
 
-	this.insertRow = function(idx, data)
+	this.insertRow = function(idx, data, dirty)
 	{
-		renderRow(idx, data);
+		renderRow(idx, data, dirty);
 		if(idx == -1)
 		{
 			idx = _datarows - 1;
@@ -918,7 +977,7 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	this.appendNewRow = function()
 	{
 		var data = _self.data.createRow();
-		var idx = _self.insertRow(-1, data);
+		var idx = _self.insertRow(-1, data, true);
 		_self.editCell(idx, 0);
 	}
 
@@ -930,14 +989,15 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	 *
 	 * @param idx the index of where to create the new row
 	 * @param data the row data to display
+	 * @param dirty whether to mark the row as dirty or not
 	 * @param returns the actual data index of the row
 	 *		inserted
 	 */
 
-	this.insertRow = function(idx, data)
+	this.insertRow = function(idx, data, dirty)
 	{
 		println("Need to insert new row at data index {0}", [ idx ]);
-		return this.layout.insertRow(idx, data);
+		return this.layout.insertRow(idx, data, dirty);
 	};
 
 	this.editing = null;
