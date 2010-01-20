@@ -33,19 +33,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		grid-controls.js
+// Name:		property_editors.js
 // Created:		Fri Jan 15 11:06:12 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
-namespace("archistry.ui.grid");
+namespace("archistry.ui.editor");
 
 /**
  * This object provides some mix-in behavior methods that are
  * used to support validation during cell editing.
  */
 
-archistry.ui.grid.ValidatingCellEditor = {
+archistry.ui.editor.ValidatingCellEditor = {
 	
 	/**
 	 * This method can be called before the editing process is
@@ -68,21 +68,23 @@ archistry.ui.grid.ValidatingCellEditor = {
 	 * parameters are equivalent to the parameters passed to
 	 * this method.
 	 *
-	 * @param row the row object from the model
-	 * @param col the column definition
+	 * @param obj the object being edited
+	 * @param key the property key of the property being * edited
 	 * @param old the old value from the model
 	 * @param newVal the new value from the editor
+	 * @param helper an optional object that has a validate
+	 *		method
 	 * @return true if the editing value is acceptable or
 	 *		false otherwise.
 	 */
 
-	onBeforeEditingCompleted: function(row, col, old, newVal)
+	onBeforeEditingCompleted: function(obj, key, old, newVal, helper)
 	{
 		archistry.ui.Console.println("checking values '{0}' vs '{1}'", [old, newVal]);
 		var validator = null;
-		if(col.validator)
+		if(helper)
 		{
-			validator = col.validator;
+			validator = helper;
 		}
 		else if(this.validator)
 		{
@@ -95,7 +97,7 @@ archistry.ui.grid.ValidatingCellEditor = {
 
 		if(validator)
 		{
-			return validator.validate(row, col, old, newVal);
+			return validator.validate(obj, key, old, newVal);
 		}
 
 		return true;
@@ -107,22 +109,22 @@ archistry.ui.grid.ValidatingCellEditor = {
  * editing single line text values.
  */
 
-archistry.ui.grid.TextCellEditor = function()
+archistry.ui.editor.TextCellEditor = function()
 {	
 	include(archistry.ui.Helpers);
-	include(archistry.ui.grid.ValidatingCellEditor);
+	include(archistry.ui.editor.ValidatingCellEditor);
 
 	var _self = this;
 	var _editing = false;
-	var _grid = null;
-	var _rowIndex = null;
-	var _row = null;
-	var _col = null;
+	var _observer = null;
+	var _obj = null;
+	var _key = null;
 	var _cell = null;
 	var _editor = null;
 	var _value = null;
+	var _context = null;
 
-	const INPUTFMT = "<form action='javascript:void(0);'><input id='{0}' autocomplete='off' value='{1}' style='width:{2};height:{3};'/></form>";
+	const INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><input id='{0}' autocomplete='off' value='{1}' style='width:{2};height:{3};'/></form>";
 //	const INPUTFMT = "<form action='javascript:void(0);'><input id='{0}' autocomplete='off' value='{1}' style='width:{2}'/></form>";
 
 	/**
@@ -170,13 +172,15 @@ archistry.ui.grid.TextCellEditor = function()
 		if(!_editing)
 			return true;
 
-		if(onBeforeEditingCompleted(_row, _col, 
-				_row[_col.key], _editor.value))
+		if(onBeforeEditingCompleted(_obj, _key, _obj[_key], _editor.value))
 		{
 			_editing = false;
 			_value = _editor.value;
 			destroyEditor();
-			_grid.editingCompleted(_rowIndex, _col);
+			if(_observer)
+			{
+				_observer.editingCompleted(_context);
+			}
 			return true;
 		}
 
@@ -195,7 +199,10 @@ archistry.ui.grid.TextCellEditor = function()
 			_editing = false;
 			_value = null;
 			destroyEditor();
-			_grid.editingCancelled(_rowIndex, _col);
+			if(_observer)
+			{
+				_observer.editingCancelled(_context);
+			}
 		}
 	}
 
@@ -210,9 +217,23 @@ archistry.ui.grid.TextCellEditor = function()
 
 	function createEditor(cell, name, value)
 	{
-		cell.innerHTML = String.format(INPUTFMT,
-			[ name, value, getStyle(cell, "width"), getStyle(cell, "height")]);
-//			[ name, value, getStyle(cell, "width") ]);
+		var width = getStyle(cell, "width");
+		var height = getStyle(cell, "height");
+
+		if(cell.tagName == "SPAN")
+		{
+			if(cell.clip)
+			{
+				width = cell.clip.width;
+			}
+			else
+			{
+				width = cell.offsetWidth;
+			}
+			width = width + "px";
+		}
+
+		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
 		return e(name);
 	}
 
@@ -222,14 +243,21 @@ archistry.ui.grid.TextCellEditor = function()
 	 * This method is called by the control to prepare the
 	 * editor for interaction with the user.
 	 *
-	 * @param grid the grid control
-	 * @param rowIndex the row index of the cell being edited
-	 * @param row the row data object from the model
-	 * @param col the column definition for the cell
-	 * @param cell the actual cell element
+	 * @param observer an object that wishes to be notified
+	 *		when the editing is completed or cancelled.  It
+	 *		MUST implement the EditingObserver interface as
+	 *		follows:
+	 *			editingCancelled(context);
+	 *			editingCompleted(context);
+	 * @param obj the data object being edited
+	 * @param key the property key being edited
+	 * @param cell the element where the editor should be
+	 *		rendered
+	 * @param context an opaque context object that is sent to
+	 *		the observer when the editing operation ends
 	 */
 
-	this.startEditing = function(grid, rowIndex, row, col, cell)
+	this.startEditing = function(observer, obj, key, cell, context)
 	{
 		if(_editing)
 		{
@@ -237,17 +265,16 @@ archistry.ui.grid.TextCellEditor = function()
 		}
 
 		_editing = true;
-		_grid = grid;
-		_rowIndex = rowIndex;
-		_row = row;
-		_col = col;
+		_observer = observer
+		_obj = obj;
+		_key = key;
 		_cell = cell;
+		_context = context;
 
-//		alert("create editor in: " + cell.innerHTML);
-		_editor = createEditor(cell, "editor-" + col.key, row[col.key]);
+		_editor = createEditor(cell, "editor-" + _key, _obj[_key]);
 		setTimeout(function() { _editor.focus(); }, 50);
 		_editor.onkeydown = onKeyDown;
-		_editor.onblur = onBlur;
+//		_editor.onblur = onBlur;
 		return true;
 	};
 

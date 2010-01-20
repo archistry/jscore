@@ -46,7 +46,7 @@ namespace = function(ns)
 {
 	if('string' != typeof ns)
 	{
-		throw("Must specify namespace path to be defined as a string!");
+		throw new ReferenceError("Must specify namespace path to be defined as a string!");
 	}
 
 	var global = (function(){return this;}).call();

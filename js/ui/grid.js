@@ -650,9 +650,9 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 				{
 					cell.innerHTML = "Edit to add a new row";
 				}
-				bindEdit(cell, _grid.onCreateNewRow);
 				trigger = true;
 			}
+			bindEdit(cell, _grid.onCreateNewRow);
 			_grid.nav.onCellAdded(cell);
 		}
 		_sentinal = row;
@@ -837,38 +837,40 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	 * This method is called from cell editors when the user
 	 * cancels the edit.
 	 *
-	 * @param rowIndex the row index being edited
-	 * @param col the column definition of the editing column
+	 * @param context the context object contains a reference
+	 *		to the row index being edited and the column definition
+	 *		of the editing column
 	 */
 
-	this.editingCancelled = function(rowIndex, col)
+	this.editingCancelled = function(context)
 	{
 		this.editing = null;
-		this.renderCell(rowIndex, col);
+		this.renderCell(context.rowIndex, context.col);
 	};
 
 	/**
 	 * This method is called from cell editors when they have
 	 * completed editing the current cell.
 	 *
-	 * @param rowIndex the row index being edited
-	 * @param col the column definition of the editing column
+	 * @param context the context object contains a reference
+	 *		to the row index being edited and the column definition
+	 *		of the editing column
 	 */
 
-	this.editingCompleted = function(rowIndex, col)
+	this.editingCompleted = function(context)
 	{
-		var row = this.data.row(rowIndex);
-		var old = row[col.key];
-		var newVal = col.editor.value();
+		var row = this.data.row(context.rowIndex);
+		var old = row[context.col.key];
+		var newVal = context.col.editor.value();
 		var dirty = false;
 
 		if(old != newVal)
 		{
-			row[col.key] = newVal;
+			row[context.col.key] = newVal;
 			dirty = true;
 		}
 		this.editing = null;
-		this.renderCell(rowIndex, col, dirty);
+		this.renderCell(context.rowIndex, context.col, dirty);
 	};
 
 	/**
@@ -903,7 +905,8 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 		{
 			setTimeout(function() {
 				_self.editing = cdef;
-				cdef.editor.startEditing(_self, row, data, cdef, cell);
+				cdef.editor.startEditing(_self, data, cdef.key, cell, {
+							rowIndex: row, col: cdef });
 			}, 50);
 		}
 		else
