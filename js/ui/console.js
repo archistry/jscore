@@ -47,7 +47,7 @@ namespace("archistry.ui");
 
 archistry.ui.ConsoleImpl = function()
 {
-	include(archistry.ui.Helpers);
+	mixin(archistry.ui.Helpers);
 
 	/**
 	 * This method is used to attach the console to an output
@@ -60,7 +60,7 @@ archistry.ui.ConsoleImpl = function()
 	this.attach = function(divid)
 	{
 		this.div = e(divid);
-		this.div.innerHTML = "<div id='console-title' style='font-weight:bold;font-size:10pt;font-family:sans-serif;border: 1px solid #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;'>archistry.ui.Console <img id='console-clear' src='gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' disabled='yes'></textarea></form>";
+		this.div.innerHTML = "<div id='console-title' style='font-weight:bold;font-size:10pt;font-family:sans-serif;border: 1px solid #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;'>archistry.ui.Console <img id='console-clear' src='../images/gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' disabled='yes'></textarea></form>";
 		this.text = e("console-text");
 		this.text.style.width = getStyle(e("console-title"), "width");
 		this.attached = true;
