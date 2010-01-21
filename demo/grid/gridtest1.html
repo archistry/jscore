@@ -4,16 +4,6 @@
 <head>
   <title>ArchistryJS Grid Test #1</title>
   <style type="text/css" media="screen">
-    .aui-editable
-    {
-      border-bottom: 1px dashed #002654;
-    }
-
-    p.aui-editable, div.aui-editable
-    {
-      border-right: 1px dashed #002654;
-    }
-
     #console
     {
       margin-top: 1em;
@@ -101,7 +91,7 @@
       font-style: italic;
     }
 
-    .aui-grid tr.aui-grid-row:hover, .aui-editable:hover
+    .aui-grid tr.aui-grid-row:hover
     {
       background: #f7eac3;
     }
@@ -137,61 +127,20 @@
   <script type="text/javascript" src="../js/ui/helpers.js"></script>
   <script type="text/javascript" src="../js/ui/console.js"></script>
   <script type="text/javascript" src="../js/ui/property_editors.js"></script>
-  <script type="text/javascript" src="../js/ui/editable.js"></script>
   <script type="text/javascript" src="../js/ui/grid.js"></script>
   <script type="text/javascript" src="../js/jquery/jquery-1.3.2.js"></script>
 </head>
  
 <body>
-  <h1>Model-based Content Editing</h1>
-  <p>
-  The idea is that you can render mark-up and indicate that certain
-  parts of it can be edited using specific types of edit controls.
-  This is similar in many ways to the jQuery Editable approach, but
-  the missing part there is that you're just editing the raw mark-up
-  and you lose any semantics or structure to the information.
-  </p>
-  <p>
-  With these controls, you simply mark an editable span,
-  whether a large body of text or a single word, using the following
-  syntax:
-  <pre>
-  This is &lt;span class="aui-editable" object="jsModelVar" property="p1" editor="jsSharedEditor|jsClassName">
-  some editable text&lt;/span> in the middle of a paragraph.
-  </pre>
-  <blockquote>
-    This is <span class="aui-editable" object="jsModelVar"
-    property="p1" editor="editor"></span>
-  </blockquote>
-  </p>
-  <p class="aui-editable" object="jsModelVar" property="p2"></p>
-  </p>
-
+  <h1>Test Grid</h1>
   <div id="testgrid"></div>
   <div id="console"></div>
 
   <script type="text/javascript">
-    // Note:  these MUST be declared outside the function so that we
-    // can find the values later!
-
-    var jsModelVar = {
-      p1: "some editable text with a ",
-      p2: "In this example, the text \"some editable text\" will be edited based on the contents of the model <code>jsModelVar</code> which should be established somewhere within the script.  The editor is defined by a reference to either a shared JavaScript editing instance to be shared within the document, or, if the variable doesn't exist, it is assumed to be the name of a class that implements the editor interface."
-    };
-
-    var editor = new archistry.ui.editor.TextCellEditor();
-
     $(function()
     {
-      // Editable example;
-      var elements = $(".aui-editable");
-      var editables = [];
-      for(var e = 0; e < elements.length; ++e)
-      {
-        editables[i] = new archistry.ui.Editable(elements[e]);
-      }
-
-      // Grid example
+      var editor = new archistry.ui.editor.TextFieldEditor();
+      
       var darray = [];
 //      for(var i = 0; i < 20; ++i)
       for(var i = 0; i < 2; ++i)
