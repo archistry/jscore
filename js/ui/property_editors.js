@@ -105,14 +105,15 @@ archistry.ui.editor.ValidatingCellEditor = {
 };
 
 /**
- * This class provides a basic text editor suitable for
- * editing single line text values.
+ * This class provides an implementation of an abstract base
+ * editor that can be used by specific editor implementations
+ * to share code.
  */
 
-archistry.ui.editor.TextCellEditor = function()
-{	
-	include(archistry.ui.Helpers);
-	include(archistry.ui.editor.ValidatingCellEditor);
+archistry.ui.editor.AbstractEditor = function()
+{
+	mixin(archistry.ui.Helpers);
+	mixin(archistry.ui.editor.ValidatingCellEditor);
 
 	var _self = this;
 	var _editing = false;
@@ -124,29 +125,10 @@ archistry.ui.editor.TextCellEditor = function()
 	var _value = null;
 	var _context = null;
 
-	const INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><input id='{0}' autocomplete='off' value='{1}' style='width:{2};height:{3};'/></form>";
-//	const INPUTFMT = "<form action='javascript:void(0);'><input id='{0}' autocomplete='off' value='{1}' style='width:{2}'/></form>";
+	this.cancelKeyCodes = [ 27 ];
+	this.completionKeyCodes = [ 9, 13 ];
 
-	/**
-	 * This event handler is used to detect the end of the
-	 * editing session.
-	 *
-	 * @param event the key event
-	 */
-
-	function onKeyDown(event)
-	{
-		switch(event.keyCode)
-		{
-			case 9:		// TAB key
-			case 13:	// ENTER key
-				return onEditingCompleted();
-			case 27:	// ESC key
-				onEditingCancelled();
-		}
-		
-		return true;
-	}
+	////// INTERNAL EDITOR API //////
 
 	/**
 	 * This is the focus lost handler to ensure the edit is
@@ -155,9 +137,9 @@ archistry.ui.editor.TextCellEditor = function()
 	 * @param event the event
 	 */
 
-	function onBlur(event)
+	this.onBlur = function(event)
 	{
-		return onEditingCompleted();
+		return _self.onEditingCompleted();
 	}
 
 	/**
@@ -167,7 +149,7 @@ archistry.ui.editor.TextCellEditor = function()
 	 * the validation fails.
 	 */
 
-	function onEditingCompleted()
+	this.onEditingCompleted = function()
 	{
 		if(!_editing)
 			return true;
@@ -176,7 +158,7 @@ archistry.ui.editor.TextCellEditor = function()
 		{
 			_editing = false;
 			_value = _editor.value;
-			destroyEditor();
+			_self.destroyEditor();
 			if(_observer)
 			{
 				_observer.editingCompleted(_context);
@@ -192,13 +174,13 @@ archistry.ui.editor.TextCellEditor = function()
 	 * user.
 	 */
 
-	function onEditingCancelled()
+	this.onEditingCancelled = function()
 	{
 		if(_editing)
 		{
 			_editing = false;
 			_value = null;
-			destroyEditor();
+			_self.destroyEditor();
 			if(_observer)
 			{
 				_observer.editingCancelled(_context);
@@ -206,7 +188,38 @@ archistry.ui.editor.TextCellEditor = function()
 		}
 	}
 
-	function destroyEditor()
+	/**
+	 * This event handler is used to detect the end of the
+	 * editing session.
+	 *
+	 * @param event the key event
+	 */
+
+	this.onKeyDown = function(event)
+	{
+		// FIXME:  this probably isn't as efficient as the
+		// switch version, but we need to be able to change
+		// the keybindings without having to re-implement this
+		// method!
+		if(_self.cancelKeyCodes.include(event.keyCode))
+		{
+			_self.onEditingCancelled();
+		}
+		else if(_self.completionKeyCodes && _self.completionKeyCodes.include(event.keyCode))
+		{
+			return _self.onEditingCompleted();
+		}
+		
+		return true;
+	}
+
+	/**
+	 * This method is used to destroy the editor instance.  It
+	 * is called from #onEditingCancelled and
+	 * #onEditingCompleted
+	 */
+
+	this.destroyEditor = function()
 	{
 		if(_editor)
 		{
@@ -215,26 +228,20 @@ archistry.ui.editor.TextCellEditor = function()
 		}
 	}
 
-	function createEditor(cell, name, value)
+	/**
+	 * This method should be overridden in concrete
+	 * implementations to actually create the editor within
+	 * the cell.
+	 *
+	 * @param cell the cell in which to render the editor
+	 * @param name the element ID of the editor control
+	 * @param value the initial value for the control
+	 * @return the editor element
+	 */
+
+	this.createEditor = function(cell, name, value)
 	{
-		var width = getStyle(cell, "width");
-		var height = getStyle(cell, "height");
-
-		if(cell.tagName == "SPAN")
-		{
-			if(cell.clip)
-			{
-				width = cell.clip.width;
-			}
-			else
-			{
-				width = cell.offsetWidth;
-			}
-			width = width + "px";
-		}
-
-		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
-		return e(name);
+		return null;
 	}
 
 	////// PUBLIC EDITOR API //////
@@ -264,6 +271,14 @@ archistry.ui.editor.TextCellEditor = function()
 			return false;
 		}
 
+		// FIXME:  there's gotta be a better way around the
+		// problem of this getting redefined in the event
+		// handlers than this sort of crap!
+		if(_self !== this)
+		{
+			_self = this;
+		}
+		
 		_editing = true;
 		_observer = observer
 		_obj = obj;
@@ -271,10 +286,10 @@ archistry.ui.editor.TextCellEditor = function()
 		_cell = cell;
 		_context = context;
 
-		_editor = createEditor(cell, "editor-" + _key, _obj[_key]);
+		_editor = this.createEditor(cell, "editor-" + _key, _obj[_key]);
 		setTimeout(function() { _editor.focus(); }, 50);
-		_editor.onkeydown = onKeyDown;
-//		_editor.onblur = onBlur;
+		_editor.onkeydown = this.onKeyDown;
+		_editor.onblur = this.onBlur;
 		return true;
 	};
 
@@ -288,12 +303,106 @@ archistry.ui.editor.TextCellEditor = function()
 	 * This method is used to cancel the edit operation.
 	 */
 
-	this.cancelEditing = function() { onEditingCancelled(); }
+	this.cancelEditing = function() { _self.onEditingCancelled(); }
 
 	/**
 	 * This method is used to request completion of the
 	 * current edit operation.
 	 */
 
-	this.completeEditing = function() { return onEditingCompleted(); }
+	this.completeEditing = function() { return _self.onEditingCompleted(); }
+};
+
+/**
+ * This class provides a basic text editor suitable for
+ * editing single line text values.
+ */
+
+archistry.ui.editor.TextFieldEditor = function()
+{
+	mixin(archistry.ui.Helpers);
+	this.mixin(archistry.ui.editor.AbstractEditor);
+
+	const INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><input id=\"{0}\" autocomplete='off' value=\"{1}\" style='width:{2};height:{3};'/></form>";
+
+	/**
+	 * This method creates the HTML form and the HTML input
+	 * control.
+	 */
+
+	this.createEditor = function(cell, name, value)
+	{
+		var width = ewidth(cell);
+		var height = getStyle(cell, "height");
+
+		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
+		return e(name);
+	}
+};
+
+/**
+ * This class provides a basic multi-line text editor suitable
+ * for editing multi-line text values.
+ */
+
+archistry.ui.editor.TextAreaEditor = function()
+{
+	mixin(archistry.ui.Helpers);
+	this.mixin(archistry.ui.editor.AbstractEditor);
+	this.completionKeyCodes = [];
+
+	const INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><textarea id=\"{0}\" style='width:{2};height:{3};'>{1}</textarea></form>";
+
+	/**
+	 * This method creates the HTML form and the HTML textarea
+	 * control.
+	 */
+
+	this.createEditor = function(cell, name, value)
+	{
+		var width = ewidth(cell);
+		var height = getStyle(cell, "height");
+
+		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
+		return e(name);
+	}
+};
+
+/**
+ * This class provides a flexible text editor for editing
+ * inline content elements.  If the cell containing the text
+ * value to be edited is a block element, a TextAreaEditor is
+ * used.  Otherwise, an inline TextFieldEditor is used
+ * instead.
+ *
+ * @param config any override configuation settings for the
+ *		editor.
+ */
+
+archistry.ui.editor.InlineTextEditor = function(config)
+{
+	mixin(archistry.ui.Helpers);
+	this.mixin(archistry.ui.editor.AbstractEditor);
+	this.mixin(config);
+
+	var _inputEditor = new archistry.ui.editor.TextFieldEditor();
+	var _textEditor = new archistry.ui.editor.TextAreaEditor();
+
+	this.createEditor = function(cell, name, value)
+	{
+		var editor = null;
+		if(getStyle(cell, "display") === "block")
+		{
+			editor = _textEditor;
+		}
+		else
+		{
+			editor = _inputEditor;
+		}
+		
+		this.completionKeyCodes = editor.completionKeyCodes;
+		this.cancelKeyCodes = editor.cancelKeyCodes;
+
+		return editor.createEditor(cell, name, value);
+	};
 };
