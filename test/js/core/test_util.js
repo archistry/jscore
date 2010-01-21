@@ -41,7 +41,7 @@
 Jester.testing("Utility library functionality", {
 	tests: [
 		{
-			what: "Object.include works correctly",
+			what: "Object.mixin works correctly",
 			how: function(context, result)
 			{
 				var proto = { 
@@ -53,7 +53,7 @@ Jester.testing("Utility library functionality", {
 				};
 
 				var A = function() {};
-				A.include(proto);
+				A.mixin(proto);
 				result.check("non-function property included in prototype", {
 					actual: (A.prototype.foo != null),
 					expect: true
@@ -86,7 +86,7 @@ Jester.testing("Utility library functionality", {
 				});
 				
 				var Aa = function() {};
-				Aa.include(proto, false);
+				Aa.mixin(proto, false);
 				result.check("non-function property not included in prototype (false)", {
 					actual: (Aa.prototype.foo == null),
 					expect: true
@@ -120,7 +120,7 @@ Jester.testing("Utility library functionality", {
 
 				var B = function()
 				{
-					this.include(A);
+					this.mixin(A);
 				};
 
 				var b = new B();
@@ -159,7 +159,7 @@ Jester.testing("Utility library functionality", {
 				{
 					this.doit = function() { return "yyy"; };
 				}
-				P.include(proto);
+				P.mixin(proto);
 				var p = new P();
 				result.check("existing property not modified by include", {
 					actual: p.doit(),
@@ -183,7 +183,7 @@ Jester.testing("Utility library functionality", {
 
 				var bar = function()
 				{
-					this.include(foo);
+					this.mixin(foo);
 
 					result.check("prop1 is available within initializer", {
 						actual: this.prop1,
@@ -220,7 +220,7 @@ Jester.testing("Utility library functionality", {
 
 				var bar = function()
 				{
-					this.include(foo);
+					this.mixin(foo);
 
 					result.check("prop1 is available within initializer", {
 						actual: this.prop1,
@@ -257,7 +257,7 @@ Jester.testing("Utility library functionality", {
 
 				var bar = function()
 				{
-					this.include(foo);
+					this.mixin(foo);
 
 					result.check("prop1 is available within initializer", {
 						actual: this.prop1,
