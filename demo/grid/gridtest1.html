@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>ArchistryJS Grid Test #1</title>
+  <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <style type="text/css" media="screen">
     #console
     {
@@ -10,7 +11,7 @@
       border: 1px solid #002654;
       padding: 5px;
     }
-
+/*
     .aui-grid 
     {
       font-family: sans-serif;
@@ -23,7 +24,7 @@
       border: 1px solid green;
       margin: 3px;
     }
-
+*/
     .aui-grid td
     {
       vertical-align: top;
@@ -38,9 +39,10 @@
 
     .aui-grid > table th
     {
-      color: white;
+/*      color: white; */
       text-align: left;
-      background: green;
+/*      background: green; */
+      border: 1px solid #aed0ea;
     }
 
     .aui-grid > table td, .aui-grid > table th
@@ -61,7 +63,8 @@
 */
     td.aui-grid-cell
     {
-      border: 1px solid #002654;
+/*      border: 1px solid #002654; */
+      border: 1px solid rgb(221,221,221);
     }
 
     .aui-grid tr.aui-grid-row-dirty
@@ -72,7 +75,7 @@
 
     .aui-grid-cell-dirty
     {
-      background: url(changed-red.gif) top right no-repeat;
+      background: url(../images/changed-red.gif) top right no-repeat;
     }
 
     td.aui-grid-col-value
@@ -93,27 +96,38 @@
 
     .aui-grid tr.aui-grid-row:hover
     {
-      background: #f7eac3;
+/*      background: #f7eac3; */
+        background: #e4f1fb;
+        border: 1px solid #74b2e2;
     }
 
     .aui-grid tr.aui-grid-row:hover > td
     {
-      border: 1px solid #e0aa0f;
+/*      border: 1px solid #e0aa0f; */
+        border: 1px solid #74b2e2;
     }
 
     .aui-grid td.aui-grid-cell:hover
     {
-      background: #f0d588;
+/*      background: #f0d588; */
+/*        background: #d7ebf9 url(../jqueryui/css/cupertino/images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x; */
+        background: #d7ebf9;
+        border: 1px solid #aed0ea;
+        color: #2779aa
     }
 
     .aui-grid td.aui-grid-cell-dirty:hover
     {
-      background: #f0d588 url(changed-red.gif) top right no-repeat;
+/*      background: #f0d588 url(../images/changed-red.gif) top right no-repeat; */
+      background: #d7ebf9 url(../images/changed-red.gif) top right no-repeat;
     }
 
     .aui-grid th.aui-grid-cell:hover
     {
-      background: rgb(0,113,141);
+/*      background: rgb(0,113,141); */
+        background: #3baae3 url(../jqueryui/css/cupertino/images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+        border: 1px solid #294e8;
+        color: #ffffff;
     }
 
     td.actions
@@ -165,7 +179,7 @@
                     }
       });
       var grid = new archistry.ui.Grid("testgrid", cols, data, {
-                    //showHeader: true,
+                    showHeader: true,
                     editable: true,
                     clicksToEdit: 2,
                     showSentinalRow: true
