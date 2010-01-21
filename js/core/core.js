@@ -91,7 +91,7 @@ namespace = function(ns)
  *
  *   var P = { a: "a", b: function() {} };
  *   var A = function() {};
- *   A.include(P);
+ *   A.mixin(P);
  *   var a = new A();
  *
  * Both the class A.a and A.b() will be defined as well as for
@@ -104,12 +104,12 @@ namespace = function(ns)
  * most often be used in practice as the including into the
  * prototype of the function really doesn't matter 99% of the
  * time.  This case is more like Ruby's include keyword,
- * except that it will only include the mixin object into
+ * except that it will only mixin the mixin object into
  * instances of the class, not the prototype of the class.
  *
  *   var A = function()
  *   {
- *		this.include(P);
+ *		this.mixin(P);
  *	 };
  *
  *	 var a = new A();
@@ -141,8 +141,13 @@ namespace = function(ns)
  * @return this
  */
 
-Object.prototype.include = function(obj, inPrototype)
+Object.prototype.mixin = function(obj, inPrototype)
 {
+	if(!obj)
+	{
+		return this;
+	}
+
 	var src = obj;
 	var p = null;
 	if(typeof obj === 'function')
@@ -161,7 +166,7 @@ Object.prototype.include = function(obj, inPrototype)
         }
     }
 
-	// include the prototype properties
+	// mixin the prototype properties
 	if(src.prototype != null)
 	{
 		for(p in src.prototype)
