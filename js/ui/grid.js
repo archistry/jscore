@@ -46,156 +46,16 @@ namespace("archistry.ui");
  */
 
 archistry.ui.GridStyles = {
-	GRID				: "aui-grid",
+	GRID				: "aui-grid " + archistry.ui.Styles.Widget.CONTROL,
 	CELL				: "aui-grid-cell",
-	CELL_SELECTED		: "aui-grid-cell-selected",
-	CELL_DIRTY			: "aui-grid-cell-dirty",
+	CELL_SELECTED		: "aui-grid-cell-selected " + archistry.ui.Styles.State.HIGHLIGHT,
+	CELL_DIRTY			: "aui-grid-cell-dirty " + archistry.ui.Styles.State.DIRTY,
 	ROW					: "aui-grid-row",
-	ROW_HEADER			: "aui-grid-header",
-	ROW_SELECTED		: "aui-grid-row-selected",
+	ROW_HEADER			: "aui-grid-header " + archistry.ui.Styles.Widget.HEADER,
+	ROW_SELECTED		: "aui-grid-row-selected " + archistry.ui.Styles.State.HIGHLIGHT,
 	ROW_DIRTY			: "aui-grid-row-dirty",
 	ROW_SENTINAL		: "aui-grid-row-sentinal",
 	COLUMN_BASE			: "aui-grid-col-"
-};
-
-/**
- * While it's hardly jQuery, here are some helper methods that
- * can be mixed in to various classes without introducing a
- * jQuery dependency in the core UI framework.
- */
-
-archistry.ui.Helpers = {
-	/**
-	 * This is a very simple wrapper for locating elements by
-	 * ID (and only by ID).
-	 *
-	 * @param id the element's ID to locate
-	 * @return the element or null if not found
-	 */
-
-	e: function(id)
-	{
-		return document.getElementById(id);
-	},
-
-	/**
-	 * This method is used to create a new element of the
-	 * specified name.
-	 *
-	 * @param elt the element name to create
-	 * @return the new element reference
-	 */
-
-	ne: function(elt)
-	{
-		return document.createElement(elt);
-	},
-
-    /**
-     * Shorter version of getElementsByTagName
-     *
-     * @param elt the start element
-     * @param tag the tag name
-     * @returns array of all child elements with the tag name
-     */
-
-    etn: function(elt, tag)
-    {
-        return elt.getElementsByTagName(tag);
-    },
-
-	/**
-	 * This method is used to disable selection on the
-	 * specific element.  It is similar to what's implemented
-	 * in jQuery UI, but slightly different in the
-	 * implementation.  It is based on several different code
-	 * snippets found on the Web.
-	 *
-	 * @param elt the element to not be selected
-	 * @return a reference to the element for call chaining
-	 */
-
-	disableSelect: function(elt)
-	{
-		elt.setAttribute("unselectable", "on");
-		elt.style.MozUserSelect = "none";
-		elt.style.cursor = "default";
-		elt.onselectstart = function() { return false; }
-		return elt;
-	},
-
-	/**
-	 * This method of code was lifted (more or less) directly
-	 * from quirksmode.org and is used to determine the target
-	 * of the specified event.
-	 *
-	 * @param event the event instance
-	 * @return the target element for the event
-	 */
-
-	eventTarget: function(event)
-	{
-		var targ = null;
-		if(!event)
-			event = window.event;
-
-		if(!event)
-			return null;
-
-		if(event.target)
-		{
-			targ = event.target;
-		}
-		else if(event.srcElement)
-		{
-			targ = event.srcElement;
-		}
-		if(targ.nodeType == 3)
-		{
-			targ = targ.parentNode;
-		}
-		return targ;
-	},
-
-	/**
-	 * This function was lifted from Robert Nyman at
-	 * http://robertnyman.com/2006/04/24/get-the-rendered-style-of-an-element/
-	 */
-
-	getStyle: function(oElm, strCssRule){
-		var strValue = "";
-		if(document.defaultView && document.defaultView.getComputedStyle){
-			strValue = document.defaultView.getComputedStyle(oElm, "").getPropertyValue(strCssRule);
-		}
-		else if(oElm.currentStyle){
-			strCssRule = strCssRule.replace(/\-(\w)/g, function (strMatch, p1){
-				return p1.toUpperCase();
-			});
-			strValue = oElm.currentStyle[strCssRule];
-		}
-		return strValue;
-	},
-
-	/**
-	 * This method finds the first parent element from the
-	 * start element with the specified tag.
-	 *
-	 * @param start the start element
-	 * @param tag the tag of the element to find
-	 * @return the element or null if not found
-	 */
-
-	parentWithTag: function(start, tag)
-	{
-		var t = tag.toUpperCase();
-		var p = start;
-		while(p.tagName != t && p != document)
-		{
-			p = p.parentNode;
-		}
-
-		return p;
-	}
 };
 
 /**
@@ -236,7 +96,7 @@ archistry.ui.DefaultGridCellRenderer = function()
 archistry.ui.ArrayRowModel = function(data, options)
 {
 	var _data = data;
-	if(options) { this.include(options); }
+	this.mixin(options);
 
 	/**
 	 * This method provides an indexer for retrieving the
@@ -294,7 +154,7 @@ archistry.ui.ArrayRowModel = function(data, options)
 archistry.ui.ArrayColumnModel = function(cols, options)
 {
 	var _cols = cols;
-	if(options) { this.include(options); }
+	this.mixin(options);
 
 	if(!this.defaultRenderer)
 	{
@@ -340,7 +200,7 @@ archistry.ui.ArrayColumnModel = function(cols, options)
 
 archistry.ui.DefaultKeyNavStrategy = function(grid)
 {
-	include(archistry.ui.Helpers);
+	mixin(archistry.ui.Helpers);
 
 	var _this = this;
 	var _grid = grid;
@@ -435,7 +295,8 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
 archistry.ui.BrowserGridLayout = function(id, grid)
 {
-	include(archistry.ui.Helpers);
+	mixin(archistry.ui.Helpers);
+	mixin(archistry.ui.Styles);
 
 	var _tabid = "ag-table-" + id;
 	var _that = this;
@@ -709,6 +570,7 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	{
 		appendAttr(_root, "class", _grid.styleClass.GRID);
 		_table = ne("table");
+		appendAttr(_table, "class", Widget.CONTENT);
 		_table.id = _tabid;
 		_datarows = 0;
         
@@ -802,7 +664,7 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 {
 	var _self = this;
 	this.styleClass = archistry.ui.GridStyles;
-	this.include(options);
+	this.mixin(options);
 	this.chunkSize = 20;
 	this.columnModel = columnModel;
 	this.data = rowModel;
