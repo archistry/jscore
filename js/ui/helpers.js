@@ -41,6 +41,50 @@
 namespace("archistry.ui");
 
 /**
+ * This object defines the base styles that are common across
+ * all of the UI components.  They also include all of the
+ * jQueryUI CSS Framework definitions where appropriate so
+ * that the core controls will play nice with jQueryUI themes.
+ */
+
+archistry.ui.Styles = {
+
+	/** These are layout styles that apply to UI widgets */
+	Layout: {
+		HIDDEN				: "ui-helper-hidden",
+		HIDDEN_ACCESSIBLE	: "ui-helper-hidden-acessible",
+		RESET				: "ui-helper-reset",
+		CLEARFIX			: "ui-helper-clearfix",
+		ZFIX				: "ui-helper-zfix"
+	},
+
+	/**
+	 * These are widget styles that can be used for all the
+	 * widget elements.
+	 */
+
+	Widget: {
+		CONTROL				: "ui-widget",
+		HEADER				: "ui-widget-header",
+		CONTENT				: "ui-widget-content"
+	},
+
+	/** These are widget state styles */
+	State: {
+		DEFAULT				: "ui-state-default",
+		HOVER				: "ui-state-hover",
+		FOCUS				: "ui-state-focus",
+		ACTIVE				: "ui-state-active",
+		HIGHLIGHT			: "ui-state-highlight",
+		ERROR				: "ui-state-error",
+		ERROR_TEXT			: "ui-state-error-text",
+		DISABLED			: "ui-state-disabled",
+		PRIORITY_PRIMARY	: "ui-state-priority-primary",
+		PRIORITY_SECONDARY	: "ui-state-priority-secondary"
+	}
+};
+
+/**
  * While it's hardly jQuery, here are some helper methods that
  * can be mixed in to various classes without introducing a
  * jQuery dependency in the core UI framework.
@@ -237,5 +281,31 @@ archistry.ui.Helpers = {
 	println: function(fmt, args)
 	{
 		archistry.ui.Console.println(fmt, args);
+	},
+
+	/**
+	 * This method will return the width of the
+	 * element--including inline elements
+	 *
+	 * @param elt the element
+	 * @return the width in pixels
+	 */
+
+	ewidth: function(elt)
+	{
+		var width = getStyle(elt, "width");
+		if(getStyle(elt, "display") == "inline")
+		{
+			if(elt.clip)
+			{
+				width = elt.clip.width;
+			}
+			else
+			{
+				width = elt.offsetWidth;
+			}
+			width = width + "px";
+		}
+		return width;
 	}
 };
