@@ -72,19 +72,16 @@ archistry.ui.DefaultPropertyRenderer = function()
 
 archistry.ui.Editable = function(arg, options)
 {
-	include(archistry.ui.Helpers);
-
+	mixin(archistry.ui.Helpers);
+	
+	var _oldval = null;
 	var _node = null;
 	var _self = this;
 	var _obj = null;
 	var _key = null
-	var _editor = null;
 	var _global = (function(){return this;}).call();
-
-	if(options)
-	{
-		_self.include(options);
-	}
+	
+	_self.mixin(options);
 
 	if(!_self.renderer)
 	{
@@ -119,7 +116,8 @@ archistry.ui.Editable = function(arg, options)
 
 	function onEdit(event)
 	{
-		_editor.startEditing(_self, _obj, _key, _node);
+		_oldval = _obj[_key];
+		_self.editor.startEditing(_self, _obj, _key, _node);
 	}
 
 	function render()
@@ -139,27 +137,23 @@ archistry.ui.Editable = function(arg, options)
 		}
 
 		_key = getAttribute("property")
-		if(_self.editor)
+		if(!_self.editor)
 		{
-			_editor = _self.editor;
-		}
-		else
-		{
-			_editor = _node.getAttribute("editor");
-			if(_editor)
+			_self.editor = _node.getAttribute("editor");
+			if(_self.editor)
 			{
-				if(_editor instanceof String)
+				if(_self.editor instanceof String)
 				{
-					_editor = new _editor();
+					_self.editor = new _self.editor();
 				}
 				else
 				{
-					_editor = _global[_editor];
+					_self.editor = _global[_self.editor];
 				}
 			}
 			else
 			{
-				_editor = new archistry.ui.editor.TextCellEditor();
+				_self.editor = new archistry.ui.editor.InlineTextEditor();
 			}
 		}
 		var signal = (_self.clicksToEdit == 2 ? "dblclick" : "click");
@@ -195,8 +189,12 @@ archistry.ui.Editable = function(arg, options)
 
 	this.editingCompleted = function(context)
 	{
-		appendAttr(_node, "class", archistry.ui.GridStyles.CELL_DIRTY);
-		_obj[_key] = _editor.value();
+		var _newval = _self.editor.value();
+		if(_oldval != _newval)
+		{
+			appendAttr(_node, "class", archistry.ui.GridStyles.CELL_DIRTY);
+			_obj[_key] = _newval;
+		}
 		render();
 	}
 
