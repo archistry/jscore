@@ -336,7 +336,9 @@ archistry.ui.editor.TextFieldEditor = function()
 		var height = getStyle(cell, "height");
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
-		return e(name);
+		var editor = e(name);
+		editor.select();
+		return editor;
 	}
 };
 
@@ -364,7 +366,9 @@ archistry.ui.editor.TextAreaEditor = function()
 		var height = getStyle(cell, "height");
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
-		return e(name);
+		var editor = e(name);
+		editor.select();
+		return editor;
 	}
 };
 

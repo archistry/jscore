@@ -194,6 +194,13 @@ archistry.ui.Editable = function(arg, options)
 		{
 			appendAttr(_node, "class", archistry.ui.GridStyles.CELL_DIRTY);
 			_obj[_key] = _newval;
+			if(this.changeSet)
+			{
+				this.changeSet.add(
+					new archistry.data.ChangeMemento(_obj,
+							archistry.data.ChangeOp.PROPERTY_CHANGE,
+							_key, _oldval));
+			}
 		}
 		render();
 	}

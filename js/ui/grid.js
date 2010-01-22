@@ -77,7 +77,16 @@ archistry.ui.DefaultGridCellRenderer = function()
 
 	this.render = function(grid, rowIdx, row, column, cell)
 	{
-		cell.innerHTML = row[column.key];
+		var val = null;
+		if(column.value)
+		{
+			val = column.value(row);
+		}
+		else
+		{
+			val = row[column.key];
+		}
+		cell.innerHTML = val;
 	}
 };
 
@@ -192,6 +201,21 @@ archistry.ui.ArrayColumnModel = function(cols, options)
 };
 
 /**
+ * This class handles notification management for RowModel
+ * implementations as a mixin component.
+ */
+
+archistry.ui.RowModelNotifier = function()
+{
+	this.include(archistry.core.SignalSource);
+	this.validSignals([
+		"row-inserted",
+		"row-deleted",
+		"row-changed"
+	]);
+};
+
+/**
  * This class implements the default keyboard navigation
  * strategy for the grid control.  The idea is that various
  * strategies can be provided to mimic various types of
@@ -260,6 +284,16 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 		{
 			var row = parseInt(nextCell.getAttribute("row"));
 			var col = parseInt(nextCell.getAttribute("col"));
+			while(!_grid.isCellEditable(row, col))
+			{
+				println("<<<< Cell({0}, {1}) is not editable", [row, col]);
+				nextCell = findNextCell(nextCell, !event.shiftKey, down)
+				if(!nextCell)
+					return true;
+
+				row = parseInt(nextCell.getAttribute("row"));
+				col = parseInt(nextCell.getAttribute("col"));
+			}
 			if(_grid.completeEditing())
 			{
 				_grid.editCell(row, col);
@@ -445,12 +479,25 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 
 	function renderRow(idx, data, dirty)
 	{
-		println("\nrenderRow({0}, {1}, {2})", [idx, data, dirty]);
-		var row = newRow(idx);
-		if(idx == -1)
+		var isNew = false;
+		var row = null;
+
+		println("renderRow({0}, {1}, {2})", [idx, data, dirty]);
+		if(idx < _datarows)
 		{
-			idx = _datarows; // because we're inserting a new row
+			idx = c2h(idx);
+			row = _table.rows[idx];
 		}
+		else
+		{
+			row = newRow(idx);
+			if(idx == -1)
+			{
+				idx = _datarows; // because we're inserting a new row
+			}
+			isNew = true;
+		}
+
 		if(dirty)
 		{
 			appendAttr(row, "class", _grid.styleClass.ROW_DIRTY);
@@ -459,26 +506,44 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 		println("rendering row using idx: {0} (data: {1})", [ idx, data.inspect() ]);
 		for(var i = 0; i < _grid.columnModel.length; ++i)
 		{
+			var cell = null;
 			var col = _grid.columnModel.col(i);
-			var cell = row.insertCell(i);
 			var style = [ _grid.styleClass.CELL, col.style ];
+
+			if(isNew)
+			{
+				cell = row.insertCell(i);
+				cell.setAttribute("row", idx);
+				cell.setAttribute("col", i);
+			}
+			else
+			{
+				cell = row.cells[i];
+			}
 			if(dirty)
 			{
 				style.add(_grid.styleClass.CELL_DIRTY);
 			}
 
 			cell.setAttribute("class", style.join(" "));
-			cell.setAttribute("row", idx);
-			cell.setAttribute("col", i);
-
 			col.renderer.render(_grid, idx, data, col, cell);
-			if(_grid.editable && col.editable !== false && col.editor !== null)
+			if(isNew)
 			{
-				bindEdit(cell, _grid.onStartCellEdit);
+				if(_grid.editable && col.editable !== false && col.editor)
+				{
+					bindEdit(cell, _grid.onStartCellEdit);
+				}
+				else if(_grid.editable)
+				{
+					appendAttr(cell, "class", archistry.ui.Styles.State.DISABLED);
+				}
+				_grid.nav.onCellAdded(cell);
 			}
-			_grid.nav.onCellAdded(cell);
 		}
-		_datarows += 1;
+		if(isNew)
+		{
+			_datarows += 1;
+		}
 	}
 
 	/**
@@ -544,10 +609,17 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 
 	function updateRows(start, end)
 	{
+		var x = c2h(start);
+		var y = c2h(end);
 		println("\nupdateRows({0}, {1})", [ start, end ]);
-		println("real start: {0}; real end: {1}", [ c2h(start), c2h(end) ]);
+		println("real start: {0}; real end: {1}", [ x, y ]);
 
-		for(var i = c2h(start); i <= c2h(end); ++i)
+		if(x >= _table.rows.length)
+		{
+			return;
+		}
+
+		for(var i = x; i <= y; ++i)
 		{
 			var row = _table.rows[i];
 			println("updating row using idx: {0} (data: {1})", [ i, row.innerHTML ]);
@@ -624,10 +696,20 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 
 	this.insertRow = function(idx, data, dirty)
 	{
-		renderRow(idx, data, dirty);
+		// FIXME: this is a hack and won't work except for
+		// adding rows at the end
 		if(idx == -1)
 		{
+			renderRow(_datarows, data, dirty);
 			idx = _datarows - 1;
+		}
+		else if(idx === _datarows)
+		{
+			renderRow(idx, data, dirty);
+		}
+		else
+		{
+			throw new Error("inserting other than at the end is not currently supported");
 		}
 		updateRows(idx + 1, -1);
 		
@@ -645,6 +727,16 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 	{
 		// FIXME:  this is a cheat that I'm not sure is right!
 		return idx == _datarows;
+	};
+
+	/**
+	 * This method is used to re-render a given row in the
+	 * layout.
+	 */
+
+	this.renderRow = function(idx, data, dirty)
+	{
+		renderRow(idx, data, dirty);
 	};
 
 	init();
@@ -694,7 +786,21 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 		col.renderer.render(this, rowIndex, this.data.row(rowIndex),
 							col, cell);
 	};
-	
+
+	/**
+	 * This method is used to determine if the specific cell
+	 * is editable
+	 * 
+	 * @param row the row index of the cell
+	 * @param col the column index of the cell
+	 * @return true or false
+	 */
+
+	this.isCellEditable = function(row, col)
+	{
+		return this.columnModel.col(col).editor;
+	};
+
 	/**
 	 * This method is called from cell editors when the user
 	 * cancels the edit.
@@ -730,6 +836,12 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 		{
 			row[context.col.key] = newVal;
 			dirty = true;
+			if(this.changeSet)
+			{
+				this.changeSet.add(new archistry.data.ChangeMemento(row,
+							archistry.data.ChangeOp.PROPERTY_CHANGED,
+							context.col.key, old));
+			}
 		}
 		this.editing = null;
 		this.renderCell(context.rowIndex, context.col, dirty);
@@ -843,7 +955,18 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	{
 		var data = _self.data.createRow();
 		var idx = _self.insertRow(-1, data, true);
-		_self.editCell(idx, 0);
+		var i = 0;
+		if(_self.changeSet)
+		{
+			_self.changeSet.add(new archistry.data.ChangeMemento(data,
+								archistry.data.ChangeOp.OBJECT_ADDED));
+		}
+		for(i = 0; i < _self.columnModel.length; ++i)
+		{
+			if(_self.isCellEditable(idx, i))
+				break;
+		}
+		_self.editCell(idx, i);
 	}
 
 	/**
@@ -861,6 +984,9 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 
 	this.insertRow = function(idx, data, dirty)
 	{
+		// FIXME:  probably need to have some kind of
+		// event/change memento for this too, but it isn't
+		// related to the data per-se...
 		println("Need to insert new row at data index {0}", [ idx ]);
 		return this.layout.insertRow(idx, data, dirty);
 	};
@@ -868,4 +994,22 @@ archistry.ui.Grid = function(id, columnModel, rowModel, options)
 	this.editing = null;
 	this.nav = new archistry.ui.DefaultKeyNavStrategy(this);
 	this.layout = new archistry.ui.BrowserGridLayout(id, this);
+	
+	// hook up the signals if the model supports them
+	if(this.data.signalConnect)
+	{
+		this.data.signalConnect("row-inserted", function(sender, idx, obj) {
+			println("row-inserted");
+			_self.insertRow(idx, obj);
+		});
+
+		this.data.signalConnect("row-deleted", function(sender, idx, obj) {
+			/* NOT IMPLEMENTED YET */
+		});
+
+		this.data.signalConnect("row-changed", function(sender, idx, obj) {
+			println("~~~~~~ row-changed");
+			_self.layout.renderRow(idx, obj);
+		});
+	}
 };

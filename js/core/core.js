@@ -213,7 +213,39 @@ Object.prototype.inspect = function()
 
 	s += ">";
 	return s;
-}
+};
+
+/**
+ * This method returns a unique object ID for each object.  It
+ * depends on having both the Math.uuid.js and md5.js
+ * functions available.
+ *
+ * @return the unique object ID for this instance
+ */
+
+Object.prototype.object_id = function()
+{
+	if(this.__ajs_id)
+	{
+		return this.__ajs_id;
+	}
+
+	this.__ajs_id = "0x" + hex_md5(Math.uuid());
+	return this.__ajs_id;
+};
+
+///**
+// * This method redefines the default toString to display the
+// * object id rather than the meaningless [object Object]
+// * toString that's the default implementation.
+// *
+// * @return a string containing the object ID
+// */
+//
+//Object.prototype.toString = function()
+//{
+//	return "[object: " + this.object_id() + "]";
+//};
 
 ///////////////////////////////////////////////////////////////////////
 // Array class additions
@@ -283,7 +315,7 @@ Array.prototype.indexOf = function(obj)
 Array.prototype.includes = function(obj)
 {
 	return this.indexOf(obj) != -1;
-}
+};
 
 Array.prototype.include = Array.prototype.includes;
 

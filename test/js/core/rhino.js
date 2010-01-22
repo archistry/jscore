@@ -43,7 +43,7 @@ load('/opt/devel/env-js/src/env.rhino.js');
 load('../jester.js');
 
 // load the core stuff
-load('../../../js/core/util.js');
+load('../../../js/core/core.js');
 load('../../../js/core/observer.js');
 load('../../../js/core/xhr.js');
 

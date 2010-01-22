@@ -47,7 +47,7 @@ namespace("archistry.core");
  * include into other implementation classes.
  */
 
-archistry.core.SignalHandler = function()
+archistry.core.SignalSource = function()
 {
 	/**
 	 * This is a helper method to ensure that the signal has
@@ -173,10 +173,9 @@ archistry.core.SignalHandler = function()
 		for(var i = 0; i < listeners.length; ++i)
 		{
 			var fn = listeners[i];
-//			alert("signal: " + signal + "; fn = " + fn);
 			// FIXME:  I don't really like this because we're
 			// invoking it without a this reference... :(
-			fn.apply(null, args);
+			setTimeout(function() { fn.apply(null, args); }, 50);
 		}
 	};
 };
