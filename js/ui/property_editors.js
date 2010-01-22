@@ -223,6 +223,7 @@ archistry.ui.editor.AbstractEditor = function()
 	{
 		if(_editor)
 		{
+			removeAttr(_cell, "class", archistry.ui.Styles.State.EDITING);
 			_cell.removeChild(_editor.parentNode);
 			_editor = null;
 		}
@@ -290,6 +291,7 @@ archistry.ui.editor.AbstractEditor = function()
 		setTimeout(function() { _editor.focus(); }, 50);
 		_editor.onkeydown = this.onKeyDown;
 		_editor.onblur = this.onBlur;
+		appendAttr(_cell, "class", archistry.ui.Styles.State.EDITING);
 		return true;
 	};
 

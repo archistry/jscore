@@ -80,7 +80,8 @@ archistry.ui.Styles = {
 		ERROR_TEXT			: "ui-state-error-text",
 		DISABLED			: "ui-state-disabled",
 		PRIORITY_PRIMARY	: "ui-state-priority-primary",
-		PRIORITY_SECONDARY	: "ui-state-priority-secondary"
+		PRIORITY_SECONDARY	: "ui-state-priority-secondary",
+		EDITING				: "aui-editing"
 	}
 };
 
@@ -245,7 +246,7 @@ archistry.ui.Helpers = {
 	 * @return the element
 	 */
 
-	removeAttr: function(elt, attr, value)
+	removeAttr: function(elt, attr, val)
 	{
 		var s = elt.getAttribute(attr);
 		var regex = new RegExp(val.trim());

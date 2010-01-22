@@ -158,6 +158,8 @@ archistry.ui.ArrayRowModel = function(data, options)
  *   - editor: a reference to a JavaScript instance that will
  *			be used to edit the particular column cell if the
  *			grid is editable
+ *   - value: a function that will be called with the row to
+ *			retrieve the value to be displayed for the column
  */
 
 archistry.ui.ArrayColumnModel = function(cols, options)

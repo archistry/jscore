@@ -31,6 +31,11 @@
       vertical-align: top;
     }
 
+    .aui-grid td.aui-editing
+    {
+      padding: 2px;
+    }
+
     .aui-grid td input
     {
       border: 1px solid #e0aa0f;
@@ -203,7 +208,7 @@
         getKey: function(mem) { return [ mem.object.object_id(), mem.key ].join(":"); }
       });
       var chCols = new archistry.ui.ArrayColumnModel([
-        { label: "Object", value: function(row) { return row.object.object_id(); } },
+        { key: "id", label: "Object", value: function(row) { return row.object.object_id(); } },
         { key: "change", label: "Change Type" },
         { key: "key", label: "Property Key" },
         { key: "oldVal", label: "Previous Value" }
@@ -214,15 +219,13 @@
       var editor = new archistry.ui.editor.TextFieldEditor();
       
       var darray = [];
-//      for(var i = 0; i < 20; ++i)
       for(var i = 0; i < 2; ++i)
       {
         darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
-//        darray.add({ key: "Key " + i, value: "Value " + i });
       }
 
       var cols = new archistry.ui.ArrayColumnModel([
-        { label: "Object ID", value: function(r) { return r.object_id(); } },
+        { key: "id", label: "Object ID", value: function(r) { return r.object_id(); } },
         { key: "key", label: "Key", editor: editor },
         { key: "value", label: "Value", editor: editor }
       ]);
