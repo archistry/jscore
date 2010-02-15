@@ -1,0 +1,52 @@
+/**
+ * CSS Styles for the UI framework that are independent of the
+ * jQuery UI styles.
+ *
+ * Created: Mon Jan 25 14:25:08 GMT 2010
+ */
+
+/**
+ * Basing default context menus on jQueryUI definitions from
+ * September 2008
+ */
+
+.ui-menu {
+	position: absolute;
+/*	width: 8em; */
+	z-index: 99999;
+	padding: 0;
+	margin: 0;
+	list-style-type: none;
+	display: none; 
+	overflow: hidden;
+}
+
+.ui-menu li {
+	clear:both;
+	float: left;
+	width: 100% !important;
+	border: 1px solid transparent;
+}
+
+.ui-menu a:link,
+.ui-menu a:visited,
+.ui-menu a:hover,
+.ui-menu a:active
+{
+	display: block;
+	padding: .3em .6em; 
+	line-height: 1.2em;
+	text-decoration: none;
+	outline: 0 !important;
+	border: 0;
+}
+
+.ui-menu li.ui-separator {
+	padding: 0px;
+	border-bottom: 1px solid #ffffff;
+	border-top: 1px solid #aed0ea;
+}
+
+.ui-icon-none {
+	background-position: 0 200px;
+}

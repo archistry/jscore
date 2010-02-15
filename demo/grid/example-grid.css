@@ -1,0 +1,93 @@
+@import url("../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css");
+body
+{
+	font-size: small;
+}
+
+#console
+{
+	margin-top: 1em;
+	border: 1px solid #002654;
+	padding: 5px;
+	clear: both;
+}
+
+.aui-grid td
+{
+	vertical-align: top;
+}
+
+.aui-grid td.aui-editing
+{
+	padding: 2px;
+}
+
+.aui-grid td input
+{
+	border: 1px solid #e0aa0f;
+	padding: 0;
+	margin: 0;
+}
+
+.aui-grid > table th
+{
+	text-align: left;
+	border: 1px solid #aed0ea;
+}
+
+.aui-grid > table td, .aui-grid > table th
+{
+	padding: 3px;
+}
+
+td.aui-grid-cell
+{
+	border: 1px solid rgb(221,221,221);
+}
+
+.aui-grid tr.aui-grid-row-dirty
+{
+	background: #f0e7f3;
+	font-style: italic;
+}
+
+.aui-grid-cell-dirty
+{
+	background: url(../images/changed-red.gif) top right no-repeat;
+}
+
+tr.aui-grid-row-sentinal
+{
+	background: #bec2c6;
+	font-style: italic;
+}
+
+.aui-grid tr.aui-grid-row:hover
+{
+		background: #e4f1fb;
+		border: 1px solid #74b2e2;
+}
+
+.aui-grid tr.aui-grid-row:hover > td
+{
+		border: 1px solid #74b2e2;
+}
+
+.aui-grid td.aui-grid-cell:hover
+{
+		background: #d7ebf9;
+		border: 1px solid #aed0ea;
+		color: #2779aa
+}
+
+.aui-grid td.aui-grid-cell-dirty:hover
+{
+	background: #d7ebf9 url(../images/changed-red.gif) top right no-repeat;
+}
+
+.aui-grid th.aui-grid-cell:hover
+{
+		background: #3baae3 url(../jqueryui/css/cupertino/images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+		border: 1px solid #294e80;
+		color: #ffffff;
+}
