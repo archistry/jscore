@@ -49,7 +49,7 @@ Jester.testing("Observer functionality", {
 					this.name = name;
 					var _this = this;
 
-					this.include(archistry.util.SignalHandler);
+					this.mixin(archistry.core.SignalSource);
 
 					this.emit = function()
 					{

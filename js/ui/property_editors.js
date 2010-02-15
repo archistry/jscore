@@ -223,8 +223,8 @@ archistry.ui.editor.AbstractEditor = function()
 	{
 		if(_editor)
 		{
-			removeAttr(_cell, "class", archistry.ui.Styles.State.EDITING);
 			_cell.removeChild(_editor.parentNode);
+			removeAttr(_cell, "class", archistry.ui.Styles.State.EDITING);
 			_editor = null;
 		}
 	}
@@ -397,7 +397,8 @@ archistry.ui.editor.InlineTextEditor = function(config)
 	this.createEditor = function(cell, name, value)
 	{
 		var editor = null;
-		if(getStyle(cell, "display") === "block")
+		if((getStyle(cell, "display") === "block")
+			|| (value && this.maxLength && value.length > this.maxLength))
 		{
 			editor = _textEditor;
 		}

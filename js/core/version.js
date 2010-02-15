@@ -65,4 +65,4 @@ archistry.core.Version = function(name, major, minor, release, build, date)
 	this.__defineGetter__("fullVersion", function() { return _fullVersion; });
 };
 
-archistry.core.version = new archistry.core.Version("ArchistryJS Core", 0, 1, 0, "2010-01-15T11:04:52+0000");
+archistry.core.version = new archistry.core.Version("@package_name@", @version_major@, @version_minor@, "@version_release@", "@version_date@");

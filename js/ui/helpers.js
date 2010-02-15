@@ -66,7 +66,10 @@ archistry.ui.Styles = {
 	Widget: {
 		CONTROL				: "ui-widget",
 		HEADER				: "ui-widget-header",
-		CONTENT				: "ui-widget-content"
+		CONTENT				: "ui-widget-content",
+		CONTEXT_MENU		: "ui-context-menu",
+		BUTTON_ICON_LEFT	: "ui-button-icon-left",
+		BUTTON_ICON_RIGHT	: "ui-button-icon-right"
 	},
 
 	/** These are widget state styles */
@@ -308,5 +311,23 @@ archistry.ui.Helpers = {
 			width = width + "px";
 		}
 		return width;
+	},
+
+	/**
+	 * This method is used to ensure default values are set
+	 * which don't override any options already set via mixin
+	 * calls.
+	 *
+	 * @param key the property key that is to be checked
+	 * @param val the default value if there is not already a
+	 *		key set.
+	 */
+
+	setDefault: function(key, val)
+	{
+		if(this[key] === undefined)
+		{
+			this[key] = val;
+		}
 	}
 };

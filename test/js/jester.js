@@ -108,19 +108,19 @@ jester.runner.TestResult = function(test)
 			if((l == null && r != null)
 					|| (r == null && l != null))
 			{
-				print("A");
+//				print("A");
 				return false;
 			}
 			else if(l == null && r == null)
 			{
-				print("B");
+//				print("B");
 				// special handling for the undefined case
 				return true;
 			}
 
 			if(l.equals == null || r.equals == null)
 			{
-				print("c");
+//				print("c");
 				return l === r;
 			}
 			else

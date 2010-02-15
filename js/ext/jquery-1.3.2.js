@@ -1057,9 +1057,11 @@ jQuery.extend({
 				"";
 		}
 
-		name = name.replace(/-([a-z])/ig, function(all, letter){
-			return letter.toUpperCase();
-		});
+		if(typeof name === "string" ) {
+			name = name.replace(/-([a-z])/ig, function(all, letter){
+				return letter.toUpperCase();
+			});
+		}
 
 		if ( set )
 			elem[ name ] = value;
@@ -2487,7 +2489,7 @@ jQuery.event = {
 
 			// Get the current list of functions bound to this event
 			var handlers = events[type];
-			
+
 			if ( jQuery.event.specialAll[type] )
 				jQuery.event.specialAll[type].setup.call(elem, data, namespaces);
 
@@ -2560,8 +2562,8 @@ jQuery.event = {
 								// Handle the removal of namespaced events
 								if ( namespace.test(events[type][handle].type) )
 									delete events[type][handle];
-									
-						if ( jQuery.event.specialAll[type] )
+
+						if ( jQuery.event.specialAll && jQuery.event.specialAll[type] && jQuery.event.specialAll[type].teardown )
 							jQuery.event.specialAll[type].teardown.call(elem, namespaces);
 
 						// remove generic event handler if no more handlers exist

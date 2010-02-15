@@ -43,13 +43,18 @@ load('/opt/devel/env-js/src/env.rhino.js');
 load('../jester.js');
 
 // load the core stuff
+//load('../../../archistry-core-min.js');
+load('../../../js/ext/Math.uuid.js');
+load('../../../js/ext/md5.js');
 load('../../../js/core/core.js');
+load('../../../js/core/path.js');
 load('../../../js/core/observer.js');
 load('../../../js/core/xhr.js');
 
 // load the tests
-//load('test_util.js');
+load('test_util.js');
 load('test_observer.js');
+load('test_path.js');
 
 // print the results
 print(Jester.reporter.toString());

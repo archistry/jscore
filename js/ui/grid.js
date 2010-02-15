@@ -51,6 +51,7 @@ archistry.ui.GridStyles = {
 	CELL_SELECTED		: "aui-grid-cell-selected " + archistry.ui.Styles.State.HIGHLIGHT,
 	CELL_DIRTY			: "aui-grid-cell-dirty " + archistry.ui.Styles.State.DIRTY,
 	ROW					: "aui-grid-row",
+	ROW_CONTENT			: "aui-grid-row-data",
 	ROW_HEADER			: "aui-grid-header " + archistry.ui.Styles.Widget.HEADER,
 	ROW_SELECTED		: "aui-grid-row-selected " + archistry.ui.Styles.State.HIGHLIGHT,
 	ROW_DIRTY			: "aui-grid-row-dirty",
@@ -498,6 +499,7 @@ archistry.ui.BrowserGridLayout = function(id, grid)
 				idx = _datarows; // because we're inserting a new row
 			}
 			isNew = true;
+			appendAttr(row, "class", _grid.styleClass.ROW_CONTENT);
 		}
 
 		if(dirty)

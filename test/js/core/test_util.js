@@ -471,7 +471,6 @@ Jester.testing("Utility library functionality", {
 					expect: true
 				});
 
-				print("foo");
 				result.check("middle of namespace is defined", {
 					actual: (example.app != null),
 					expect: true
