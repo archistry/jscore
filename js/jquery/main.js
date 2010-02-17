@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009 Archistry Limited
+// Copyright (c) 2010 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -33,32 +33,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		rhino.js
-// Created:		Mon Dec  7 17:39:41 GMT 2009
+// Name:		main.js
+// Created:		Tue Feb 16 17:28:47 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
+// declare a global document instance of the controller class
+// and make sure it is initialized when the page is ready for
+// interaction.
 
-load('/opt/devel/env-js/src/env.rhino.js');
-load('../jester.js');
+var ajc = new archistry.ui.Controller();
+$(function()
+{
+	ajc.initialize();
+});
 
-// load the core stuff
-// FIXME:  this one doesn't work due to jQuery... :(
-//load('../../../archistry-core-min.js');
+// Make sure that we cancel all pending XHR requests when the
+// page is about to be unloaded.
 
-load('../../../js/ext/Math.uuid.js');
-load('../../../js/ext/md5.js');
-load('../../../js/core/core.js');
-load('../../../js/core/path.js');
-load('../../../js/core/observer.js');
-load('../../../js/core/xhr.js');
-
-
-// load the tests
-load('test_util.js');
-load('test_observer.js');
-load('test_path.js');
-
-// print the results
-print(Jester.reporter.toString());
-java.lang.System.exit(Jester.reporter.failures());
+$(window).unload(function() {
+	ajc.xhr.shutdown();
+});

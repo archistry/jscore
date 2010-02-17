@@ -121,6 +121,12 @@ namespace = function(ns)
  * different effects, but which in practice are nearly
  * equivalent.
  *
+ * NOTE:  specifying an object (or function) as the argument
+ * of this method that has attribute accessors
+ * (getters/setters) defined, will only mix in the VALUES of
+ * those attributes and not the methods themselves.  I don't
+ * know of a good way around this issue...
+ *
  * Case #1:
  *
  * Using the following construct, the prototype object will be
@@ -193,15 +199,15 @@ Object.prototype.mixin = function(obj, inPrototype)
 		src = new obj();
 	}
     for(p in src)
-    {   
-        if(this[p] == null)
-        {
-            this[p] = src[p];
-        }
-        if(this.prototype != null && this.prototype[p] == null && inPrototype != false)
-        {
-            this.prototype[p] = src[p];
-        }
+    {
+		if(this[p] == null)
+		{
+			this[p] = src[p];
+		}
+		if(this.prototype != null && this.prototype[p] == null && inPrototype != false)
+		{
+			this.prototype[p] = src[p];
+		}
     }
 
 	// mixin the prototype properties

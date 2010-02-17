@@ -160,10 +160,13 @@ archistry.core.XHR = function()
 	 *	sent with the request, including HTTP headers and a
 	 *	request body.
 	 *
-	 *	hash.headers  - an array of objects with properties
-	 *					"key" and "value" to indicate the
-	 *					header to send
-	 *	hash.body	  - the request body to send
+	 *	hash.headers		- an array of objects with properties
+	 *						  "key" and "value" to indicate the
+	 *						  header to send
+	 *	hash.body			- the request body to send
+	 *	hash.contentType	- the MIME type of the content
+	 *						  type being sent (ignored for all
+	 *						  but PUT and POST requests)
 	 */
 
 	this.makeRequest = function(method, location, hash)
@@ -174,7 +177,35 @@ archistry.core.XHR = function()
 		}
 		callbacks = hash;
 		var body = hash.body;
-		
+		if(typeof body === 'object')
+		{
+			switch(method)
+			{
+				case 'POST':
+					body = this.urlEncode(body);
+					hash.headers.add({key: "Content-Type", value: "application/x-www-form-urlencoded"});
+					break;
+				case 'GET':
+					if(location.match(/\?/))
+					{
+						location = archistry.core.Path.join(location,
+									this.urlEncode(body), "&");
+					}
+					else
+					{
+						location = archistry.core.path.join(location,
+									this.urlEncode(body), "?");
+					}
+					body = null;
+					break;
+			}
+		}
+	
+		if(hash.contentType)
+		{
+			hash.headers.add({key: "Content-Type", value: hash.contentType});
+		}
+
 		xhr.open(method, location, true);
 		xhr.onreadystatechange = readyStateHandler;
 		
@@ -203,5 +234,114 @@ archistry.core.XHR = function()
 	this.abort = function()
 	{
 		xhr.abort();
+	};
+
+	/**
+	 * This method is used to escape each component of a URL query
+	 * string parameter to generate valid data according to
+	 * the application/x-www-form-urlencoded MIME format.
+	 *
+	 * @param val the value to escape
+	 * @return the escaped, URL Encoded value
+	 */
+
+	this.urlEscape = function(val)
+	{
+		// FIXME: I know this isn't too efficient...
+		return val.replace(/([^ a-zA-Z0-9_.-]+)/g, function(m, s) {
+			var vals = "";
+			for(var i = 0; i < s.length; ++i)
+			{
+				vals += "%" + s.charCodeAt(i).toString(16);
+			}
+			return vals;
+		}).replace(/ /g, "+");
+	};
+
+	/**
+	 * This method is used to convert a value object
+	 * representing form parameters into a URL Encoded query
+	 * string path component.  This path component can then
+	 * either be joined to a URI using the
+	 * archistry.core.Path#join method, or it can be used as
+	 * the body of a POST request.
+	 *
+	 * This method will automatically be applied to body
+	 * values that are given to the makeRequest method as
+	 * objects.
+	 *
+	 * @param obj the object representing the values to send
+	 * @return the encoded object as a string
+	 */
+
+	this.urlEncode = function(obj)
+	{
+		var ps = [];
+		for(k in obj)
+		{
+			if(typeof obj[k] === 'function')
+				continue;
+
+			ps.add(String.format("{0}={1}", 
+					[ this.urlEscape(k), this.urlEscape(obj[k]) ]));
+		}
+		return ps.join("&");
+	};
+};
+
+/**
+ * This class provides a factory for creating and managing
+ * groups of XHR objects to simplify management when changing
+ * pages.
+ */
+
+archistry.core.XHRFactory = function()
+{
+	var instances = [];
+
+	/**
+	 * This method creates a new XHR instance and keeps a
+	 * reference to the created object for further management.
+	 *
+	 * @return the XHR instance
+	 */
+
+	this.createInstance = function()
+	{
+		var xhr = new archistry.core.XHR();
+		instances.add(xhr);
+		return xhr;
+	};
+
+	/**
+	 * This method is used to abort all currently active
+	 * requests for XHR instances created by the factory.  It
+	 * will only affect instances that were created by this
+	 * instance, and it will not interfere with other factory
+	 * objects that may be in use on the current page.
+	 */
+
+	this.abortAll = function()
+	{
+		for(var i = 0; i < instances.length; ++i)
+		{
+			instances[i].abort();
+		}
+	};
+
+	/**
+	 * This method is used to clean up the factory and any
+	 * instances.  It calls abort for each XHR managed by the
+	 * factory and then deletes the instance to ensure that
+	 * memeory leaks are avoided.
+	 */
+
+	this.shutdown = function()
+	{
+		for(var i = 0; i < instances.length; ++i)
+		{
+			instances[i].abort();
+			delete instances[i];
+		}
 	};
 };

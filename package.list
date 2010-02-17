@@ -9,10 +9,12 @@
 - js/ext/Math.uuid.js
 - js/ext/jquery-1.3.2.js
 - js/ext/md5.js
+- js/ext/stacktrace.js
 - js/core/core.js
 - js/core/path.js
 - js/core/observer.js
 - js/core/version.js
+- js/core/element.js
 - js/core/xhr.js
 - js/data/changeset.js
 - js/ui/editable.js
@@ -20,5 +22,6 @@
 - js/ui/grid.js
 - js/ui/property_editors.js
 - js/ui/console.js
+- js/jquery/controller.js
 - js/jquery/menu.js
 :version_major: 0

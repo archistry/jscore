@@ -176,6 +176,11 @@ Jester.testing("Path function functionality", {
 					actual: Path.join("/some/path", "/file.txt"),
 					expect: "/some/path/file.txt"
 				});
+
+				result.check("join of path at root", {
+					actual: Path.join("/", "file.txt"),
+					expect: "/file.txt"
+				});
 			}
 		}
 	]

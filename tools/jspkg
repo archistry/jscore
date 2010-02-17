@@ -2,6 +2,7 @@
 # Created: Sat Feb 13 11:47:11 GMT 2010
 
 require 'tempfile'
+require 'fileutils'
 require 'time'
 require 'yaml'
 
@@ -11,6 +12,11 @@ packagelist = ARGV.shift
 if packagelist.nil?
   packagelist = "package.list"
 end
+
+# FIXME:  need command-line argument handling here.  NOTE
+# should really only minify for non-developer "builds" of the
+# package.
+minify = false;
 
 @pkg = YAML.load(File.open(packagelist))
 
@@ -59,10 +65,14 @@ end
 file.flush
 file.close
 
-if (rc = system("java -jar #{yuicjar} --type js #{file.path} -o #{@pkg[:package]}"))
-  File.delete(file.path)
-  File.open(packagelist, "w+") { |f| f.write @pkg.to_yaml } if @count
+if minify
+  if (rc = system("java -jar #{yuicjar} --type js #{file.path} -o #{@pkg[:package]}"))
+    File.delete(file.path)
+    File.open(packagelist, "w+") { |f| f.write @pkg.to_yaml } if @count
+  else
+    STDERR.puts "java process exited with status: #{rc}"
+    exit rc
+  end
 else
-  STDERR.puts "java process exited with status: #{rc}"
-  exit rc
+  FileUtils.install(file.path, @pkg[:package], :mode => 0644)
 end

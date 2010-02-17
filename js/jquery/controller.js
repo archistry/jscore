@@ -60,10 +60,10 @@ archistry.ui.Action = function(callback, options)
 	 * function supplied in the constructor.
 	 */
 
-	this.execute = function()
+	this.execute = function(event)
 	{
 		if(this.sensitive)
-			callback();
+			callback(this, event);
 	};
 
 	/**
@@ -177,6 +177,7 @@ archistry.ui.Action = function(callback, options)
 
 archistry.ui.Controller = function()
 {
+	const ACTION_REGEX	= /^(?:ajc:@([^\s#]+))?#(.*)$/;
 	var _self = this;
 
 	this.actions = {
@@ -220,6 +221,13 @@ archistry.ui.Controller = function()
 	};
 
 	/**
+	 * This attribute allows centralized management of XHR
+	 * instances from the controller.
+	 */
+
+	this.xhr = new archistry.core.XHRFactory();
+
+	/**
 	 * This method should be called automatically when the
 	 * document is loaded and ready to be processed.
 	 */
@@ -231,12 +239,11 @@ archistry.ui.Controller = function()
 			var key = null;
 			var action = null;
 			var elt = this;
-			var regex = /^(?:@([^\s#]+))?#(.*)$/;
 
 			switch(this.tagName.toLowerCase())
 			{
 				case "a":
-					var match = regex.exec($(this).attr("href"));
+					var match = ACTION_REGEX.exec($(this).attr("href"));
 					if(match)
 					{
 						if(match[1])
@@ -249,23 +256,22 @@ archistry.ui.Controller = function()
 						action = _self.actions[group][key];
 						if(action)
 						{
-							$(this).click(function() {
-								action.execute(elt);
+							$(this).click(function(e) {
+								action.execute(e);
 								return false;
 							});
 							action.bindings.add(this);
 						}
+						else
+						{
+							$(this).addClass(archistry.ui.Styles.State.DISABLED);
+						}
+						// prevent bogus requests for all of
+						// our magic links
+						$(this).attr("href", "javascript:void(0)");
 					}
 					break;
 			}
 		});
 	};
 };
-
-// declare a global document instance of the controller class
-var ajc = new archistry.ui.Controller();
-
-$(function()
-{
-	ajc.initialize();
-});
