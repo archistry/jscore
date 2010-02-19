@@ -177,13 +177,19 @@ archistry.core.XHR = function()
 		}
 		callbacks = hash;
 		var body = hash.body;
-		if(typeof body === 'object')
+		var headers = hash.headers;
+		if(!headers)
+		{
+			headers = [];
+		}
+
+		if(body && typeof body === 'object')
 		{
 			switch(method)
 			{
 				case 'POST':
 					body = this.urlEncode(body);
-					hash.headers.add({key: "Content-Type", value: "application/x-www-form-urlencoded"});
+					headers.add({key: "Content-Type", value: "application/x-www-form-urlencoded"});
 					break;
 				case 'GET':
 					if(location.match(/\?/))
@@ -193,7 +199,7 @@ archistry.core.XHR = function()
 					}
 					else
 					{
-						location = archistry.core.path.join(location,
+						location = archistry.core.Path.join(location,
 									this.urlEncode(body), "?");
 					}
 					body = null;
@@ -203,13 +209,12 @@ archistry.core.XHR = function()
 	
 		if(hash.contentType)
 		{
-			hash.headers.add({key: "Content-Type", value: hash.contentType});
+			headers.add({key: "Content-Type", value: hash.contentType});
 		}
 
 		xhr.open(method, location, true);
 		xhr.onreadystatechange = readyStateHandler;
 		
-		var headers = hash.headers;
 		if(headers != null)
 		{
 			for(var i = 0; i < headers.length; ++i)
@@ -231,9 +236,17 @@ archistry.core.XHR = function()
 		this.makeRequest("GET", url, hash);
 	};
 
+	this.head = function(url, hash)
+	{
+		this.makeRequest("HEAD", url, hash);
+	};
+
 	this.abort = function()
 	{
-		xhr.abort();
+		if(xhr)
+		{
+			xhr.abort();
+		}
 	};
 
 	/**

@@ -166,6 +166,11 @@ archistry.core.Path = {
 
 	join: function(base, leaf, delim)
 	{
+		if(!leaf)
+		{
+			return base;
+		}
+
 		var d = "/";
 		var l = leaf;
 		if(delim) { d = delim; }

@@ -10,6 +10,7 @@
 - js/ext/jquery-1.3.2.js
 - js/ext/md5.js
 - js/ext/stacktrace.js
+- js/ext/date.format.js
 - js/core/core.js
 - js/core/path.js
 - js/core/observer.js

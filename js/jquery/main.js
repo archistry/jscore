@@ -46,6 +46,10 @@ var ajc = new archistry.ui.Controller();
 $(function()
 {
 	ajc.initialize();
+
+	// FIXME:  need to automatically find/build certain
+	// controls if they are referenced in the page, e.g. the
+	// console...
 });
 
 // Make sure that we cancel all pending XHR requests when the
