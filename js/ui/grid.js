@@ -1058,6 +1058,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 					{
 						expand(row);
 					}
+					event.cancelBubble = true;
+					if(event.stopPropagation)
+						event.stopPropagation();
 				};
 			}
 		}
