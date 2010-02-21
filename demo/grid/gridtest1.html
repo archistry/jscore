@@ -167,9 +167,10 @@
       ]);
       var data = new archistry.ui.ArrayRowModel(darray);
       var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
-        showExpanders: false
+        showExpanders: false,
+        showSelectorColumn: true,
+        showHeaders: true
       });
-      grid.selectPath([ 3 ]);
     });
   </script>
 </body>

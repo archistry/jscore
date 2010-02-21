@@ -60,78 +60,6 @@ archistry.ui.GridStyles = {
 };
 
 /**
- * This class represents the default cell renderer behavior.
- */
-
-archistry.ui.DefaultCellRenderer = function()
-{
-	/**
-	 * This method is called by the grid when it needs to
-	 * render a particular cell.
-	 *
-	 * @param grid the control
-	 * @param node the row object from the model
-	 * @param column the column definition for the cell
-	 * @param cell the cell element itself
-	 */
-
-	this.render = function(grid, node, column, cell)
-	{
-		var val = null;
-		if(column.value)
-		{
-			val = column.value(node);
-		}
-		else
-		{
-			val = node[column.key];
-		}
-		cell.innerHTML = val;
-	}
-};
-
-/**
- * This class represents the cell renderer behavior using
- * checkboxes for boolean values.
- */
-
-archistry.ui.CheckboxCellRenderer = function()
-{
-	/**
-	 * This method is called by the grid when it needs to
-	 * render a particular cell.
-	 *
-	 * @param grid the control
-	 * @param node the row object from the model
-	 * @param column the column definition for the cell
-	 * @param cell the cell element itself
-	 */
-
-	this.render = function(grid, node, column, cell)
-	{
-		var _self = this;
-		var val = null;
-		if(column.value)
-		{
-			val = column.value(node);
-		}
-		else
-		{
-			val = node[column.key];
-		}
-
-		if(val)
-		{
-			cell.innerHTML = '<input type="checkbox" checked="true"/>';
-		}
-		else
-		{
-			cell.innerHTML = '<input type="checkbox"/>';
-		}
-	}
-};
-
-/**
  * This class provides a linear TreeRowModel implementation based on
  * using an array of JavaScript objects.
  *
@@ -457,7 +385,11 @@ archistry.ui.ObjectTreeModel = function(obj, childKey, options)
  *			will be used to render the particular column cell
  *	 - headerRenderer: a reference to a JavaScript instance
  *			that will be used to render the particular column
- *			cell header
+ *			cell header.  It must implement the following
+ *			interface:
+ *
+ *			  callback(grid, col, cell)
+ *
  *   - editor: a reference to a JavaScript instance that will
  *			be used to edit the particular column cell if the
  *			grid is editable
@@ -471,13 +403,12 @@ archistry.ui.ArrayColumnModel = function(cols, options)
 
 	if(!this.defaultRenderer)
 	{
-		this.defaultRenderer = new archistry.ui.DefaultCellRenderer();
+		this.defaultRenderer = new archistry.ui.CellRenderer();
 	}
 
 	for(var i = 0; i < cols.length; ++i)
 	{
 		if(!cols[i].renderer) { cols[i].renderer = this.defaultRenderer; }
-		if(!cols[i].headerRenderer) { cols[i].renderer = this.defaultRenderer; }
 		if(!cols[i].label)
 		{
 			var s = cols[i].key;
@@ -719,6 +650,7 @@ archistry.ui.BrowserGridLayout = function(id)
 	function insertRow(index, cols)
 	{
 		var ri = mapIndex(index, _table.rows.length);
+//		println("insert row index: {0}; ri: {1}", [ index, ri ]);
 		var row = _table.insertRow(ri);
 		var rval = new GridLayoutRow(_self, row, []);
 
@@ -970,7 +902,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	mixin(archistry.ui.Helpers);
 	this.mixin(options);
 	
-	var CheckboxCellRenderer = archistry.ui.CheckboxCellRenderer;
+	var Renderer = archistry.ui.Renderer;
+	var CellRenderer = archistry.ui.CellRenderer;
+	var CheckboxRenderer = archistry.ui.CheckboxRenderer;
 	var GridStyle = archistry.ui.GridStyles;
 	var Style = archistry.ui.Styles;
 
@@ -1006,20 +940,11 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 	function renderRow(row)
 	{
-		for(var i = 0; i < _allCols.length; ++i)
-		{
-			var col = _allCols[i];
-			var cell = row.cell(i);
-			col.renderer.render(_self, row, col, cell);
-			if(row.dirty)
-			{
-				appendAttr(cell, "class", GridStyle.CELL_DIRTY);
-			}
-			else
-			{
-				removeAttr(cell, "class", GridStyle.CELL_DIRTY);
-			}
-		}
+		row.render(_allCols, _colsByKey);
+
+		// render the special columns/expanders
+		// FIXME: should this stuff be done in the row
+		// implementation too???
 
 		var cell = row.cell(0);
 		if(_self.showSelectorColumn)
@@ -1091,13 +1016,25 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	 *
 	 * @param layoutRow a row from the layout
 	 * @param modelNode a node from the data model
+	 * @param options additional mixin options
 	 */
 
-	function TreeRow(layoutRow, modelNode)
+	function TreeRow(layoutRow, modelNode, options)
 	{
 		mixin(archistry.data.TreeUtil);
-//		mixin(layoutRow)
+		mixin(options);
+		
+		// set defaults for options
+		if(sentinal === undefined)
+			var sentinal = false;
+		if(header === undefined)
+			var header = false;
+		if(dirty === undefined)
+			var dirty = false;
 
+
+// FIXME:  not sure why this doesn't seem to work!
+//		mixin(layoutRow)
 		if(layoutRow)
 		{
 			var cell = layoutRow.cell;
@@ -1107,8 +1044,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 		var _childKey = "__atg_children";
 		var _selected = false;
 		var _expanded = false;
-		var _sentinal = false;
-		var _dirty = false;
 		var _parent = null;
 		var _children = [];
 
@@ -1167,7 +1102,27 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 		 * children.
 		 */
 
-		this.isLeaf = function() { return data.isLeaf(modelNode); };
+		this.isLeaf = function()
+		{
+			if(!row)
+			{
+				// must be root
+				return false;
+			}
+			return data.isLeaf(modelNode);
+		};
+
+		/**
+		 * This method indicates if the row is a header row
+		 */
+
+		this.isHeader = function() { return header; };
+
+		/**
+		 * This method indicates if the row is a sential row
+		 */
+
+		this.isSentinal = function() { return sentinal; };
 
 		/**
 		 * This method is used to retrieve the i-th cell in
@@ -1309,6 +1264,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 		this.rowIndex = function()
 		{
+			if(!row)
+				return 0;
+
 			// FIXME:  this does a linear search because
 			// there's just not a good way that I know to
 			// track this without a lot of extra overhead...
@@ -1337,13 +1295,100 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 			return rows;
 		};
 
+		/**
+		 * This method is a handier way to toggle the
+		 * selection state of the row.
+		 *
+		 * @param state the boolean state (default is true)
+		 */
+
+		this.selected = function(state)
+		{
+			if(state !== undefined)
+			{
+				_me.__atg_selected = state;
+				return;
+			}
+
+			_me.__atg_selected = true;
+		};
+
 		///////// EVENT REGISTRATION ////////
 		if(!row)
 			return;
 
+		/**
+		 * This method is used to render the rows given the
+		 * specified array of column definitions.
+		 *
+		 * @param cols the column array
+		 * @param keyIndex the column-by-key index mapping
+		 */
+
+		this.render = function(cols, keyIndex)
+		{
+			for(var i = 0; i < cols.length; ++i)
+			{
+				var col = cols[i];
+				var cel = cell[keyIndex[col.key]];
+				if(!cel)
+				{
+					println("TreeNode.render: no cell for {0}\n{1}",
+							[ i , printStackTrace() ])
+				}
+				col.renderer.render(_self, _me, col, cel);
+				if(dirty)
+				{
+					appendAttr(cel, "class", GridStyle.CELL_DIRTY);
+				}
+				else
+				{
+					removeAttr(cel, "class", GridStyle.CELL_DIRTY);
+				}
+			}
+		}
+
 		row.onclick = function(event)
 		{
 			_me.__atg_selected = !_selected;
+		}
+	}
+
+	function HeaderRow(layoutRow)
+	{
+		var row = layoutRow.row;
+		var cell = layoutRow.cell;
+		var layout = layoutRow.layout;
+
+		this.mixin(new TreeRow(layoutRow, null, { header: true }));
+		row.onclick = null;
+
+		/**
+		 * We need to render column header rows differently
+		 * than regular tree rows.
+		 */
+
+		this.render = function(cols, keyIndex)
+		{
+			println("KeyIndex: " + keyIndex.inspect());
+			for(var i = 0; i < cols.length; ++i)
+			{
+				var col = cols[i];
+				var cel = cell[keyIndex[col.key]];
+				if(!cel)
+				{
+					println("TreeNode.render: no cell for {0}\n{1}",
+							[ i , printStackTrace() ])
+				}
+				if(col.headerRenderer)
+				{
+					col.headerRenderer.render(_self, col, cel);
+				}
+				else
+				{
+					_renderer.render(cel, col.label);
+				}
+			}
 		}
 	}
 
@@ -1371,13 +1416,29 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	}
 
 	var _root = null;
+	var _header = null;
 	var _cols = [];
 	var _allCols = [];
 	var _colsByKey = {};
+	var _checkRenderer = new CheckboxRenderer();
+	var _renderer = new Renderer();
+	var _selectAll = false;
 
 	if(this.showSelectorColumn)
 	{
-		_allCols = [ new TreeColumn({ key: "__atg_selected", renderer: new CheckboxCellRenderer(), style: "aui-grid-col-selector ui-widget-header" })];
+		_allCols = [ new TreeColumn({
+			key: "__atg_selected",
+			renderer: new CellRenderer(_checkRenderer),
+			headerRenderer: {
+				render: function(grid, col, cell)
+				{
+					_checkRenderer.render(cell, _selectAll);
+				}
+			},
+			style: "aui-grid-col-selector ui-widget-header"
+			})
+		];
+		_colsByKey["__atg_selected"] = 0;
 	}
 
 	// load the column definitions
@@ -1451,12 +1512,15 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	 * node and update the layout accordingly.
 	 *
 	 * @param node the TreeRow reference
-	 * @param row the row index of the layout of the node to
-	 *		be expanded
 	 */
 
-	function expand(node, row)
+	function expand(node)
 	{
+		if(node.isLeaf())
+			return;
+
+		// FIXME:  not sure why double expansion seems to add
+		// duplicate rows at the moment... :/
 		var i = 0;
 		if(!node.expanded() && node.__atg_children.length > 0)
 		{
@@ -1469,10 +1533,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 			return;
 		}
 
-		if(!row)
-		{
-			row = node.rowIndex();
-		}
+		var row = node.rowIndex();
+		println("Insert row index = " + row);
 		var count = data.childCount(node.data());
 		var rows = _self.layout.insertRows(row + 1, _allCols.length, count);
 		// clear any references from before
@@ -1556,7 +1618,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 					if(xpand && row)
 					{
 						row += pi;
-						expand(n, row);
+						expand(n)
 					}
 					else
 					{
@@ -1738,6 +1800,62 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	};
 
 	/**
+	 * This method is used to select all of the rows in the
+	 * model.
+	 *
+	 * @param selected (optional) boolean indicating the
+	 *		selection state
+	 */
+
+	this.selectAll = function(selected)
+	{
+		if(_self.showRoot)
+		{
+			if(!_root.expanded())
+			{
+				expand(_root);
+			}
+			_root.selected(selected);
+		}
+
+		visitChildren(_root, "__atg_children", function(parent, node, i) {
+			if(!node.expanded())
+				expand(node);
+
+			node.selected(selected);
+			return true;
+		});
+		_selectAll = selected;
+	};
+
+	/**
+	 * This method is used to expand all of the nodes in the
+	 * tree.
+	 *
+	 * @param state (optional) boolean representing the
+	 *		desired state of the tree
+	 */
+
+	this.expandAll = function(state)
+	{
+		if(_self.showRoot)
+		{
+			if(state && !node.expanded())
+				expand(_root);
+			else
+				collapse(_root);
+		}
+
+		visitChildren(_root, "__atg_children", function(p, node, i) {
+			if(state && !node.expanded())
+				expand(node);
+			else if(!state)
+				collapse(node);
+			return true;
+		});
+	};
+
+	/**
 	 * This method is used to ensure the edit of the current
 	 * cell has been completed.
 	 */
@@ -1805,9 +1923,41 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 	// FIXME:  show/hide/reorder of columns is not yet
 	// implemented
 
+	if(this.showHeader || this.showHeaders)
+	{
+		var hrow = _self.layout.insertRows(-1, _allCols.length, 1);
+		_header = new HeaderRow(hrow[0]);
+		appendAttr(_header.row(), "class", GridStyle.ROW_HEADER);
+		for(var i = 0; i < _allCols.length; ++i)
+		{
+			var col = _allCols[i];
+			var cell = _header.cell(i);
+			var style = [ GridStyle.CELL, col.style ];
+			cell.setAttribute("class", style.join(" "));
+			disableSelect(cell);
+			if(col.headerRenderer)
+			{
+				col.headerRenderer.render(_self, col, cell);
+			}
+			else
+			{
+				_renderer.render(cell, col.label);
+			}
+		}
+
+		if(_self.showSelectorColumn)
+		{
+			_header.cell(0).onclick = function(event) {
+				_self.selectAll(!_selectAll);
+			}
+		};
+
+		_header.render(_allCols, _colsByKey);
+	}
+
 	if(this.showRoot)
 	{
-		var rrow = _self.layout.insertRows(0, _allCols.length, 1);
+		var rrow = _self.layout.insertRows(-1, _allCols.length, 1);
 		_root = new TreeRow(rrow[0], data.root);
 		buildRow(_root);
 	}

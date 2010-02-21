@@ -41,28 +41,6 @@
 namespace("archistry.ui");
 
 /**
- * This class provides the most basic property value renderer
- * that simply places the value of the specified attribute in
- * the given element.
- */
-
-archistry.ui.DefaultPropertyRenderer = function()
-{
-	/**
-	 * This method is called to render the property
-	 *
-	 * @param obj the object providing the data
-	 * @param key the property being rendered
-	 * @param node the element in which to render the value
-	 */
-
-	this.render = function(obj, key, node)
-	{
-		node.innerHTML = obj[key];
-	}
-};
-
-/**
  * This class provides in-line object property editing for the
  * specified element.
  *

@@ -57,9 +57,14 @@ archistry.data.TreeUtil = {
 
 	mapIndex: function(idx, count)
 	{
-		if(idx < 0 && (count - idx > -1))
+		if(count === 0)
 		{
-			return count - idx;
+			return 0;
+		}
+
+		if(idx < 0 && (count - idx - 1 > -1))
+		{
+			return count - idx - 1;
 		}
 		else if(idx > -1)
 		{
@@ -158,7 +163,7 @@ archistry.data.TreeUtil = {
 	{
 		if(!callback)
 			return;
-
+		
 		var kidz = root[childKey];
 		for(var i = 0; i < kidz.length; ++i)
 		{
@@ -192,7 +197,13 @@ archistry.data.TreeUtil = {
 	 * @return the length of the childKey array
 	 */
 
-	childCount: function(node, childKey) { return node[childKey].length; },
+	childCount: function(node, childKey)
+	{
+		if(!node[childKey])
+			return 0;
+
+		return node[childKey].length;
+	},
 
 	/**
 	 * This method is used to retrieve the i-th child of the

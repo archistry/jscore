@@ -220,6 +220,11 @@ archistry.ui.Helpers = {
 
 	appendAttr: function(elt, attr, val)
 	{
+		if(typeof elt.getAttribute !== 'function')
+		{
+			println("appendAttr error:  element not element! {0}\n{1}",
+					elt.inspect(), printStackTrace());
+		}
 		var regex = new RegExp(val.trim());
 		var s = elt.getAttribute(attr);
 		if(s && s.length > 0)
