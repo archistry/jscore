@@ -1332,6 +1332,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 		};
 
 		///////// EVENT REGISTRATION ////////
+		if(!row)
+			return;
+
 		row.onclick = function(event)
 		{
 			_me.__atg_selected = !_selected;
