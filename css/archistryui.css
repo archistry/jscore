@@ -74,3 +74,8 @@
 	float: left;
 	margin-right: 0.2em;
 }
+
+.aui-grid-col-selector
+{
+	vertical-align: middle !important;
+}
