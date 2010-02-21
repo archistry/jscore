@@ -53,7 +53,7 @@ Jester.testing("Observer functionality", {
 
 					this.emit = function()
 					{
-						this.signalEmit("signal1", this, "one", 2, { one: 3, two: 4 });
+						this.signalEmit("signal1", _this, "one", 2, { one: 3, two: 4 });
 					};
 				};
 

@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>ArchistryJS Grid Test #1</title>
+  <title>ArchistryJS Tree Test #1</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <link type="text/css" href="../css/archistryui.css" rel="stylesheet" />
   <style type="text/css" media="screen">
@@ -135,13 +135,13 @@
     {
       width: 20px;
     }
-
+    
   </style>
   <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
 <body>
-  <h1>Test Grid</h1>
+  <h1>Test Tree</h1>
   <div id="testgrid"></div>
   <div id="console"></div>
 
@@ -155,7 +155,16 @@
 //      for(var i = 0; i < 2; ++i)
       {
 //        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
-        darray.add({ key: "Key " + i, value: "Value " + i });
+        darray.add({ key: "Key " + i, value: "Value " + i, children: [
+          { key: "Child 1", value: "Child Value #1", children: [
+            { key: "Child Child 1", value: "Child Child Value #1" },
+            { key: "Child Child 2", value: "Child Child Value #2" }
+          ]},
+          { key: "Child 2", value: "Child Value #2", children: [
+            { key: "Child Child 1", value: "Child Child Value #1" },
+            { key: "Child Child 2", value: "Child Child Value #2" }
+          ]}
+        ]});
       }
 
       archistry.ui.Console.attach("console");
@@ -165,11 +174,8 @@
         { key: "key", label: "Key" },
         { key: "value", label: "Value" }
       ]);
-      var data = new archistry.ui.ArrayRowModel(darray);
-      var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
-        showExpanders: false
-      });
-      grid.selectPath([ 3 ]);
+      var data = new archistry.ui.ObjectTreeModel({ key: "Root", children: darray}, "children");
+      var grid = new archistry.ui.TreeGrid("testgrid", cols, data);
     });
   </script>
 </body>

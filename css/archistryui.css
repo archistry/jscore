@@ -50,3 +50,27 @@
 .ui-icon-none {
 	background-position: 0 200px;
 }
+    
+.aui-grid-expander-open
+{
+	background-position: -64px -128px;
+}
+
+.aui-grid-expander-closed
+{
+	background-position: -32px -128px;
+}
+
+.aui-grid-child-node
+{
+}
+
+.aui-grid-parent-node, .aui-grid-child-node
+{
+}
+
+.aui-grid-cell > span.ui-icon
+{
+	float: left;
+	margin-right: 0.2em;
+}

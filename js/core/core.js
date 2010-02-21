@@ -200,7 +200,7 @@ Object.prototype.mixin = function(obj, inPrototype)
 	}
     for(p in src)
     {
-		if(this[p] == null)
+		if(!this[p] && src[p] !== undefined)
 		{
 			this[p] = src[p];
 		}
@@ -323,7 +323,16 @@ if(Array.prototype.add == null)
 
 Array.prototype.inspect = function()
 {
-	return "[" + this.toString() + "]";
+	var s = "[ ";
+	for(var i = 0; i < this.length; ++i)
+	{
+		s += this[i].inspect();
+		if(i < this.length - 1)
+		{
+			s += ", "
+		}
+	}
+	return s + "]";
 };
 
 /**

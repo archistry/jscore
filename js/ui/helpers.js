@@ -252,8 +252,11 @@ archistry.ui.Helpers = {
 	removeAttr: function(elt, attr, val)
 	{
 		var s = elt.getAttribute(attr);
-		var regex = new RegExp(val.trim());
-		elt.setAttribute(attr, s.replace(regex, ""));
+		if(s)
+		{
+			var regex = new RegExp(val.trim());
+			elt.setAttribute(attr, s.replace(regex, ""));
+		}
 		return elt;
 	},
 
@@ -292,10 +295,11 @@ archistry.ui.Helpers = {
 	 * element--including inline elements
 	 *
 	 * @param elt the element
+	 * @param raw true to return without the px suffix
 	 * @return the width in pixels
 	 */
 
-	ewidth: function(elt)
+	ewidth: function(elt, raw)
 	{
 		var width = getStyle(elt, "width");
 		if(getStyle(elt, "display") == "inline")
@@ -310,7 +314,10 @@ archistry.ui.Helpers = {
 			}
 			width = width + "px";
 		}
-		return width;
+		if(!raw)
+			return width;
+
+		return parseInt(width.replace(/px$/, ""));
 	},
 
 	/**

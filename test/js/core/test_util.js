@@ -283,6 +283,24 @@ Jester.testing("Utility library functionality", {
 			}
 		},
 		{
+			what: "ensure multi-level mixin works correctly",
+			how: function(context, result)
+			{
+				var foo = { p1: "one", p2: "two" };
+				function Mixer(x)
+				{
+					this.mixin(x);
+					this.p3 = "three";
+				}
+
+				var mixer = new Mixer(foo);
+				result.check("p1 is available as an external property", {
+					actual: mixer.p1,
+					expect: "one"
+				});
+			}
+		},
+		{
 			what: "ensure Array.indexOf works correctly",
 			how: function(context, result)
 			{
