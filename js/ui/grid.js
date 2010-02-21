@@ -106,7 +106,13 @@ archistry.ui.ArrayRowModel = function(data, options)
 	 * be treated as children of this node.
 	 */
 
-	this.isLeaf = function(node) { return true; };
+	this.isLeaf = function(node) 
+	{
+		if(node === _self)
+			return false;
+
+		return true;
+	};
 
 	/**
 	 * This method returns the count of items in the array as
@@ -754,9 +760,10 @@ archistry.ui.BrowserGridLayout = function(id)
 	this.insertRows = function(idx, cols, count)
 	{
 		var rval = [];
+		var si = mapIndex(idx, _table.rows.length);
 		for(var i = 0; i < count; ++i)
 		{
-			rval.add(insertRow(idx + i, cols));
+			rval.add(insertRow(si + i, cols));
 		}
 
 		return rval;
@@ -1187,7 +1194,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 			var expander = cell[0].firstChild;
 			if(_self.showSelectorColumn)
 			{
-				println("Using column 2 for the expander!");
+//				println("Using column 2 for the expander!");
 				expander = cell[1].firstChild;
 			}
 			if(!val)
@@ -1264,9 +1271,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 		this.rowIndex = function()
 		{
-			if(!row)
-				return 0;
-
 			// FIXME:  this does a linear search because
 			// there's just not a good way that I know to
 			// track this without a lot of extra overhead...
@@ -1333,8 +1337,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 				var cel = cell[keyIndex[col.key]];
 				if(!cel)
 				{
-					println("TreeNode.render: no cell for {0}\n{1}",
-							[ i , printStackTrace() ])
+//					println("TreeNode.render: no cell for {0}\n{1}",
+//							[ i , printStackTrace() ])
 				}
 				col.renderer.render(_self, _me, col, cel);
 				if(dirty)
@@ -1370,15 +1374,15 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 		this.render = function(cols, keyIndex)
 		{
-			println("KeyIndex: " + keyIndex.inspect());
+//			println("KeyIndex: " + keyIndex.inspect());
 			for(var i = 0; i < cols.length; ++i)
 			{
 				var col = cols[i];
 				var cel = cell[keyIndex[col.key]];
 				if(!cel)
 				{
-					println("TreeNode.render: no cell for {0}\n{1}",
-							[ i , printStackTrace() ])
+//					println("TreeNode.render: no cell for {0}\n{1}",
+//							[ i , printStackTrace() ])
 				}
 				if(col.headerRenderer)
 				{
@@ -1516,12 +1520,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 	function expand(node)
 	{
-		if(node.isLeaf())
+		if(node.isLeaf() || node.expanded())
 			return;
 
-		// FIXME:  not sure why double expansion seems to add
-		// duplicate rows at the moment... :/
 		var i = 0;
+//		println("node.expanded? {0}", node.expanded());
+//		println("node.children.length? {0}", node.__atg_children.length);
 		if(!node.expanded() && node.__atg_children.length > 0)
 		{
 			visitChildren(node, "__atg_children", function(parent, node, idx) {
@@ -1534,9 +1538,16 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 		}
 
 		var row = node.rowIndex();
-		println("Insert row index = " + row);
+		var idx = row + 1;
+		if(row === -1)
+		{
+			idx = row;
+		}
+//		println("index of row {0} is {1}; inserting at {2}", [ node.key, row, idx ]);
+//		println(printStackTrace());
+
 		var count = data.childCount(node.data());
-		var rows = _self.layout.insertRows(row + 1, _allCols.length, count);
+		var rows = _self.layout.insertRows(idx, _allCols.length, count);
 		// clear any references from before
 		node.clearChildren();
 		for(i = 0; i < count; ++i)
@@ -1925,6 +1936,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
 	if(this.showHeader || this.showHeaders)
 	{
+//		println("Inserting header row");
 		var hrow = _self.layout.insertRows(-1, _allCols.length, 1);
 		_header = new HeaderRow(hrow[0]);
 		appendAttr(_header.row(), "class", GridStyle.ROW_HEADER);
