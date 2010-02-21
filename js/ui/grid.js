@@ -1226,6 +1226,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 				return _expanded;
 
 			_expanded = val;
+			if(!cell)
+				return;
+
 			var expander = cell[0].firstChild;
 			if(_self.showSelectorColumn)
 			{
@@ -1540,7 +1543,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 		for(var i = 0; i < path.length; ++i)
 		{
 //			println("Processing path {0}", [ path[i] ]);
-			var pi = mapIndex(path[i], node.childLength());
+			var pi = mapIndex(path[i], node.childCount());
 //			println("Processing path {0} ({1})", [ path[i], pi ]);
 			if((n = node.child(pi)))
 			{
