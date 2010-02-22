@@ -1770,12 +1770,15 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 //        println("node.children.length? {0}", node.__atg_children.length);
         if(!node.expanded() && node.__atg_children.length > 0)
         {
+            node.expanded(true);
             visitChildren(node, "__atg_children", function(parent, node, idx) {
+                if(!parent.expanded())
+                    return false;
+
 //                println("Expanding node: {0}.child[{1}]: {2}", [ parent.key, idx, node.key ]);
                 removeAttr(node.row(), "class", Style.Layout.HIDDEN);
                 return true;
             });
-            node.expanded(true);
             return;
         }
 
@@ -1816,7 +1819,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     {
         visitChildren(node, "__atg_children", function(parent, node, idx) {
 //            println("Collapsing node: {0}.child[{1}]: {2}", [ parent.key, idx, node.key ]);
-            if(parent.expanded())
+            if(node.row())
             {
                 appendAttr(node.row(), "class", Style.Layout.HIDDEN);
                 return true;
