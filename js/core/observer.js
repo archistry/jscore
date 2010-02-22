@@ -38,18 +38,63 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+/**
+ * @name archistry
+ * @namespace
+ *
+ * The root namespace of Archistry Limited
+ */
+
+/**
+ * @name archistry.core
+ * @namespace
+ *
+ * This is the namespace for the core Archistry JavaScript
+ * library.
+ */
+
 namespace("archistry.core");
 
 /**
+ * @class
+ *
  * This class provides signal handling similar to GTK+ to
  * allow for fine-grained, chained notifications for a
  * particular signal.  It is a mixin, so it should be safe to
  * include into other implementation classes.
+ * <p>
+ * To effectively use this class as a mixin, the sender of the
+ * event should be passed to the constructor.  In mixin
+ * scenarios, this means that you'll have something similar
+ * to:
+ * <pre>
+ *   var A = function()
+ *   {
+ *     this.mixin(new archistry.core.SignalSource(this));
+ *     ...
+ *   }
+ * </pre>
+ * </p>
+ * <p>
+ * Using this approach ensures that the signal handlers are
+ * invoked with the instance of class A that actually emits
+ * the signal as the 'this' pointer.
+ * </p>
+ *
+ * @param sender the object that should be passed as the this
+ *		reference to the signal handlers.
  */
 
-archistry.core.SignalSource = function()
+archistry.core.SignalSource = function(sender)
 {
+    // NOTE:  the reason we use this variables here to keep
+    // track of the signals is so that if multiple signal
+    // source instances are mixed in, a unified list of
+    // handlers will be maintained.
+
 	/**
+	 * @private
+	 *
 	 * This is a helper method to ensure that the signal has
 	 * been correctly defined.
 	 *
@@ -63,7 +108,7 @@ archistry.core.SignalSource = function()
 		{
 			if(!this.__validSignals.include(signal))
 			{
-				throw "Signal '" + signal + "' is not supported by this object!";
+				throw new Error("Signal '" + signal + "' is not supported by this object!");
 			}
 		}
 
@@ -153,13 +198,15 @@ archistry.core.SignalSource = function()
 	 * This method is used to fire the notification for the
 	 * specific signal.  Variable arguments are used so that a
 	 * variety of signal types can be supported.
-	 *
+	 * <p>
+	 * <p>
 	 * By convention, the first argument SHOULD be the sender
 	 * of the signal.
-	 *
+	 * </p>
 	 * NOTE:  this WILL NOT work correctly with array
 	 * arguments passed to the emit signal due to the way that
 	 * Array.slice seems to flatten the array first.  FFS!!!
+	 * </p>
 	 *
 	 * @param signal the signal of interest
 	 * @param arguments (implied)
@@ -173,9 +220,31 @@ archistry.core.SignalSource = function()
 		for(var i = 0; i < listeners.length; ++i)
 		{
 			var fn = listeners[i];
-			// FIXME:  I don't really like this because we're
-			// invoking it without a this reference... :(
-			setTimeout(function() { fn.apply(null, args); }, 50);
+
+			// allow immediate sending of the signal for unit
+			// testing
+			if(this.immediate)
+			{
+				fn.apply(sender, args);
+			}
+			else
+			{
+				setTimeout(function() { fn.apply(sender, args); }, 50);
+			}
 		}
 	};
+
+	/**
+	 * This method returns a list of the valid signals for the
+	 * notifier.
+	 */
+
+	this.__defineGetter__("signals", function() {
+		var rval = [];
+		for(k in this.__signals)
+		{
+			rval.add(k);
+		}
+		return rval;
+	});
 };

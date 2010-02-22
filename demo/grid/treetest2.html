@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>ArchistryJS Tree Test #1</title>
+  <title>ArchistryJS Tree Test #2</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <link type="text/css" href="../css/archistryui.css" rel="stylesheet" />
   <style type="text/css" media="screen">
@@ -11,6 +11,7 @@
       margin-top: 1em;
       border: 1px solid #002654;
       padding: 5px;
+      clear: both;
     }
     
     .aui-grid td
@@ -101,13 +102,32 @@
     {
       width: 20px;
     }
-    
+   
+    .controls
+    {
+      float: right;
+    }
   </style>
   <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
 <body>
   <h1>Test Tree</h1>
+  <p>
+  This test/example demonstrates how to manipulate the grid
+  programmatically via the API.  The following operations are supported:
+  <ul>
+  <li>Delete selected rows</li>
+  <li>Inserting a new row as a child of the selected row</li>
+  <li>Expansion/collapse of all nodes</li>
+  </ul>
+  </p>
+
+  <div class="controls">
+    <button id="delete-rows" type="button">Delete Selection</button><br />
+    <button id="insert-row" type="button">Insert Row Selection</button><br />
+    <button id="expand-all" type="button">Expand All</button>
+  </div>
   <div id="testgrid"></div>
   <div id="console"></div>
 
@@ -115,22 +135,28 @@
     $(function()
     {
       var editor = new archistry.ui.editor.TextFieldEditor();
-      
-      var darray = [];
-      for(var i = 0; i < 10; ++i)
-//      for(var i = 0; i < 2; ++i)
+     
+      function buildModel(start)
       {
-//        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
-        darray.add({ key: "Key " + i, value: "Value " + i, children: [
-          { key: "Child 1", value: "Child Value #1", children: [
-            { key: "Child Child 1", value: "Child Child Value #1" },
-            { key: "Child Child 2", value: "Child Child Value #2" }
-          ]},
-          { key: "Child 2", value: "Child Value #2", children: [
-            { key: "Child Child 1", value: "Child Child Value #1" },
-            { key: "Child Child 2", value: "Child Child Value #2" }
-          ]}
-        ]});
+        var darray = [];
+        for(var i = (start ? start : 0); i < 5; ++i)
+        {
+          darray.add({ key: "Key " + i, value: "Value " + i, children: [
+            { key: "Child 1", value: "Child Value #1", children: [
+              { key: "Child Child 1", value: "Child Child Value #1" },
+              { key: "Child Child 2", value: "Child Child Value #2" }
+            ]},
+            { key: "Child 2", value: "Child Value #2", children: [
+              { key: "Child Child 1", value: "Child Child Value #1" },
+              { key: "Child Child 2", value: "Child Child Value #2" }
+            ]}
+          ]});
+        }
+      
+        return new archistry.ui.ObjectTreeModel({
+                  key: "Root", value: "I'm the root!",
+                  children: darray
+                }, "children");
       }
 
       archistry.ui.Console.attach("console");
@@ -140,13 +166,62 @@
         { key: "key", label: "Key" },
         { key: "value", label: "Value" }
       ]);
-      var data = new archistry.ui.ObjectTreeModel({ key: "Root", value: "I'm the root!", children: darray}, "children");
-      var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
-        showRoot: true,
+      var grid = new archistry.ui.TreeGrid("testgrid", cols, buildModel(), {
+        showRoot: false,
         showSelectorColumn: true,
         showHeader: true
       });
-      grid.expandPath([]);
+
+      function printPath(path)
+      {
+        var s = "[ ";
+        for(var i = 0; i < path.length; ++i)
+        {
+          s += path[i];
+          if(i < path.length - 1)
+            s += ", ";
+        }
+        return s += " ]";
+      }
+
+      $("#delete-rows").click(function(event) {
+        grid.selection.reverseEach(function() {
+//        grid.selection.each(function() {
+          var path = this.path();
+//          println("node: {0}; path: {1}", [ this.key, printPath(path) ]);
+          grid.deleteRow(path);
+        });
+      });
+
+      $("#insert-row").click(function(event) {
+        if(grid.selection.length !== 1)
+        {
+          alert("Can't insert under more than one parent!");
+          return;
+        }
+
+        var node = null;
+        grid.selection.each(function() { node = this; });
+        var path = node.path();
+        grid.insertRow(path, 0, {
+          key: String.format("New row {0}", [ node.childCount() ]),
+          value: null
+        });
+      });
+
+      var expanded = false;
+      $("#expand-all").click(function(event) {
+        expanded = !expanded;
+        grid.expandAll(expanded);
+        if(expanded)
+        {
+          this.innerHTML = "Collapse All";
+        }
+        else
+        {
+          this.innerHTML = "Expand All";
+        }
+      });
     });
   </script>
 </body>

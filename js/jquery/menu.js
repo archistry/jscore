@@ -38,9 +38,19 @@
 //
 //////////////////////////////////////////////////////////////////////
 
+/**
+ * @name archistry.jquery
+ * @namespace
+ *
+ * This namespace is used to isolate all of the library code
+ * that has dependencies on jQuery.
+ */
+
 namespace("archistry.jquery");
 
 /**
+ * @class
+ *
  * This class defines the basic behavior required for a popup
  * menu.  It is inspired by both some of the examples from the
  * Filament Group as well as the jQuery Context Menu plugin.

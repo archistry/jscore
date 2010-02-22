@@ -41,6 +41,8 @@
 namespace("archistry.core");
 
 /**
+ * @class
+ *
  * This class is used to represent version information about
  * the particular thing being versioned.
  */

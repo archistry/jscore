@@ -41,6 +41,8 @@
 namespace("archistry.ui");
 
 /**
+ * @class
+ *
  * The Console object provides a way to write output messages
  * to the current page in a consistent manner.
  */
@@ -107,5 +109,11 @@ archistry.ui.ConsoleImpl = function()
 		}
 	};
 };
+
+/**
+ * This is the global instance of the console that is required
+ * to allow embedded println calls to function properly even
+ * when the console isn't displayed.
+ */
 
 archistry.ui.Console = new archistry.ui.ConsoleImpl();

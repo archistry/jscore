@@ -41,6 +41,8 @@
 namespace("archistry.core");
 
 /**
+ * @class
+ *
  * This is our version of the XMLHttpRequest handler that is
  * influenced by implementations in other JavaScript
  * libraries.
@@ -52,6 +54,8 @@ archistry.core.XHR = function()
 	var callbacks	= null;
 
 	/**
+	 * @private
+	 *
 	 * This method is used to allocate the XMLHttpRequest
 	 * object on a variety of browsers.
 	 */
@@ -89,6 +93,7 @@ archistry.core.XHR = function()
 		}
 	}
 
+	/** @private */
 	function readyStateHandler()
 	{
 		var fn = null;
@@ -131,42 +136,63 @@ archistry.core.XHR = function()
 	 * implementation.  It uses the hash parameter to allow
 	 * the caller to provide an object tree to be used during
 	 * the interaction with the XMLHttpRequest session.
-	 *
+	 * <p>
 	 * The following properties are used by this
 	 * implementation:
-	 *
+	 * </p>
+	 * <h3>
 	 * Callbacks
-	 *
+	 * </h3>
+	 * <p>
 	 * Each of the following property represents a callback
 	 * function with the signature:  fn(xhr).  The callback
 	 * will be passed a reference to the underlying
 	 * XMLHttpRequest object being used to make the request.
-	 *
+	 * <ul>
+	 *	<li>
 	 *	hash.loading	  - the function to execute when the ready
 	 *					    state is 1
+	 *	</li>
+	 *	<li>
 	 *	hash.loaded       - the function to execute when the ready
 	 *						state is 2
+	 *	</li>
+	 *	<li>
 	 *	hash.interactive  - the function to execute when the ready
 	 *						state is 3
+	 *  </li>
+	 *  <li>
 	 *	hash.completed	  - the function to execute when the ready
 	 *						state is 4
+	 *	</li>
+	 *	<li>
 	 *	hash.authenticate - the function to be executed when
 	 *						authentication is required with
 	 *						the target endpoint.
-	 *
+	 *  </li>
+	 *  </ul>
+	 *  <h3>
 	 *	Request
-	 *
+	 *  </h3>
+	 *  <p>
 	 *	The caller can also specify request properties to be
 	 *	sent with the request, including HTTP headers and a
 	 *	request body.
-	 *
+	 *  <ul>
+	 *  <li>
 	 *	hash.headers		- an array of objects with properties
 	 *						  "key" and "value" to indicate the
 	 *						  header to send
+	 *	</li>
+	 *	<li>
 	 *	hash.body			- the request body to send
+	 *	</li>
+	 *	<li>
 	 *	hash.contentType	- the MIME type of the content
 	 *						  type being sent (ignored for all
 	 *						  but PUT and POST requests)
+	 *	</li>
+	 *	</ul>
 	 */
 
 	this.makeRequest = function(method, location, hash)
@@ -278,11 +304,11 @@ archistry.core.XHR = function()
 	 * either be joined to a URI using the
 	 * archistry.core.Path#join method, or it can be used as
 	 * the body of a POST request.
-	 *
+	 * <p>
 	 * This method will automatically be applied to body
 	 * values that are given to the makeRequest method as
 	 * objects.
-	 *
+	 * </p>
 	 * @param obj the object representing the values to send
 	 * @return the encoded object as a string
 	 */
@@ -303,6 +329,8 @@ archistry.core.XHR = function()
 };
 
 /**
+ * @class
+ *
  * This class provides a factory for creating and managing
  * groups of XHR objects to simplify management when changing
  * pages.

@@ -38,7 +38,20 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+/**
+ * @name archistry.data
+ * @namespace
+ *
+ * This namespace provides various data-centric utility
+ * classes.
+ */
+
 namespace("archistry.data");
+
+/**
+ * This is a static object that represents the names of the
+ * change operations.
+ */
 
 archistry.data.ChangeOp = {
 	OBJECT_ADDED		: "obj-add",
@@ -49,6 +62,8 @@ archistry.data.ChangeOp = {
 };
 
 /**
+ * @class
+ *
  * This class represents object property changes and
  * implements the Memento pattern.  It is fully initialized by
  * the constructor.
@@ -70,21 +85,23 @@ archistry.data.ChangeMemento = function(object, change, key, oldVal)
 };
 
 /**
+ * @class
+ *
  * This class defines the signals that are used by the
  * ObjectChangeObserver protocol.  This protocol defines 3
  * signals:
  * <ul>
  * <li>object-inserted &ndash; fired after a new object has
  * been added to the signal source.  The signal handler is
- * passed the following arguments: <em>sender</em>,
+ * passed the following arguments:
  * <em>index</em>, and <em>data</em>.</li>
  * <li>object-deleted &ndash; fired after an object has
  * been deleted from the signal source.  The signal handler is
- * passed the following arguments: <em>sender</em>,
+ * passed the following arguments: 
  * <em>index</em>, and <em>data</em>.</li>
  * <li>object-changed &ndash; fired after an object has
  * been changed in the signal source.  The signal handler is
- * passed the following arguments: <em>sender</em>,
+ * passed the following arguments:
  * <em>index</em>, and <em>data</em>.</li>
  * </ul>
  *
@@ -94,7 +111,7 @@ archistry.data.ChangeMemento = function(object, change, key, oldVal)
 
 archistry.data.ObjectChangeSignalSource = function()
 {
-	this.mixin(archistry.core.SignalSource);
+	this.mixin(new archistry.core.SignalSource(this));
 	this.addValidSignals([
 		"object-inserted",
 		"object-deleted",
@@ -111,7 +128,7 @@ archistry.data.ObjectChangeSignalSource = function()
 
 	this.fireObjectInserted = function(idx, object)
 	{
-		this.signalEmit("object-inserted", this, idx, object);
+		this.signalEmit("object-inserted", idx, object);
 	}
 
 	/**
@@ -124,7 +141,7 @@ archistry.data.ObjectChangeSignalSource = function()
 
 	this.fireObjectDeleted = function(idx, object)
 	{
-		this.signalEmit("object-deleted", this, idx, object);
+		this.signalEmit("object-deleted", idx, object);
 	}
 
 	/**
@@ -137,11 +154,13 @@ archistry.data.ObjectChangeSignalSource = function()
 
 	this.fireObjectChanged = function(idx, object)
 	{
-		this.signalEmit("object-changed", this, idx, object);
+		this.signalEmit("object-changed", idx, object);
 	}
 };
 
 /**
+ * @class
+ *
  * This class plays the role of the Caretaker in the Memento
  * pattern implementation.  It tracks a history of changes, so
  * can be used as the basis of an undo/redo facility.
@@ -208,6 +227,8 @@ archistry.data.ChangeSet = function(options)
 };
 
 /**
+ * @class
+ *
  * This is an implementation of a ChangeSet that only records
  * the last change for any object.  It is not suitable for
  * undo/redo operations, but it is useful for creating the
@@ -232,6 +253,7 @@ archistry.data.CompactChangeSet = function(options)
 	var _changes = {};
 	var _keys = [];
 
+	/** @private */
 	function getIdx(key)
 	{
 		for(var i = 0; i < _keys.length; ++i)

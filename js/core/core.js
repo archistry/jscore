@@ -76,10 +76,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-///////////////////////////////////////////////////////////////////////
-// Allow easy definition of namespaces 
-///////////////////////////////////////////////////////////////////////
-
+/**
+ * This function is used to define an object hierarchy that
+ * represents a "namespace" entry.  It will create
+ * intermediate objects (including the top-level global
+ * holder) that represent the string path.
+ * <p>
+ * For example, to declare the "com.example" namespace, you
+ * would simply write:
+ *
+ * <pre>
+ *   namespace("com.example");
+ * </pre>
+ *
+ * And further in the code, you could define new classes as:
+ * <pre>
+ *   com.example.MyClass = function() { ... }
+ * </pre>
+ * </p>
+ *
+ * @param ns the namespace string to create
+ */
+ 
 namespace = function(ns)
 {
 	if('string' != typeof ns)
@@ -110,65 +128,75 @@ namespace = function(ns)
  * This method functions similarly to the Ruby include
  * directive to provide mixin behavior by including the
  * properties of the specified object into the receiver.
- *
+ * <p>
  * If the receiver already has a property defined by the
  * prototype, the receiver's property is not altered.  Most of
  * the time, this is the behavior you'd expect, and it
  * prevents accidental loss of functionality in classes
  * including a prototype.
- *
+ * </p>
+ * <p>
  * There are two ways to use this method--each with slightly
  * different effects, but which in practice are nearly
  * equivalent.
- *
+ * </p>
+ * <p>
  * NOTE:  specifying an object (or function) as the argument
  * of this method that has attribute accessors
  * (getters/setters) defined, will only mix in the VALUES of
  * those attributes and not the methods themselves.  I don't
  * know of a good way around this issue...
- *
+ * </p>
+ * <h3>
  * Case #1:
- *
+ * </h3>
+ * <p>
  * Using the following construct, the prototype object will be
  * mixed in to both the instance of the function as well as
  * the function's prototype.
- *
+ * <pre>
  *   var P = { a: "a", b: function() {} };
  *   var A = function() {};
  *   A.mixin(P);
  *   var a = new A();
- *
+ * </pre>
+ * </p>
+ * <p>
  * Both the class A.a and A.b() will be defined as well as for
  * instances of A that are created afterwards, e.g. a.a == "foo"
  * and a.b == A.b.
- *
+ * </p>
+ * <h3>
  * Case #2:
- *
+ * </h3>
+ * <p>
  * This is a more likely scenario and is probably how it will
  * most often be used in practice as the including into the
  * prototype of the function really doesn't matter 99% of the
  * time.  This case is more like Ruby's include keyword,
  * except that it will only mixin the mixin object into
  * instances of the class, not the prototype of the class.
- *
+ * <pre>
  *   var A = function()
  *   {
- *		this.mixin(P);
- *	 };
+ *     this.mixin(P);
+ *   };
  *
- *	 var a = new A();
- *	 (a.a == P.a); // true
- *	 (a.b == P.b); // true
- *	 (A.a == P.a); // false
- *	 (A.b == P.b); // false
- *
+ *   var a = new A();
+ *   (a.a == P.a); // true
+ *   (a.b == P.b); // true
+ *   (A.a == P.a); // false
+ *   (A.b == P.b); // false
+ * </pre>
+ * <p>
  * NOTES
- *  - Much of this method was inspired by both Crockford's
+ * <ul>
+ *  <li>Much of this method was inspired by both Crockford's
  *    "Prototypical Inheritance in JavaScript" article and
  *    Peter Michaux's "Transitioning from Java Classes to
  *    JavaScript Prototypes" blog post.
- *  
- *  - Use of 'inPrototype = false' may not have the effects
+ *  </li>
+ *  <li>Use of 'inPrototype = false' may not have the effects
  *    you'd expect unless you really understand what's going
  *    on with prototypes.  This approach is useful to only
  *    limit the scope of the mixin behaior to the immediate
@@ -176,6 +204,7 @@ namespace = function(ns)
  *    'new SomeClass()' WILL NOT exhibit the mixin behavior.
  *    Occasionally, this could be what you want, but normally
  *    it isn't.
+ *  </li>
  *
  * @param obj the prototype object
  * @param inPrototype optional parameter specifying if the
@@ -405,6 +434,51 @@ Array.prototype.remove = function(obj)
 	}
 	return null;
 };
+
+if(!Array.prototype.each)
+{
+    /**
+     * This method provides an each iterator and calls the
+     * callback with the this reference set to the array element
+     * and the index of the item in the array.
+     *
+     * @param callback the callback function
+     * @return reference to the array
+     */
+
+    Array.prototype.each = function(callback)
+    {
+        for(var i = 0; i < this.length; ++i)
+        {
+            callback.apply(this[i], [ i ]);
+        }
+
+        return this;
+    };
+
+    /**
+     * This method provides an each iterator and calls the
+     * callback with the this reference set to the array element
+     * and the index of the item in the array.
+     *
+     * @param callback the callback function
+     * @return reference to the array
+     */
+
+    Array.prototype.reverseEach = function(callback)
+    {
+        for(var i = this.length - 1; i >= 0; --i)
+        {
+            callback.apply(this[i], [ i ]);
+        }
+
+        return this;
+    };
+}
+else
+{
+    throw new Error("Array#each is already defined!  Probably library incompatibility errors have been introduced.");
+}
 
 // I can't believe JS doesn't have a string trim function...or
 // a working clone...FFS!!!

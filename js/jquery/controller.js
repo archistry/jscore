@@ -41,6 +41,8 @@
 namespace("archistry.ui");
 
 /**
+ * @class
+ *
  * This class represents a framework Action.  Action instances
  * implement the GoF Command pattern, but they also have
  * additional state associated with them during the execution
@@ -154,25 +156,28 @@ archistry.ui.Action = function(callback, options)
 };
 
 /**
+ * @class
+ *
  * This class provides a basic page controller object that is
  * responsible for binding actions to the actual DOM elements.
  * Actions are bound by associating the 'aj-action' class to
  * the given element.  Based on the element, specific binding
  * rules apply.
- *
+ * <p>
  * For A elements, the actions are specified via the href
  * attribute using the following naming convention:
- *
+ * </p>
+ * <pre>
  *   [@action-set]#action-id
- *
+ * </pre>
+ * </p>
+ * <p>
  * The action-set value is optional, but is useful to prevent
  * unexpected things happening when the page is viewed if the
  * user has JavaScript disabled.  The action-id is bound to an
  * Action instance that is registered to the appropriate
  * action set.
- *
- * By default, the controller executes automatically when the
- * document is ready, therefore you 
+ * </p>
  */
 
 archistry.ui.Controller = function()

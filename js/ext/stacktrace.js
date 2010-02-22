@@ -56,6 +56,17 @@
  * @cfg {Boolean} guess If we should try to resolve the names of anonymous functions
  */
 function printStackTrace(options) {
+    return stackTrace(options).join("\n- ");
+}
+
+/**
+ * This method actually returns the original array returned by
+ * printStackTrace since you get a string in Java, but you get
+ * an array here.  Added this method to differentiate the two
+ * and make more readable defaults.
+ */
+
+function stackTrace(options) {
     var ex = (options && options.e) ? options.e : null;
     var guess = (options && options.guess) ? options.guess : false;
     

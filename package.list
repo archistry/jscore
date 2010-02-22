@@ -18,7 +18,8 @@
 - js/core/element.js
 - js/core/xhr.js
 - js/data/changeset.js
-- js/data/tree_util.js
+- js/data/tree.js
+- js/ui/selection.js
 - js/ui/renderer.js
 - js/ui/editable.js
 - js/ui/helpers.js

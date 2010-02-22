@@ -1,0 +1,1 @@
+java -Djsdoc.dir=/opt/jsdoc -Djsdoc.template.dir=/opt/jsdoc/templates/jsdoc -jar /opt/devel/jsdoc-toolkit-read-only/jsdoc-toolkit/jsrun.jar /opt/devel/jsdoc-toolkit-read-only/jsdoc-toolkit/app/run.js -v -d=jsdocs -a -r=10 -p js

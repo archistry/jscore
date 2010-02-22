@@ -46,26 +46,26 @@ Jester.testing("Observer functionality", {
 			{
 				var Actor = function(name)
 				{
+					this.mixin(new archistry.core.SignalSource(this));
 					this.name = name;
-					var _this = this;
-
-					this.mixin(archistry.core.SignalSource);
+					this.immediate = true;
 
 					this.emit = function()
 					{
-						this.signalEmit("signal1", _this, "one", 2, { one: 3, two: 4 });
+						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 });
 					};
 				};
 
 				var Observer = function(actor)
 				{
 					var _this = this;
-					handler = function(sender, arg1, arg2, arg3)
+					handler = function(arg1, arg2, arg3)
 					{
-						_this.sender = sender;
-						_this.arg1 = arg1;
-						_this.arg2 = arg2;
-						_this.arg3 = arg3;
+						var name = this.name;
+						result.check("signal handler called", {
+							actual: [ name, arg1, arg2, arg3.one, arg3.two ],
+							expect: [ actor.name, "one", 2, 3, 4 ]
+						});
 					}
 					
 					actor.signalConnect("signal1", handler);
@@ -74,11 +74,6 @@ Jester.testing("Observer functionality", {
 				var actor = new Actor("sam");
 				var obs = new Observer(actor);
 				actor.emit();
-
-				result.check("signal handler called", {
-					actual: [ obs.sender.name, obs.arg1, obs.arg2, obs.arg3.one, obs.arg3.two ],
-					expect: [ actor.name, "one", 2, 3, 4 ]
-				});
 			}
 		}
 	]

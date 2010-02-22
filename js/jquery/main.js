@@ -38,9 +38,11 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-// declare a global document instance of the controller class
-// and make sure it is initialized when the page is ready for
-// interaction.
+/**
+ * declare a global document instance of the controller class
+ * and make sure it is initialized when the page is ready for
+ * interaction.
+ */
 
 var ajc = new archistry.ui.Controller();
 $(function()

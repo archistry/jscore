@@ -41,6 +41,8 @@
 namespace("archistry.ui.editor");
 
 /**
+ * @class
+ *
  * This object provides some mix-in behavior methods that are
  * used to support validation during cell editing.
  */
@@ -63,10 +65,12 @@ archistry.ui.editor.ValidatingCellEditor = {
 	 * property of this object</li>
 	 * </ol>
 	 *
+	 * <p>
 	 * The signature of the validate method MUST be:
 	 * <code>validate(row, col, old, new)</code> where the
 	 * parameters are equivalent to the parameters passed to
 	 * this method.
+	 * </p>
 	 *
 	 * @param obj the object being edited
 	 * @param key the property key of the property being * edited
@@ -105,6 +109,8 @@ archistry.ui.editor.ValidatingCellEditor = {
 };
 
 /**
+ * @class
+ *
  * This class provides an implementation of an abstract base
  * editor that can be used by specific editor implementations
  * to share code.
@@ -316,6 +322,8 @@ archistry.ui.editor.AbstractEditor = function()
 };
 
 /**
+ * @class
+ *
  * This class provides a basic text editor suitable for
  * editing single line text values.
  */
@@ -345,6 +353,8 @@ archistry.ui.editor.TextFieldEditor = function()
 };
 
 /**
+ * @class
+ *
  * This class provides a basic multi-line text editor suitable
  * for editing multi-line text values.
  */
@@ -375,6 +385,8 @@ archistry.ui.editor.TextAreaEditor = function()
 };
 
 /**
+ * @class
+ *
  * This class provides a flexible text editor for editing
  * inline content elements.  If the cell containing the text
  * value to be edited is a block element, a TextAreaEditor is

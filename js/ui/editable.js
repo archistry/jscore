@@ -41,6 +41,8 @@
 namespace("archistry.ui");
 
 /**
+ * @class
+ *
  * This class provides in-line object property editing for the
  * specified element.
  *
@@ -81,6 +83,7 @@ archistry.ui.Editable = function(arg, options)
 				String.format("unable to find node for '{0}'", [ arg ]));
 	}
 
+	/** @private */
 	function getAttribute(attr)
 	{
 		var _val = _node.getAttribute(attr);
@@ -92,17 +95,20 @@ archistry.ui.Editable = function(arg, options)
 		return _val;
 	}
 
+	/** @private */
 	function onEdit(event)
 	{
 		_oldval = _obj[_key];
 		_self.editor.startEditing(_self, _obj, _key, _node);
 	}
 
+	/** @private */
 	function render()
 	{
 		_self.renderer.render(_obj, _key, _node);
 	}
 
+	/** @private */
 	function init()
 	{
 		// first, validate that the element has all the right

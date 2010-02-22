@@ -41,6 +41,8 @@
 namespace("archistry.core");
 
 /**
+ * @class
+ *
  * This is a static object that defines utility functions for
  * arbitrary path-like structures.
  */

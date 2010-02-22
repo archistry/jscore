@@ -38,6 +38,15 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+/**
+ * @name archistry.ui
+ * @namespace
+ *
+ * This namespace contains all of the base UI classes and
+ * constants which do not require any particular JavaScript
+ * toolkit other than this one.
+ */
+
 namespace("archistry.ui");
 
 /**
@@ -49,7 +58,9 @@ namespace("archistry.ui");
 
 archistry.ui.Styles = {
 
-	/** These are layout styles that apply to UI widgets */
+	/** 
+	 * These are layout styles that apply to UI widgets
+	 */
 	Layout: {
 		HIDDEN				: "ui-helper-hidden",
 		HIDDEN_ACCESSIBLE	: "ui-helper-hidden-acessible",
@@ -72,8 +83,12 @@ archistry.ui.Styles = {
 		BUTTON_ICON_RIGHT	: "ui-button-icon-right"
 	},
 
-	/** These are widget state styles */
+	/**
+	 * These are widget state styles
+	 */
+
 	State: {
+		/** this is a test comment */
 		DEFAULT				: "ui-state-default",
 		HOVER				: "ui-state-hover",
 		FOCUS				: "ui-state-focus",
@@ -89,6 +104,8 @@ archistry.ui.Styles = {
 };
 
 /**
+ * @class
+ *
  * While it's hardly jQuery, here are some helper methods that
  * can be mixed in to various classes without introducing a
  * jQuery dependency in the core UI framework.
@@ -341,5 +358,24 @@ archistry.ui.Helpers = {
 		{
 			this[key] = val;
 		}
-	}
+	},
+
+    /**
+     * This method is used to create a new error object with
+     * the specified arguments.
+     *
+     * @param fmt the message format (per String#format)
+     * @param args variable length arguments to String#format
+     *
+     * @return an Error object
+     */
+
+    createError: function(fmt)
+    {
+        var msg = String.format("{0}\n{1}", [
+                String.format.apply(this, arguments),
+                printStackTrace()
+            ]);
+        return new Error(msg);
+    }
 };
