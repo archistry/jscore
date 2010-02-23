@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009 Archistry Limited
+// Copyright (c) 2010 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -33,23 +33,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		rhino.js
-// Created:		Mon Dec  7 17:39:41 GMT 2009
+// Name:		test_indexer.js
+// Created:		Mon Feb 22 22:54:04 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
+var Indexer = archistry.data.Indexer;
 
-load('/opt/devel/env-js/src/env.rhino.js');
-load('../jester.js');
+Jester.testing("Indexer core functionality", {
+	tests: [
+		{
+			what: "mapIndex method functionality",
+			how: function(context, result)
+			{
+                mixin(Indexer);
+                var data = [ 1, 2, 3, 4 ];
 
-// load the core library
-load('../../rhino-core-min.js');
+                result.check("start index not changed", {
+                    actual: mapIndex(0, data.length),
+                    expect: 0
+                });
+                
+                result.check("last index not changed", {
+                    actual: mapIndex(3, data.length),
+                    expect: 3
+                });
+                
+                result.check("-1 mapped to last element", {
+                    actual: mapIndex(-1, data.length),
+                    expect: 3
+                });
+                
+                result.check("-4 mapped to first element", {
+                    actual: mapIndex(-4, data.length),
+                    expect: 0
+                });
 
-// load the tests
-load('test_util.js');
-load('test_observer.js');
-load('test_path.js');
-
-// print the results
-print(Jester.reporter.toString());
-java.lang.System.exit(Jester.reporter.failures());
+                result.check("zero count returns zero offset", {
+                    actual: mapIndex(-4, 0),
+                    expect: 0
+                });
+			}
+		}
+	]
+});

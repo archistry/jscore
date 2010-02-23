@@ -38,17 +38,20 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
 load('/opt/devel/env-js/src/env.rhino.js');
 load('../jester.js');
+
+function println(fmt, args)
+{
+    print(String.format(fmt, args));
+}
 
 // load the core library
 load('../../rhino-core-min.js');
 
 // load the tests
-load('test_util.js');
-load('test_observer.js');
-load('test_path.js');
+load('test_indexer.js');
+load('test_tree_model.js');
 
 // print the results
 print(Jester.reporter.toString());

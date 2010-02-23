@@ -1,0 +1,28 @@
+--- 
+:version_minor: 1
+:version_release: 0-pre1dev
+:package_name: Archistry Core JavaScript Library
+:version_count: 13
+:package: rhino-core-min.js
+:version_date: "2010-02-13T19:13:27Z"
+:files: 
+- ../js/ext/Math.uuid.js
+- ../js/ext/md5.js
+- ../js/ext/stacktrace.js
+- ../js/ext/date.format.js
+- ../js/core/core.js
+- ../js/core/path.js
+- ../js/core/observer.js
+- ../js/core/version.js
+- ../js/core/element.js
+- ../js/core/xhr.js
+- ../js/data/changeset.js
+- ../js/data/tree.js
+- ../js/ui/selection.js
+- ../js/ui/renderer.js
+- ../js/ui/editable.js
+- ../js/ui/helpers.js
+- ../js/ui/grid.js
+- ../js/ui/property_editors.js
+- ../js/ui/console.js
+:version_major: 0
