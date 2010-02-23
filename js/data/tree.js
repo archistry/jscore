@@ -278,6 +278,108 @@ namespace("archistry.data.tree");
 
 /**
  * @class
+ * 
+ * This class represents a specific tree cell location within
+ * a tree.  "Cells" are actually holders for values of named
+ * object properties, so they MUST have a unique key.
+ * <p>
+ * To locate any cell in a tree, you need to identify the path
+ * to the tree node and then the specific property to which
+ * the cell refers.  This class only deals with the logical
+ * addressing of a particular tree value and not with the way
+ * that value (or the path) is presented visually.
+ * </p>
+ * <p>
+ * Objects of TreeCellPath are not intended to not be a
+ * long-lived objects as the actual tree location can easily
+ * be changed for a variety of reasons.  Therefore, instances
+ * are immutable and initiallized fully when they are created.
+ * </p>
+ * <p>
+ * However, since there is no good way to freeze the path
+ * array and copying the array can be expensive, there is
+ * nothing that actually prevents the path component of the
+ * object from being modified once the object has been
+ * created.  DO NOT DO THIS!
+ * </p>
+ *
+ * @param path the array indicating the zero-indexed path from
+ *      the root of the tree to the specific tree node.
+ * @param key (optional) the property key of the cell to which the path
+ *      refers.  If the value of the key parameter is null,
+ *      the path represents the entire node of the tree.
+ */
+
+archistry.data.tree.TreeCellPath = function(path, key)
+{
+    this.__defineGetter__("path", function() { return path; });
+    this.__defineGetter__("key", function() { return key; });
+};
+
+/**
+ * @class
+ *
+ * This class reprents the location of a given tree node at a
+ * particular point in time.  It is a transient, holder object
+ * that is primarily used by the tree signals.
+ *
+ * @param node the actual tree node reference
+ * @param index the child index of the node relative to its
+ *      parent node
+ */
+
+archistry.data.tree.TreeNodeRef = function(node, index)
+{
+    this.__defineGetter__("node", function() { return node; });
+    this.__defineGetter__("index", function() { return index; });
+};
+
+/**
+ * @class
+ *
+ * This class represents a tree change event and is modelled
+ * closely after the JSE 1.4.1 TreeModelEvent class.  The
+ * actual values of the properties will vary depending on the
+ * particular tree event, so make sure you read the specific
+ * documentation about each signal.
+ * <p>
+ * Like TreeCellPath, instances of this class should be
+ * considered transient, and are therefore immutable.
+ * </p>
+ * <p>
+ * Unlike the Java TreeModelEvent, instances do not hold a
+ * reference to the sender of the signal.  Instead, the sender
+ * is available as the this reference for each of the callback
+ * signal handlers.
+ * </p>
+ * <p>
+ * The values transmitted as properties represent the previous
+ * state of the nodes, however the nodes themselves MAY NOT be
+ * snapshots of the previous state.  The only previous state
+ * transmitted by this event is the tree structure before the
+ * event occurred.
+ * </p>
+ * <p>
+ * To track the changes to the individual object properties,
+ * use the {@link archistry.data.ChangeSet} infrastructure.
+ * </p>
+ *
+ * @param path the path to the parent node in the tree
+ * @param parent the parent of the changed nodes
+ * @param refs the list of {@link
+ *      archistry.data.tree.TreeNodeRef} instances representing
+ *      children and their previous locations (if any)
+ */
+
+archistry.data.tree.TreeChange = function(path, parent, refs)
+{
+    this.__defineGetter__("path", function() { return path; });
+    this.__defineGetter__("parent", function() { return parent; });
+    this.__defineGetter__("refs", function() { return refs; });
+};
+
+/**
+ * @class
  *
  * This class is used to handle notification of tree change
  * events.
@@ -289,57 +391,42 @@ namespace("archistry.data.tree");
  * <p>
  * The following signals are supported by the notifier:
  * <dl>
- * <dt>nodes-inserted</dt>
+ * <dt>tree-nodes-inserted</dt>
  * <dd>Fired when one or more nodes are inserted into the
- * tree.</dd>
+ * tree.  The {@link TreeChange#nodes} property provides
+ * information about the new node locations.</dd>
  *
- * <dt>nodes-changed</dt>
- * <dd>Fired when one or more nodes are changed in the
- * tree.</dd>
+ * <dt>tree-nodes-changed</dt>
+ * <dd>Fired when one or more node's properties are changed in
+ * the tree.  They have not changed location in the tree.</dd>
  *
- * <dt>nodes-deleted</dt>
- * <dd>Fired when nodes are deleted from the tree</dd>
+ * <dt>tree-nodes-removed</dt> <dd>Fired when nodes are removed
+ * from the tree.  The {@link TreeChange#parent} references
+ * the previous parent of the node(s) and information about
+ * the removed child nodes is present in the {@link
+ * TreeChange#nodes} property.  NOTE:  When a subtree is
+ * removed, the sender MUST only send a notification relating
+ * to the root of the subtree.  Receivers MUST assume that all
+ * child nodes have also been removed, but they MUST NOT
+ * assume that the nodes have been permanently deleted.</dd>
  *
- * <dt>tree-structure-changed</dt>
- * <dd>Fired when the tree structure has changed and needs to
- * be revisited by the listener.  Normally, this happens when
- * nodes are re-parented, or when other massive changes occur.</dd>
+ * <dt>tree-structure-changed</dt> <dd>Fired when the tree
+ * structure has dramatically changed and needs to be
+ * revisited by the listener.</dd>
  *
  * @param sender the object that should be the sender of the
- *        signals
+ *      signals
  */
 
 archistry.data.tree.Notifier = function(sender)
 {
     this.mixin(new archistry.core.SignalSource(sender));
     this.addValidSignals([
-        "nodes-inserted",
-        "nodes-changed",
-        "nodes-deleted",
+        "tree-nodes-inserted",
+        "tree-nodes-changed",
+        "tree-nodes-removed",
         "tree-structure-changed"
     ]);
-
-    /**
-     * This method creates a tree change event that is used
-     * for all of the signals except for
-     * <code>tree-structure-changed</code>.
-     *
-     * @param parent the parent node before the event was
-     *        triggered
-     * @param node the node that is the target of the event
-     * @param oldIndex the original child index of the node
-     * @param newIndex the new child index of the node
-     */
-
-    this.createEvent = function(parent, node, oldIndex, newIndex)
-    {
-        return {
-            parent: parent, 
-            node: node,
-            oldIndex: oldIndex,
-            newIndex: newIndex
-        };
-    };
 
     /**
      * This method is used to fire the nodes inserted signal.
@@ -358,7 +445,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesInserted = function(eventlist)
     {
-        this.signalEmit("nodes-inserted", eventlist);
+        this.signalEmit("tree-nodes-inserted", eventlist);
     };
 
     /**
@@ -378,7 +465,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesChanged = function(eventlist)
     {
-        this.signalEmit("nodes-changed", eventlist);
+        this.signalEmit("tree-nodes-changed", eventlist);
     };
 
     /**
@@ -398,7 +485,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesDeleted = function(eventlist)
     {
-        this.signalEmit("nodes-deleted", eventlist);
+        this.signalEmit("tree-nodes-deleted", eventlist);
     };
 
     /**
@@ -443,6 +530,9 @@ archistry.data.tree.Notifier = function(sender)
 
 archistry.data.tree.ArrayRowModel = function(data, options)
 {
+    var TreeChange = archistry.data.tree.TreeChange;
+    var TreeNodeRef = archistry.data.tree.TreeNodeRef;
+
     mixin(archistry.data.Indexer);
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
@@ -614,7 +704,9 @@ archistry.data.tree.ArrayRowModel = function(data, options)
         var idx = mapIndex(index, data.length);
         data.splice(idx, 0, node);
         
-        this.fireNodesInserted([ this.createEvent(_self, node, -1, idx) ]);
+        this.fireNodesInserted([
+            new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
+        ]);
     };
 
     /**
@@ -633,7 +725,9 @@ archistry.data.tree.ArrayRowModel = function(data, options)
         var node = data.removeAtIndex(idx);
         if(node)
         {
-            this.fireNodesDeleted([ this.createEvent(_self, node, idx, -1) ]);
+            this.fireNodesDeleted([ 
+                new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
+            ]);
             return node;
         }
 
@@ -650,7 +744,9 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     this.rowChanged = function(index)
     {
         var idx = mapIndex(index, data.length);
-        this.fireNodesChanged([ this.createEvent(_self, data[idx], idx, -1) ]);
+        this.fireNodesChanged([ 
+            new TreeChange([], _self, [ new TreeNodeRef(data[idx], idx) ])
+        ]);
     };
 };
 

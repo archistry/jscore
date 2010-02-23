@@ -1257,32 +1257,32 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
     }
 
-    /**
-     * @class
-     *
-     * This row class represents a user-defined row that is
-     * not part of the underlying model.
-     *
-     * @param layoutRow the layoutRow of the TreeRow
-     * @param dataNode the user-managed data node to display
-     *      in the row
-     * @param options mix-in options for the node (to supply
-     *      custom rendering
-     */
-
-    function UserRow(layoutRow, dataNode, options)
-    {
-        this.mixin(new TreeRow(layoutRow, dataNode, options));
-        this.addChild = function() {};
-        this.child = function(idx) { return null; };
-        this.childCount = function(idx) { return 0; };
-        this.clearChildren = function() {};
-        this.expanded = function(val) { return false; }
-        this.indexOfChild = function(node) { return -1; }
-        this.isLeaf = function() { return true; };
-        this.isSentinal = function() { return false; };
-        this.rowCount = function() { return 1; };
-    };
+//    /**
+//     * @class
+//     *
+//     * This row class represents a user-defined row that is
+//     * not part of the underlying model.
+//     *
+//     * @param layoutRow the layoutRow of the TreeRow
+//     * @param dataNode the user-managed data node to display
+//     *      in the row
+//     * @param options mix-in options for the node (to supply
+//     *      custom rendering
+//     */
+//
+//    function UserRow(layoutRow, dataNode, options)
+//    {
+//        this.mixin(new TreeRow(layoutRow, dataNode, options));
+//        this.addChild = function() {};
+//        this.child = function(idx) { return null; };
+//        this.childCount = function(idx) { return 0; };
+//        this.clearChildren = function() {};
+//        this.expanded = function(val) { return false; }
+//        this.indexOfChild = function(node) { return -1; }
+//        this.isLeaf = function() { return true; };
+//        this.isSentinal = function() { return false; };
+//        this.rowCount = function() { return 1; };
+//    };
 
     /**
      * @class

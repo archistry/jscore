@@ -44,23 +44,24 @@ var ObjectRowModel = archistry.data.tree.ObjectRowModel;
 Jester.testing("Concrete TreeRowModel functionality", {
 	tests: [
 		{
-			what: "ArrayRowModel fires nodes-inserted on insert",
+			what: "ArrayRowModel fires tree-nodes-inserted on insert",
 			how: function(context, result)
 			{
                 var data = [ 1, 2, 3, 4 ];
                 var model = new ArrayRowModel(data);
                 var fired = false;
                 model.immediate = true;
-                model.signalConnect("nodes-inserted", function(e) {
+                model.signalConnect("tree-nodes-inserted", function(event) {
                     fired = true;
                     result.check("event list length", {
-                        actual: e.length,
+                        actual: event.length,
                         expect: 1
                     });
 
-                    result.check("nodes-inserted event data", {
-                        actual: [ this, e[0].parent, e[0].node, e[0].oldIndex, e[0].newIndex ],
-                        expect: [ model, model, 7, -1, 2 ]
+                    var e = event[0];
+                    result.check("tree-nodes-inserted event data", {
+                        actual: [ this, e.path, e.parent, e.refs[0].node, e.refs[0].index ],
+                        expect: [ model, [], model, 7, 2 ]
                     });
                 });
 
@@ -77,23 +78,24 @@ Jester.testing("Concrete TreeRowModel functionality", {
 			}
 		},
 		{
-			what: "ArrayRowModel fires nodes-deleted on remove",
+			what: "ArrayRowModel fires tree-nodes-removed on remove",
 			how: function(context, result)
 			{
                 var data = [ 1, 2, 3, 4 ];
                 var model = new ArrayRowModel(data);
                 var fired = false;
                 model.immediate = true;
-                model.signalConnect("nodes-deleted", function(e) {
+                model.signalConnect("tree-nodes-removed", function(event) {
                     fired = true;
                     result.check("event list length", {
-                        actual: e.length,
+                        actual: event.length,
                         expect: 1
                     });
-
-                    result.check("nodes-deleted event data", {
-                        actual: [ this, e[0].parent, e[0].node, e[0].oldIndex, e[0].newIndex ],
-                        expect: [ model, model, 4, 3, -1 ]
+                    
+                    var e = event[0];
+                    result.check("tree-nodes-removed event data", {
+                        actual: [ this, e.path, e.parent, e.refs[0].node, e.refs[0].index ],
+                        expect: [ model, [], model, 4, 3 ]
                     });
                 });
 
@@ -110,23 +112,24 @@ Jester.testing("Concrete TreeRowModel functionality", {
 			}
 		},
 		{
-			what: "ArrayRowModel fires nodes-changed on rowChanged",
+			what: "ArrayRowModel fires tree-nodes-changed on rowChanged",
 			how: function(context, result)
 			{
                 var data = [ 1, 2, 3, 4 ];
                 var model = new ArrayRowModel(data);
                 var fired = false;
                 model.immediate = true;
-                model.signalConnect("nodes-changed", function(e) {
+                model.signalConnect("tree-nodes-changed", function(event) {
                     fired = true;
                     result.check("event list length", {
-                        actual: e.length,
+                        actual: event.length,
                         expect: 1
                     });
-
-                    result.check("nodes-changed event data", {
-                        actual: [ this, e[0].parent, e[0].node, e[0].oldIndex, e[0].newIndex ],
-                        expect: [ model, model, 5, 2, -1 ]
+                    
+                    var e = event[0];
+                    result.check("tree-nodes-changed event data", {
+                        actual: [ this, e.path, e.parent, e.refs[0].node, e.refs[0].index ],
+                        expect: [ model, [], model, 5, 2 ]
                     });
                 });
 

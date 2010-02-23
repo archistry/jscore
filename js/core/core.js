@@ -311,6 +311,120 @@ Object.prototype.object_id = function()
 	return this.__ajs_id;
 };
 
+/**
+ * This method provides a default implementation of
+ * Object#equals that provides a framework for objects
+ * implementing custom equality tests based on private values.
+ * <p>
+ * If both objects have a #valueOf method defined, it is
+ * invoked and the value is compared using the strict equality
+ * operator <code>===</code>.
+ * </p>
+ * <p>
+ * If both objects do not have a #valueOf method, the strict
+ * equality test is performed on the two objects.
+ * </p>
+ * <h3>
+ * Rationale
+ * </h3>
+ * <p>
+ * The rationale behind this approach is that when writing
+ * well-encapsulated JavaScript objects, it doesn't make sense
+ * to expose all of the data via accessor methods.  Since
+ * there's no concept of privileged access in JavaScript,
+ * there needs to be a way to have some opaque way to get
+ * visibility inside an arbitrary JavaScript object to get a
+ * comparision value.
+ * </p>
+ * <p>
+ * JavaScript already does something similar when strings and
+ * objects are compared using the <code>==</code> operator,
+ * but it does not do this same type of implicit conversion
+ * when comparing two objects.  As a result, it seems like the
+ * best approach to get an opaque value for each object will
+ * be to implement the #valueOf method in your custom object
+ * as follows:
+ * <pre>
+ *   var A = function(val)
+ *   {
+ *      this.valueOf = function()
+ *      {
+ *          return val;
+ *      };
+ *   };
+ * </pre>
+ * </p>
+ * <p>
+ * Once implemented, then the following equality tests will
+ * show the indicated values:
+ * <pre>
+ * var a1 = new A(1);
+ * var a2 = new A(1);
+ *
+ * print(a1 == a2);         // false
+ * print(a1 === a2);        // false
+ * print(a1.equals(a2));    // true
+ * </pre>
+ * </p>
+ *
+ * @param rhs the "right hand side" object to be compared with
+ *      the receiver
+ * @returns true or false
+ */
+
+Object.prototype.equals = function(rhs)
+{
+    if(this.valueOf && rhs.valueOf)
+        return this.valueOf() === rhs.valueOf();
+
+    return this === rhs;
+};
+
+/**
+ * This method uses the same approach with a user-defined
+ * #valueOf operator to provide a generalized object
+ * comparison method #compare.
+ * <p>
+ * Implementing the single #valueOf method will provide the
+ * expected behavior for both object equality and comparison
+ * operators, or the object can override the methods
+ * themselves if all of the comparison values are public
+ * properties.
+ * </p>
+ * <p>
+ * The actual comparison of either the value returned by
+ * #valueOf or the objects themselves is handled by the
+ * built-in <code>===</code> and <code>&lt;</code> operators.
+ * </p>
+ *
+ * @param rhs the "right hand side" object to compare
+ * @returns -1, 0 or 1 depending on comparison of the value
+ *      returned from #valueOf or the native object.
+ */
+
+Object.prototype.compare = function(rhs)
+{
+    var tval = null;
+    var rval = null;
+
+    if(this.valueOf)
+        tval = this.valueOf();
+    else
+        tval = this;
+
+    if(rhs.valueOf)
+        rval = rhs.valueOf();
+    else
+        rval = rhs;
+
+    if(tval === rval)
+        return 0;
+    else if(tval < rval)
+        return -1;
+    else
+        return 1;
+};
+
 ///**
 // * This method redefines the default toString to display the
 // * object id rather than the meaningless [object Object]
@@ -378,14 +492,14 @@ Array.prototype.indexOf = function(obj)
 	var idx = -1;
 	for(var i = 0; i < this.length; ++i)
 	{
-		if(this[i].equals != null)
+		if(this[i].equals)
 		{
 			if(this[i].equals(obj))
 			{
 				return i;
 			}
 		}
-		else if(this[i] == obj)
+		else if(this[i] === obj)
 		{
 			return i;
 		}
