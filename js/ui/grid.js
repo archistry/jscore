@@ -62,325 +62,6 @@ archistry.ui.GridStyles = {
 /**
  * @class
  *
- * This class provides a linear TreeRowModel implementation based on
- * using an array of JavaScript objects.
- * <p>
- * To make this model mutable, supply the constructor with a
- * createRow property that will create a new row in the
- * model.
- * </p>
- *
- * @param data the array containing the data to display
- * @param options the options to initialize the model
- *        Supported values for the options object include:
- *
- *          keys        - defines an array of keys which are valid
- *                      for the objects in the array
- *          editable    - by default, the array is considered
- *                      mutable.  If the array objects are not
- *                      to be changed, you MAY set
- *                      options.editable = false, or simply not
- *                      define editors for the columns.
- */
-
-archistry.ui.ArrayRowModel = function(data, options)
-{
-    var _self = this;
-    this.mixin(options);
-
-    // define the column interface since we're going to be the
-    // root of the tree model.
-    this.key = "label";
-
-    // we have a default label that can be changed via the
-    // properties if the root should be shown.  Normally it
-    // isn't, because you wouldn't use this model otherwise!
-    this.label = "Root";
-
-    /**
-     * This method returns the model as the root node of the
-     * tree.
-     */
-
-    this.__defineGetter__("root", function() { return _self; });
-
-    /**
-     * This method ensures that the contents of the array will
-     * be treated as children of this node.
-     */
-
-    this.isLeaf = function(node) 
-    {
-        if(node === _self)
-            return false;
-
-        return true;
-    };
-
-    /**
-     * This method returns the count of items in the array as
-     * the child count of the root node.
-     */
-
-    this.childCount = function(node)
-    {
-        if(node === _self)
-            return data.length;
-
-        return 0;
-    };
-
-    /**
-     * This method is actually used to retrieve the child at
-     * the specified index.  Since we're dealing with a flat
-     * list, the index is mapped directly onto the data array.
-     *
-     * @param parent the parent node
-     * @param index the index of the child
-     * @return the object to be displayed
-     */
-
-    this.child = function(parent, index)
-    {
-        if(parent === _self)
-            return data[index];
-
-        return null;
-    };
-
-    /**
-     * This method is used to find the index of the specified
-     * node in the array.
-     *
-     * @param parent should be us
-     * @param node the node to find
-     * @return the index of the node or -1 if not found
-     */
-
-    this.indexOfChild = function(parent, node)
-    {
-        if(parent !== _self)
-            return -1;
-
-        for(var i = 0; i < data.length; ++i)
-        {
-            if(data[i] === node)
-                return i;
-        }
-
-        return -1;
-    };
-
-    /**
-     * This method returns the node reference for the
-     * specified path.
-     *
-     * @param path
-     * @return a reference to the node or null if the path
-     *        doesn't exist
-     */
-
-    this.nodeForPath = function(path)
-    {
-        if(path.length > 1)
-            return null;
-
-        return data[path[0]];
-    };
-
-    /**
-     * This method indicates whether the node at the specified
-     * path is editable.
-     *
-     * @param path the path to the specific node
-     * @param key (optional) can disable editing of particular
-     *            keys independent of the column editor
-     *            controls.
-     */
-
-    this.canEdit = function(path, key)
-    {
-        if(path.length > 1)
-            return false;
-
-        if(this.editable)
-            return this.editable;
-
-        return true;
-    }
-
-    /**
-     * This method is used to ensure the range given has been
-     * loaded and return the number of rows actually available
-     * in that range.
-     *
-     * @param parent the parent node (should be us)
-     * @param startIdx the start index offset
-     * @param count the number of rows requested
-     * @return the number of rows actually available
-     */
-
-    this.ensureRange = function(parent, startIdx, count)
-    {
-        if(parent !== _self)
-            return 0;
-
-        return ( (startIdx + count) < data.length ? count : data.length - startIdx);
-    };
-
-    this.dump = function()
-    {
-        var s = "";
-        _data.each(function(i) {
-            s += String.format("_data[{0}] = {1}\n", [i, this.inspect()]);
-        });
-        return s;
-    };
-};
-
-/**
- * @class
- *
- * This class provides a simple adapter for using static
- * objects as a conformant TreeRowModel.  The child nodes are
- * identitfied by the property name supplied as the
- * contstructor which should return an array of child nodes.
- *
- * @param obj the object representing the tree structure
- * @param childKey the child node accessor
- * @param options the options mixed in to the model
- */
-
-archistry.ui.ObjectTreeModel = function(obj, childKey, options)
-{
-    mixin(archistry.data.Tree);
-    this.mixin(options);
-
-    // support user-defined key definitions
-    if(!this.keys)
-    {
-        var keys = [];
-        for(k in obj)
-        {
-            if(k !== childKey && typeof obj[k] !== 'function')
-            {
-                keys.add(k);
-            }
-        }
-
-        this.__defineGetter__("keys", function() { return keys; });
-    }
-
-    /**
-     * The root of the tree will be taken as the object and
-     * cannot be modified.
-     *
-     * @return the initialized object
-     */
-
-    this.__defineGetter__("root", function() { return obj; });
-
-    if(this.editable === undefined)
-    {
-        this.editable = true;
-    }
-
-    /**
-     * This method determines if the indicated node is a leaf
-     * or not by the length of the childKey property.
-     *
-     * @param node the model node
-     * @return true if node[childKey].length > 0
-     */
-
-    this.isLeaf = function(node) { return isLeaf(node, childKey); };
-
-    /**
-     * This method returns the child count of the node.
-     *
-     * @param node the node
-     * @return the length of the childKey array
-     */
-
-    this.childCount = function(node) { return childCount(node, childKey); };
-
-    /**
-     * This method is used to retrieve the i-th child of the
-     * specified node.
-     *
-     * @param node the node
-     * @return the child node at the specified index or null
-     *        if no child exists
-     */
-
-    this.child = function(node, idx) { return child(node, childKey, idx); };
-
-    /**
-     * This method does a linear search of the child nodes to
-     * determine the result.
-     *
-     * @param parent the parent node
-     * @param child the child node
-     * @return the index or -1 if the node is not a child of
-     *        the specified parent
-     */
-
-    this.indexOfChild = function(parent, child)
-    {
-        return indexOfChild(parent, childKey, child);
-    };
-
-    /**
-     * This method will return the node for the specified path
-     * or NULL if it doesn't exist.
-     *
-     * @param path the path to check
-     */
-
-    this.nodeForPath = function(path)
-    {
-        return visitPath(obj, path, childKey);
-    };
-
-    /**
-     * This method will indicate that all the objects are
-     * editable unless the value is the childKey
-     *
-     * @param path the path to check
-     * @param key (optional) the key to check
-     */
-
-    this.canEdit = function(path, key)
-    {
-        if(key === childKey)
-            return false;
-
-        var node = this.nodeForPath(path);
-        if(!node)
-            return false;
-
-        return true;
-    };
-
-    /**
-     * this method will simply report the number of children
-     * available for the specified node
-     *
-     * @param parent the parent node
-     * @param start the start index
-     * @param count the number of nodes
-     * @return the actual number of nodes available
-     */
-
-    this.ensureRange = function(parent, start, count)
-    {
-        return this.childCount(parent);
-    };
-};
-
-/**
- * @class
- *
  * This class provides a ColumnModel based on using an array
  * of JavaScript objects to define the properties of the
  * particular column.
@@ -630,6 +311,36 @@ archistry.ui.BrowserGridLayout = function(id)
     /**
      * @private
      *
+     * This method is used to calculate the row insertion
+     * point based on mapping the appropriate index
+     *
+     * @param index raw index
+     * @return the mapped index
+     */
+
+    function insertIndex(index)
+    {
+        return mapIndex(index, _table.rows.length + 1);
+    }
+
+    /**
+     * @private
+     *
+     * This method is used to calculate the row reference
+     * point everywhere that IS NOT row insertion.
+     *
+     * @param index raw index
+     * @return the mapped index
+     */
+
+    function rowIndex(index)
+    {
+        return mapIndex(index, _table.rows.length);
+    }
+
+    /**
+     * @private
+     *
      * This method is used to retrieve the TABLE row reference
      * as opposed t the GridLayoutRow reference that is
      * expected from the GridLayout API.
@@ -642,7 +353,7 @@ archistry.ui.BrowserGridLayout = function(id)
 
     function row(row)
     {
-        return _table.rows[mapIndex(row, _table.rows.length)];
+        return _table.rows[rowIndex(row)];
     }
 
     /**
@@ -686,7 +397,7 @@ archistry.ui.BrowserGridLayout = function(id)
 
     function insertRow(index, cols)
     {
-        var ri = mapIndex(index, _table.rows.length);
+        var ri = insertIndex(index);
 //        println("rows: {0}; insert row index: {1}; ri: {2}", [
 //                _table.rows.length, index, ri ]);
         var row = _table.insertRow(ri);
@@ -759,21 +470,11 @@ archistry.ui.BrowserGridLayout = function(id)
      * be taken care of by the grid
      *
      * @param colIdx the insert index
-     * @param before (optional) if true, indicates that the
-     *        column should be inserted before the given index.
-     *        The default is false, so insertions happen after
-     *        the specified index.  Like the row references,
-     *        negative indices indicate insertion from the end.
      */
 
-    this.insertColumn = function(colIdx, before)
+    this.insertColumn = function(colIdx)
     {
-        var ci = mapIndex(colIdx, cols());
-        if(before)
-        {
-            ci--;
-        }
-
+        var ci = mapIndex(colIdx, cols() + 1);
         _table.rows.each(function() {
             this.insertCell(ci);
         });
@@ -796,7 +497,7 @@ archistry.ui.BrowserGridLayout = function(id)
     this.insertRows = function(idx, cols, count)
     {
         var rval = [];
-        var si = mapIndex(idx, _table.rows.length);
+        var si = insertIndex(idx);
 //        println("inserting {0} rows at {1}; si: {2}", [ count, idx, si ]);
         for(var i = 0; i < count; ++i)
         {
@@ -816,8 +517,8 @@ archistry.ui.BrowserGridLayout = function(id)
 
     this.deleteRows = function(idx, count)
     {
-        var di = mapIndex(idx);
-        println("Delete {0} rows starting with {1}", [ count, di ]); 
+        var di = rowIndex(idx);
+//        println("Delete {0} rows starting with {1}", [ count, di ]); 
         for(var i = count - 1; i >= 0; --i)
         {
             _table.deleteRow(di + i);
@@ -1014,6 +715,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     function renderRow(row)
     {
+        if(!row || typeof row.render !== 'function')
+        {
+            println("row: " + row.inspect());
+            throw createError("ArgumentError:  invalid row!");
+        }
+
         row.render(_allCols, _colsByKey);
 
         // render the special columns/expanders
@@ -1141,9 +848,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
          * index based on the current child nodes.
          */
 
-        function childIndex(idx)
+        function childIndex(idx, isNew)
         {
-            return mapIndex(idx, _children.length);
+            return mapIndex(idx, (isNew ? _children.length + 1 : _children.length));
         }
 
         this.__defineGetter__("__atg_children", function()
@@ -1234,7 +941,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
         this.addChild = function(idx, child)
         {
-            var ix = childIndex(idx);
+            var ix = childIndex(idx, true);
             // ensure there aren't any gaps!
             if(ix > _children.length)
                 ix = _children.length;
@@ -1915,11 +1622,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
         
         var node = nodeForPath(path);
-        if(node === _root)
-        {
-            throw new Error("Unable to delete the root node of the tree!");
-        }
-
         if(!node || node.deleted())
         {
             return;
@@ -1927,8 +1629,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      
         var rc = node.rowCount();
         var ri = node.rowIndex();
-        println("rowcount for node {0} at path [ {1} ]: {2}", [
-            node.key, path.join(", "), rc ]);
+//        println("rowcount for node {0} at path [ {1} ]: {2}", [
+//            node.key, path.join(", "), rc ]);
 
         if(ri === -1 && node.deleted())
         {
@@ -1942,9 +1644,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
 
         _self.layout.deleteRows(ri, rc);
-        node.deleted(true);
         var parent = node.parent();
-        if(parent)
+        node.deleted(true);
+        if(parent && parent.rowIndex() !== -1)
         {
             renderRow(parent);
         }
@@ -2196,7 +1898,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
         else
         {
-            _self.layout.deleteRows(1, _self.layout.length - 1);
+            if(_self.layout.length > 1)
+            {
+                _self.layout.deleteRows(1, _self.layout.length - 1);
+            }
         }
         if(this.showRoot)
         {

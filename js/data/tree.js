@@ -34,7 +34,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Name:        tree.js
-// Created:     Sat Feb 20 11:12:27 GMT 2010
+// Created:     Fri Jan 15 10:45:10 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -43,11 +43,10 @@ namespace("archistry.data");
 /**
  * @class
  *
- * This is a mixin class that provides some utility tree
- * walking functionality.
+ * This is a mixin object that defines indexing methods
  */
 
-archistry.data.Tree = {
+archistry.data.Indexer = {
     /**
      * This method is used to return the offset based on
      * negative indexing.
@@ -59,24 +58,39 @@ archistry.data.Tree = {
 
     mapIndex: function(idx, count)
     {
+        var val = count - (0 - idx);
         if(count === 0)
         {
             return 0;
         }
-
-        if(idx < 0 && (count - idx - 1 > -1))
-        {
-            return count - idx - 1;
-        }
-        else if(idx > -1)
+        else if(idx >= 0 && idx < count)
         {
             return idx;
         }
+        else if(val >= 0 && val < count)
+        {
+            return val;
+        }
 
-        var msg = String.format("Index out of bounds: index: {0}; length: {1}", [ idx, count ]);
-        alert(String.format("{0}\n{1}", [ msg, printStackTrace() ]));
+        var msg = String.format("Index out of bounds: index: {0}; length: {1}\n{2}", [ idx, count, printStackTrace() ]);
         throw new Error(msg);
-    },
+    }
+};
+
+/**
+ * @class
+ *
+ * This is a mixin class that provides some utility tree
+ * walking functionality.
+ */
+
+archistry.data.Tree = {
+    /**
+     * Uses the {@link archistry.data.Indexer#mapIndex}
+     * implementation.
+     */
+
+    mapIndex: archistry.data.Indexer.mapIndex,
 
     /**
      * This helper is used to visit the path and apply the
@@ -344,7 +358,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesInserted = function(eventlist)
     {
-        this.emit("nodes-inserted", [ eventlist ]);
+        this.signalEmit("nodes-inserted", eventlist);
     };
 
     /**
@@ -364,7 +378,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesChanged = function(eventlist)
     {
-        this.emit("nodes-changed", [ eventlist ]);
+        this.signalEmit("nodes-changed", eventlist);
     };
 
     /**
@@ -384,7 +398,7 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireNodesDeleted = function(eventlist)
     {
-        this.emit("nodes-deleted", [ eventlist ]);
+        this.signalEmit("nodes-deleted", eventlist);
     };
 
     /**
@@ -404,6 +418,380 @@ archistry.data.tree.Notifier = function(sender)
 
     this.fireStructureChanged = function()
     {
-        this.emit("tree-structure-changed");
+        this.signalEmit("tree-structure-changed");
     };
 };
+
+/**
+ * @class
+ *
+ * This class provides a linear TreeRowModel implementation based on
+ * using an array of JavaScript objects.
+ *
+ * @param data the array containing the data to display
+ * @param options the options to initialize the model
+ *        Supported values for the options object include:
+ *
+ *          keys        - defines an array of keys which are valid
+ *                      for the objects in the array
+ *          editable    - by default, the array is considered
+ *                      mutable.  If the array objects are not
+ *                      to be changed, you MAY set
+ *                      options.editable = false, or simply not
+ *                      define editors for the columns.
+ */
+
+archistry.data.tree.ArrayRowModel = function(data, options)
+{
+    mixin(archistry.data.Indexer);
+    this.mixin(new archistry.data.tree.Notifier(this));
+    this.mixin(options);
+    
+    var _self = this;
+
+    // define the column interface since we're going to be the
+    // root of the tree model.
+    this.key = "label";
+
+    // we have a default label that can be changed via the
+    // properties if the root should be shown.  Normally it
+    // isn't, because you wouldn't use this model otherwise!
+    this.label = "Root";
+
+    /**
+     * This method returns the model as the root node of the
+     * tree.
+     */
+
+    this.__defineGetter__("root", function() { return _self; });
+
+    /**
+     * This method ensures that the contents of the array will
+     * be treated as children of this node.
+     */
+
+    this.isLeaf = function(node) 
+    {
+        if(node === _self)
+            return false;
+
+        return true;
+    };
+
+    /**
+     * This method returns the count of items in the array as
+     * the child count of the root node.
+     */
+
+    this.childCount = function(node)
+    {
+        if(node === _self)
+            return data.length;
+
+        return 0;
+    };
+
+    /**
+     * This method is actually used to retrieve the child at
+     * the specified index.  Since we're dealing with a flat
+     * list, the index is mapped directly onto the data array.
+     *
+     * @param parent the parent node
+     * @param index the index of the child
+     * @return the object to be displayed
+     */
+
+    this.child = function(parent, index)
+    {
+        if(parent === _self)
+            return data[index];
+
+        return null;
+    };
+
+    /**
+     * This method is used to find the index of the specified
+     * node in the array.
+     *
+     * @param parent should be us
+     * @param node the node to find
+     * @return the index of the node or -1 if not found
+     */
+
+    this.indexOfChild = function(parent, node)
+    {
+        if(parent !== _self)
+            return -1;
+
+        for(var i = 0; i < data.length; ++i)
+        {
+            if(data[i] === node)
+                return i;
+        }
+
+        return -1;
+    };
+
+    /**
+     * This method returns the node reference for the
+     * specified path.
+     *
+     * @param path
+     * @return a reference to the node or null if the path
+     *        doesn't exist
+     */
+
+    this.nodeForPath = function(path)
+    {
+        if(path.length > 1)
+            return null;
+
+        return data[path[0]];
+    };
+
+    /**
+     * This method indicates whether the node at the specified
+     * path is editable.
+     *
+     * @param path the path to the specific node
+     * @param key (optional) can disable editing of particular
+     *            keys independent of the column editor
+     *            controls.
+     */
+
+    this.canEdit = function(path, key)
+    {
+        if(path.length > 1)
+            return false;
+
+        if(this.editable)
+            return this.editable;
+
+        return true;
+    }
+
+    /**
+     * This method is used to ensure the range given has been
+     * loaded and return the number of rows actually available
+     * in that range.
+     *
+     * @param parent the parent node (should be us)
+     * @param startIdx the start index offset
+     * @param count the number of rows requested
+     * @return the number of rows actually available
+     */
+
+    this.ensureRange = function(parent, startIdx, count)
+    {
+        if(parent !== _self)
+            return 0;
+
+        return ( (startIdx + count) < data.length ? count : data.length - startIdx);
+    };
+
+    this.dump = function()
+    {
+        var s = "";
+        data.each(function(i) {
+            s += String.format("data[{0}] = {1}\n", [i, this.inspect()]);
+        });
+        return s;
+    };
+
+    /**
+     * This method is used to add a new row into the model.
+     * It is not part of the standard TreeRowModel interface,
+     * but it ensures that the proper model events are fired
+     * when the row object is inserted.
+     *
+     * @param index the index at which the row should be
+     *      inserted
+     * @param node the object to be inserted in the row
+     */
+
+    this.insertRow = function(index, node)
+    {
+        var idx = mapIndex(index, data.length);
+        data.splice(idx, 0, node);
+        
+        this.fireNodesInserted([ this.createEvent(_self, node, -1, idx) ]);
+    };
+
+    /**
+     * This method is used to remove a row from the model and
+     * fire the appropriate event.  Note that this is not part
+     * of the core TreeRowModel API.
+     *
+     * @param index the index of the row to be removed
+     * @return the row removed
+     */
+
+    this.removeRow = function(index)
+    {
+        var idx = mapIndex(index, data.length);
+        println("index: {0}; idx: {1}", [ index, idx ]);
+        var node = data.removeAtIndex(idx);
+        if(node)
+        {
+            this.fireNodesDeleted([ this.createEvent(_self, node, idx, -1) ]);
+            return node;
+        }
+
+        return null;
+    };
+
+    /**
+     * This method is used to trigger the nodes changed event
+     * based on the index of the specified node.
+     *
+     * @param index the index of the node that was changed
+     */
+
+    this.rowChanged = function(index)
+    {
+        var idx = mapIndex(index, data.length);
+        this.fireNodesChanged([ this.createEvent(_self, data[idx], idx, -1) ]);
+    };
+};
+
+/**
+ * @class
+ *
+ * This class provides a simple adapter for using static
+ * objects as a conformant TreeRowModel.  The child nodes are
+ * identitfied by the property name supplied as the
+ * contstructor which should return an array of child nodes.
+ *
+ * @param obj the object representing the tree structure
+ * @param childKey the child node accessor
+ * @param options the options mixed in to the model
+ */
+
+archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
+{
+    mixin(archistry.data.Tree);
+    this.mixin(new archistry.data.tree.Notifier(this));
+    this.mixin(options);
+
+    // support user-defined key definitions
+    if(!this.keys)
+    {
+        var keys = [];
+        for(k in obj)
+        {
+            if(k !== childKey && typeof obj[k] !== 'function')
+            {
+                keys.add(k);
+            }
+        }
+
+        this.__defineGetter__("keys", function() { return keys; });
+    }
+
+    /**
+     * The root of the tree will be taken as the object and
+     * cannot be modified.
+     *
+     * @return the initialized object
+     */
+
+    this.__defineGetter__("root", function() { return obj; });
+
+    if(this.editable === undefined)
+    {
+        this.editable = true;
+    }
+
+    /**
+     * This method determines if the indicated node is a leaf
+     * or not by the length of the childKey property.
+     *
+     * @param node the model node
+     * @return true if node[childKey].length > 0
+     */
+
+    this.isLeaf = function(node) { return isLeaf(node, childKey); };
+
+    /**
+     * This method returns the child count of the node.
+     *
+     * @param node the node
+     * @return the length of the childKey array
+     */
+
+    this.childCount = function(node) { return childCount(node, childKey); };
+
+    /**
+     * This method is used to retrieve the i-th child of the
+     * specified node.
+     *
+     * @param node the node
+     * @return the child node at the specified index or null
+     *        if no child exists
+     */
+
+    this.child = function(node, idx) { return child(node, childKey, idx); };
+
+    /**
+     * This method does a linear search of the child nodes to
+     * determine the result.
+     *
+     * @param parent the parent node
+     * @param child the child node
+     * @return the index or -1 if the node is not a child of
+     *        the specified parent
+     */
+
+    this.indexOfChild = function(parent, child)
+    {
+        return indexOfChild(parent, childKey, child);
+    };
+
+    /**
+     * This method will return the node for the specified path
+     * or NULL if it doesn't exist.
+     *
+     * @param path the path to check
+     */
+
+    this.nodeForPath = function(path)
+    {
+        return visitPath(obj, path, childKey);
+    };
+
+    /**
+     * This method will indicate that all the objects are
+     * editable unless the value is the childKey
+     *
+     * @param path the path to check
+     * @param key (optional) the key to check
+     */
+
+    this.canEdit = function(path, key)
+    {
+        if(key === childKey)
+            return false;
+
+        var node = this.nodeForPath(path);
+        if(!node)
+            return false;
+
+        return true;
+    };
+
+    /**
+     * this method will simply report the number of children
+     * available for the specified node
+     *
+     * @param parent the parent node
+     * @param start the start index
+     * @param count the number of nodes
+     * @return the actual number of nodes available
+     */
+
+    this.ensureRange = function(parent, start, count)
+    {
+        return this.childCount(parent);
+    };
+};
+

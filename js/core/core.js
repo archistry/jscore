@@ -413,9 +413,31 @@ Array.prototype.removeRange = function(from, to) {
 };
 
 /**
+ * This method will remove the specified object at the given
+ * index.  It is based on the above implementation 
+ * of removeRange (I changed the name), but it returns the
+ * object that was removed.
+ *
+ * @param idx the index of the object to remove
+ * @return the item or null
+ */
+
+Array.prototype.removeAtIndex = function(idx)
+{
+    if(idx && idx < this.length)
+    {
+		var mobj = this[idx];
+		var rest = this.slice(idx + 1 || this.length);
+		this.length = idx;
+		this.push.apply(this, rest);
+		return mobj;
+    }
+    return null;
+};
+
+/**
  * This method will attempt to remove the specified object
- * from the array.  It is based on the above implementation 
- * of removeRange (I changed the name).
+ * from the array.
  *
  * @param obj the object to remove
  * @return the object removed
@@ -423,16 +445,7 @@ Array.prototype.removeRange = function(from, to) {
 
 Array.prototype.remove = function(obj)
 {
-	var idx = this.indexOf(obj);
-	if(idx != -1)
-	{
-		var mobj = this[idx];
-		var rest = this.slice(idx + 1 || this.length);
-		this.length = idx;
-		this.push.apply(this, rest);
-		return mobj;
-	}
-	return null;
+	return this.removeAtIndex(this.indexOf(obj));
 };
 
 if(!Array.prototype.each)

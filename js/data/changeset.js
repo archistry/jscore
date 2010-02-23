@@ -104,9 +104,11 @@ archistry.data.ChangeMemento = function(object, change, key, oldVal)
  * passed the following arguments:
  * <em>index</em>, and <em>data</em>.</li>
  * </ul>
- *
+ * <p>
  * This class can simply be mixed in to any class that wishes
  * to support these signals as a signal source.
+ * </>
+ * @param sender the sender
  */
 
 archistry.data.ObjectChangeSignalSource = function()
