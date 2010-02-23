@@ -140,7 +140,7 @@
         { key: "key", label: "Key" },
         { key: "value", label: "Value" }
       ]);
-      var data = new archistry.ui.ObjectTreeModel({ key: "Root", value: "I'm the root!", children: darray}, "children");
+      var data = new archistry.data.tree.ObjectTreeModel({ key: "Root", value: "I'm the root!", children: darray}, "children");
       var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
         showRoot: true,
         showSelectorColumn: true,

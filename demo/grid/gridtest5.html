@@ -5,27 +5,6 @@
   <title>ArchistryJS Grid Test #3</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <style type="text/css" media="screen">
-    #console
-    {
-      margin-top: 1em;
-      border: 1px solid #002654;
-      padding: 5px;
-      clear: both;
-    }
-/*
-    .aui-grid 
-    {
-      font-family: sans-serif;
-      border: 1px solid red;
-      padding: 2px;
-    }
-
-    .aui-grid > table
-    {
-      border: 1px solid green;
-      margin: 3px;
-    }
-*/
     .aui-grid td
     {
       vertical-align: top;
@@ -45,9 +24,7 @@
 
     .aui-grid > table th
     {
-/*      color: white; */
       text-align: left;
-/*      background: green; */
       border: 1px solid #aed0ea;
     }
 
@@ -56,20 +33,8 @@
       padding: 3px;
     }
 
-/*    .aui-grid > table th.aui-grid-col-key
-    {
-      background: blue;
-      color: white;
-    }
-
-    .aui-grid > table th.aui-grid-col-value
-    {
-      background: yellow;
-    }
-*/
     td.aui-grid-cell
     {
-/*      border: 1px solid #002654; */
       border: 1px solid rgb(221,221,221);
     }
 
@@ -82,11 +47,6 @@
     .aui-grid-cell-dirty
     {
       background: url(../images/changed-red.gif) top right no-repeat;
-    }
-
-    td.aui-grid-col-value
-    {
-/*      width: 250px; */
     }
 
     .aui-grid tr.aui-grid-header:hover
@@ -102,21 +62,17 @@
 
     .aui-grid tr.aui-grid-row:hover
     {
-/*      background: #f7eac3; */
         background: #e4f1fb;
         border: 1px solid #74b2e2;
     }
 
     .aui-grid tr.aui-grid-row:hover > td
     {
-/*      border: 1px solid #e0aa0f; */
         border: 1px solid #74b2e2;
     }
 
     .aui-grid td.aui-grid-cell:hover
     {
-/*      background: #f0d588; */
-/*        background: #d7ebf9 url(../jqueryui/css/cupertino/images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x; */
         background: #d7ebf9;
         border: 1px solid #aed0ea;
         color: #2779aa
@@ -124,13 +80,11 @@
 
     .aui-grid td.aui-grid-cell-dirty:hover
     {
-/*      background: #f0d588 url(../images/changed-red.gif) top right no-repeat; */
       background: #d7ebf9 url(../images/changed-red.gif) top right no-repeat;
     }
 
     .aui-grid th.aui-grid-cell:hover
     {
-/*      background: rgb(0,113,141); */
         background: #3baae3 url(../jqueryui/css/cupertino/images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
         border: 1px solid #294e80;
         color: #ffffff;
@@ -139,20 +93,14 @@
     #changes
     {
       margin-top: 2em;
-/*      float: right; */
+    }
+
+    #row-menu
+    {
+      display:none;
     }
   </style>
-  <script type="text/javascript" src="../js/ext/Math.uuid.js"></script>
-  <script type="text/javascript" src="../js/ext/md5.js"></script>
-  <script type="text/javascript" src="../js/core/core.js"></script>
-  <script type="text/javascript" src="../js/core/observer.js"></script>
-  <script type="text/javascript" src="../js/core/version.js"></script>
-  <script type="text/javascript" src="../js/data/changeset.js"></script>
-  <script type="text/javascript" src="../js/ui/helpers.js"></script>
-  <script type="text/javascript" src="../js/ui/console.js"></script>
-  <script type="text/javascript" src="../js/ui/property_editors.js"></script>
-  <script type="text/javascript" src="../js/ui/grid.js"></script>
-  <script type="text/javascript" src="../js/ext/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
 <body>
@@ -170,7 +118,6 @@
 
   <div id="testgrid"></div>
   <div id="changes"></div>
-  <!--div id="console"></div-->
 
   <script type="text/javascript">
     $(function()
