@@ -87,11 +87,6 @@ namespace("archistry.core");
 
 archistry.core.SignalSource = function(sender)
 {
-    // NOTE:  the reason we use this variables here to keep
-    // track of the signals is so that if multiple signal
-    // source instances are mixed in, a unified list of
-    // handlers will be maintained.
-
 	/**
 	 * @private
 	 *
@@ -104,24 +99,25 @@ archistry.core.SignalSource = function(sender)
 
 	function sigarray(signal)
 	{
-		if(this.__validSignals != null)
+		if(sender.__validSignals != null)
 		{
-			if(!this.__validSignals.include(signal))
+			if(!sender.__validSignals.include(signal))
 			{
 				throw new Error("Signal '" + signal + "' is not supported by this object!");
 			}
 		}
 
-		if(this.__signals == null)
+		if(sender.__signals == null)
 		{
-			this.__signals = {};
+			sender.__signals = {};
 		}
-		if(this.__signals[signal] == null)
+		if(sender.__signals[signal] == null)
 		{
-			this.__signals[signal] = [];
+			sender.__signals[signal] = [];
 		}
 
-		return this.__signals[signal];
+//        print("sigarray (" + sender.object_id() + "): " + sender.__signals[signal]);
+		return sender.__signals[signal];
 	}
 	
 	/**
@@ -133,12 +129,12 @@ archistry.core.SignalSource = function(sender)
 	
 	this.addValidSignals = function(sigs)
 	{
-		if(this.__validSignals == null)
+		if(sender.__validSignals == null)
 		{
-			this.__validSignals = [];
+			sender.__validSignals = [];
 		}
 
-		this.__validSignals.concat(sigs);
+		sender.__validSignals.concat(sigs);
 	};
 
 	/**
@@ -151,16 +147,16 @@ archistry.core.SignalSource = function(sender)
 
 	this.removeValidSignals = function(sigs)
 	{
-		if(this.__validSignals == null)
+		if(sender.__validSignals == null)
 		{
-			this.__validSignals = [];
+			sender.__validSignals = [];
 			return [];
 		}
 
 		var deleted = [];
 		for(var i = 0; i < sigs.length; ++i)
 		{
-			deleted.concat(this.__validSignals.remove(sigs[i]));
+			deleted.concat(sender.__validSignals.remove(sigs[i]));
 		}
 
 		return deleted;
@@ -223,7 +219,7 @@ archistry.core.SignalSource = function(sender)
 
 			// allow immediate sending of the signal for unit
 			// testing
-			if(this.immediate)
+			if(sender.immediate)
 			{
 				fn.apply(sender, args);
 			}
@@ -241,7 +237,7 @@ archistry.core.SignalSource = function(sender)
 
 	this.__defineGetter__("signals", function() {
 		var rval = [];
-		for(k in this.__signals)
+		for(k in sender.__signals)
 		{
 			rval.add(k);
 		}
