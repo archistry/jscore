@@ -364,18 +364,27 @@ archistry.data.tree.TreeNodeRef = function(node, index)
  * use the {@link archistry.data.ChangeSet} infrastructure.
  * </p>
  *
- * @param path the path to the parent node in the tree
- * @param parent the parent of the changed nodes
- * @param refs the list of {@link
+ * @property path the path to the parent node in the tree
+ * @property parent the parent of the changed nodes
+ * @property refs the list of {@link
  *      archistry.data.tree.TreeNodeRef} instances representing
  *      children and their previous locations (if any)
+ * @property isContiguous (optional) set to false if the child
+ *      references DO NOT represent a contiguous set of
+ *      indices.  The default is true.
  */
 
-archistry.data.tree.TreeChange = function(path, parent, refs)
+archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 {
     this.__defineGetter__("path", function() { return path; });
     this.__defineGetter__("parent", function() { return parent; });
     this.__defineGetter__("refs", function() { return refs; });
+    this.__defineGetter__("isContiguous", function() {
+        if(isContiguous === undefined)
+            return true;
+
+        return isContiguous;
+    });
 };
 
 /**
@@ -412,7 +421,11 @@ archistry.data.tree.TreeChange = function(path, parent, refs)
  *
  * <dt>tree-structure-changed</dt> <dd>Fired when the tree
  * structure has dramatically changed and needs to be
- * revisited by the listener.</dd>
+ * revisited by the listener.  The path and parent properties
+ * denote the root of the change.  If the path is length 0 and
+ * the parent is different than the current tree parent, the
+ * node referenced in the event should become the new root of
+ * the tree.</dd>
  *
  * @param sender the object that should be the sender of the
  *      signals
@@ -469,7 +482,7 @@ archistry.data.tree.Notifier = function(sender)
     };
 
     /**
-     * This method is used to fire the nodes deleted signal.
+     * This method is used to fire the nodes removed signal.
      * The signal handler's callback MUST provide the
      * following signature:
      * <pre>
@@ -483,9 +496,9 @@ archistry.data.tree.Notifier = function(sender)
      *        send
      */
 
-    this.fireNodesDeleted = function(eventlist)
+    this.fireNodesRemoved = function(eventlist)
     {
-        this.signalEmit("tree-nodes-deleted", eventlist);
+        this.signalEmit("tree-nodes-removed", eventlist);
     };
 
     /**
@@ -701,12 +714,36 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
     this.insertRow = function(index, node)
     {
-        var idx = mapIndex(index, data.length);
+        var idx = mapIndex(index, data.length + 1);
         data.splice(idx, 0, node);
         
         this.fireNodesInserted([
             new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
         ]);
+    };
+
+    /**
+     * This method is used to do bulk inserts into the tree
+     * model so that only one tree-nodes-changed event is
+     * created.
+     *
+     * @param index the insertion point index
+     * @param nodes the array of nodes to be inserted at the
+     *      insertion point
+     */
+
+    this.insertRows = function(index, nodes)
+    {
+        var idx = mapIndex(index, data.length + 1);
+        var args = [ idx, 0 ].concat(nodes);
+        data.splice.apply(data, args);
+
+        var refs = [];
+        nodes.each(function(i) {
+            refs.add( new TreeNodeRef(this, idx + i) );
+        });
+
+        this.fireNodesInserted([ new TreeChange([], _self, nodes) ]);
     };
 
     /**
@@ -721,17 +758,48 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     this.removeRow = function(index)
     {
         var idx = mapIndex(index, data.length);
-        println("index: {0}; idx: {1}", [ index, idx ]);
         var node = data.removeAtIndex(idx);
         if(node)
         {
-            this.fireNodesDeleted([ 
+            this.fireNodesRemoved([ 
                 new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
             ]);
             return node;
         }
 
         return null;
+    };
+
+    /**
+     * This method is used to bulk-remove rows from the model
+     * so that only a single tree-nodes-removed event is
+     * fired.
+     *
+     * @param index the index of the start of the rows to be
+     *      removed
+     * @param count the number of rows to be removed
+     * @returns the rows removed from the model
+     */
+
+    this.removeRows = function(index, count)
+    {
+        // special case if the index is -ve, so we need to
+        // actually subtract the count from the index so that
+        // we get the right results!
+
+        var idx = mapIndex((index < 0 ? index - count + 1 : index), data.length);
+        var nodes = data.splice(idx, count);
+        if(nodes.length > 0)
+        {
+            var refs = [];
+            nodes.each(function(i) {
+                refs.add( new TreeNodeRef(this, idx + i) );
+            });
+
+            this.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
+        }
+
+        return nodes;
     };
 
     /**
