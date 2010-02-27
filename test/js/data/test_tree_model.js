@@ -141,5 +141,73 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 });
 			}
 		},
+		{
+			what: "ArrayRowModel fires tree-nodes-inserted on insertRows",
+			how: function(context, result)
+			{
+                var data = [ 1, 2, 3, 4 ];
+                var model = new ArrayRowModel(data);
+                var fired = false;
+                model.immediate = true;
+                model.signalConnect("tree-nodes-inserted", function(event) {
+                    fired = true;
+                    result.check("event list length", {
+                        actual: event.length,
+                        expect: 1
+                    });
+
+                    var e = event[0];
+                    result.check("tree-nodes-inserted event data", {
+                        actual: [ this, e.path, e.parent, e.refs.length, e.isContiguous ],
+                        expect: [ model, [], model, 3, true ]
+                    });
+                });
+
+                model.insertRows(2, [7, 8, 9 ]);
+                result.check("nodes inserted at correct location", {
+                    actual: data,
+                    expect: [ 1, 2, 7, 8, 9, 3, 4 ]
+                });
+                
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+			}
+		},
+		{
+			what: "ArrayRowModel fires tree-nodes-removed on removeRows",
+			how: function(context, result)
+			{
+                var data = [ 1, 2, 3, 4 ];
+                var model = new ArrayRowModel(data);
+                var fired = false;
+                model.immediate = true;
+                model.signalConnect("tree-nodes-removed", function(event) {
+                    fired = true;
+                    result.check("event list length", {
+                        actual: event.length,
+                        expect: 1
+                    });
+                    
+                    var e = event[0];
+                    result.check("tree-nodes-removed event data", {
+                        actual: [ this, e.path, e.parent, e.refs.length, e.isContiguous ],
+                        expect: [ model, [], model, 2, true ]
+                    });
+                });
+
+                model.removeRows(-1, 2);
+                result.check("node removed at correct location", {
+                    actual: data,
+                    expect: [ 1, 2 ]
+                });
+                
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+			}
+		}
 	]
 });
