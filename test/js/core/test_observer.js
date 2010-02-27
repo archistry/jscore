@@ -59,13 +59,64 @@ Jester.testing("Observer functionality", {
 				var Observer = function(actor)
 				{
 					var _this = this;
-					handler = function(arg1, arg2, arg3)
+                    _this.count = 0;
+
+					var handler = function(arg1, arg2, arg3)
 					{
 						var name = this.name;
 						result.check("signal handler called", {
-							actual: [ name, arg1, arg2, arg3.one, arg3.two ],
-							expect: [ actor.name, "one", 2, 3, 4 ]
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two ],
+							expect: [ actor, actor.name, "one", 2, 3, 4 ]
 						});
+                        _this.count++;
+					}
+					
+					actor.signalConnect("signal1", handler);
+				};
+
+				var actor = new Actor("sam");
+				var fred = new Actor("fred");
+				var obs = new Observer(actor);
+				var obs2 = new Observer(fred);
+				actor.emit();
+                fred.emit();
+
+                result.check("signal handlers not called across observers", {
+                    actual: [ obs.count, obs2.count ],
+                    expect: [ 1, 1 ]
+                });
+			}
+		},
+		{
+			what: "Valid signal checking  works as expected",
+			how: function(context, result)
+			{
+				var Actor = function(name)
+				{
+					this.mixin(new archistry.core.SignalSource(this));
+                    this.addValidSignals([ "signal1" ]);
+					this.name = name;
+					this.immediate = true;
+
+					this.emit = function()
+					{
+						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 });
+					};
+				};
+
+				var Observer = function(actor)
+				{
+					var _this = this;
+                    _this.count = 0;
+
+					var handler = function(arg1, arg2, arg3)
+					{
+						var name = this.name;
+						result.check("signal handler called", {
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two ],
+							expect: [ actor, actor.name, "one", 2, 3, 4 ]
+						});
+                        _this.count++;
 					}
 					
 					actor.signalConnect("signal1", handler);
@@ -74,6 +125,70 @@ Jester.testing("Observer functionality", {
 				var actor = new Actor("sam");
 				var obs = new Observer(actor);
 				actor.emit();
+
+                result.check("signal handler was called", {
+                    actual: obs.count,
+                    expect: 1
+                });
+			}
+		},
+		{
+			what: "Unregistration of signals works as expected",
+			how: function(context, result)
+			{
+				var Actor = function(name)
+				{
+					this.mixin(new archistry.core.SignalSource(this));
+                    this.addValidSignals([ "signal1" ]);
+					this.name = name;
+					this.immediate = true;
+
+					this.emit = function()
+					{
+						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 });
+					};
+				};
+
+				var Observer = function(actor)
+				{
+					var _this = this;
+                    _this.count = 0;
+
+					var handler = function(arg1, arg2, arg3)
+					{
+						var name = this.name;
+						result.check("signal handler called", {
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two ],
+							expect: [ actor, actor.name, "one", 2, 3, 4 ]
+						});
+                        _this.count++;
+					}
+					
+					actor.signalConnect("signal1", handler);
+
+                    this.disconnect = function()
+                    {
+                        return actor.signalDisconnect("signal1", handler);
+                    };
+
+                    this.__defineGetter__("handler", function() { return handler; });
+				};
+
+				var actor = new Actor("sam");
+				var obs = new Observer(actor);
+				actor.emit();
+                var handler = obs.disconnect();
+                actor.emit();
+
+                result.check("signal handler was called only once", {
+                    actual: obs.count,
+                    expect: 1
+                });
+
+                result.check("handler was returned to caller", {
+                    actual: handler,
+                    expect: obs.handler 
+                });
 			}
 		}
 	]
