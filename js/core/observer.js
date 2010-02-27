@@ -99,24 +99,25 @@ archistry.core.SignalSource = function(sender)
 
 	function sigarray(signal)
 	{
-		if(sender.__validSignals != null)
+		if(sender.__validSignals)
 		{
+//            print("valid signals: " + sender.__validSignals.inspect());
 			if(!sender.__validSignals.include(signal))
 			{
 				throw new Error("Signal '" + signal + "' is not supported by this object!");
 			}
 		}
 
-		if(sender.__signals == null)
+		if(!sender.__signals)
 		{
 			sender.__signals = {};
 		}
-		if(sender.__signals[signal] == null)
+		if(!sender.__signals[signal])
 		{
 			sender.__signals[signal] = [];
 		}
 
-//        print("sigarray (" + sender.object_id() + "): " + sender.__signals[signal]);
+//        print("sigarray (" + sender.object_id() + "): " + sender.__signals.inspect());
 		return sender.__signals[signal];
 	}
 	
@@ -134,7 +135,8 @@ archistry.core.SignalSource = function(sender)
 			sender.__validSignals = [];
 		}
 
-		sender.__validSignals.concat(sigs);
+        var sigs = sender.__validSignals.concat(sigs);
+        sender.__validSignals = sigs;
 	};
 
 	/**
@@ -156,7 +158,7 @@ archistry.core.SignalSource = function(sender)
 		var deleted = [];
 		for(var i = 0; i < sigs.length; ++i)
 		{
-			deleted.concat(sender.__validSignals.remove(sigs[i]));
+			deleted.add(sender.__validSignals.remove(sigs[i]));
 		}
 
 		return deleted;
