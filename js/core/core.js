@@ -374,6 +374,9 @@ Object.prototype.object_id = function()
 
 Object.prototype.equals = function(rhs)
 {
+    if(rhs === undefined)
+        return false;
+
     if(this.valueOf && rhs.valueOf)
         return this.valueOf() === rhs.valueOf();
 
