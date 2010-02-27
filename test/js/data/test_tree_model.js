@@ -158,8 +158,8 @@ Jester.testing("Concrete TreeRowModel functionality", {
 
                     var e = event[0];
                     result.check("tree-nodes-inserted event data", {
-                        actual: [ this, e.path, e.parent, e.refs.length, e.isContiguous ],
-                        expect: [ model, [], model, 3, true ]
+                        actual: [ this, e.path, e.parent, e.refs.length, e.refs[0].node, e.refs[0].index, e.isContiguous ],
+                        expect: [ model, [], model, 3, 7, 2, true ]
                     });
                 });
 
@@ -192,8 +192,8 @@ Jester.testing("Concrete TreeRowModel functionality", {
                     
                     var e = event[0];
                     result.check("tree-nodes-removed event data", {
-                        actual: [ this, e.path, e.parent, e.refs.length, e.isContiguous ],
-                        expect: [ model, [], model, 2, true ]
+                        actual: [ this, e.path, e.parent, e.refs.length, e.refs[0].node, e.refs[0].index, e.isContiguous ],
+                        expect: [ model, [], model, 2, 3, 2, true ]
                     });
                 });
 
