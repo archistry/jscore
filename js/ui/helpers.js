@@ -50,6 +50,8 @@
 namespace("archistry.ui");
 
 /**
+ * @namespace
+ *
  * This object defines the base styles that are common across
  * all of the UI components.  They also include all of the
  * jQueryUI CSS Framework definitions where appropriate so
@@ -58,47 +60,71 @@ namespace("archistry.ui");
 
 archistry.ui.Styles = {
 
-	/** 
+	/**
 	 * These are layout styles that apply to UI widgets
+     * @field
 	 */
 	Layout: {
+        /* @field */
 		HIDDEN				: "ui-helper-hidden",
+        /* @field */
 		HIDDEN_ACCESSIBLE	: "ui-helper-hidden-acessible",
+        /* @field */
 		RESET				: "ui-helper-reset",
+        /* @field */
 		CLEARFIX			: "ui-helper-clearfix",
+        /* @field */
 		ZFIX				: "ui-helper-zfix"
 	},
 
 	/**
 	 * These are widget styles that can be used for all the
 	 * widget elements.
+     * @field
 	 */
 
 	Widget: {
+        /* @field */
 		CONTROL				: "ui-widget",
+        /* @field */
 		HEADER				: "ui-widget-header",
+        /* @field */
 		CONTENT				: "ui-widget-content",
+        /* @field */
 		CONTEXT_MENU		: "ui-context-menu",
+        /* @field */
 		BUTTON_ICON_LEFT	: "ui-button-icon-left",
+        /* @field */
 		BUTTON_ICON_RIGHT	: "ui-button-icon-right"
 	},
 
 	/**
 	 * These are widget state styles
+     * @field
 	 */
 
 	State: {
-		/** this is a test comment */
+        /* @field */
 		DEFAULT				: "ui-state-default",
+        /* @field */
 		HOVER				: "ui-state-hover",
+        /* @field */
 		FOCUS				: "ui-state-focus",
+        /* @field */
 		ACTIVE				: "ui-state-active",
+        /* @field */
 		HIGHLIGHT			: "ui-state-highlight",
+        /* @field */
 		ERROR				: "ui-state-error",
+        /* @field */
 		ERROR_TEXT			: "ui-state-error-text",
+        /* @field */
 		DISABLED			: "ui-state-disabled",
+        /* @field */
 		PRIORITY_PRIMARY	: "ui-state-priority-primary",
+        /* @field */
 		PRIORITY_SECONDARY	: "ui-state-priority-secondary",
+        /* @field */
 		EDITING				: "aui-editing"
 	}
 };

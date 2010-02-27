@@ -153,26 +153,33 @@
       });
 
       $("#delete-rows").click(function(event) {
+        // this is trickier because it depends on the new
+        // range-related functionality.  We can only delete in valid
+        // range blocks!
         grid.selection.reverseEach(function() {
-          model.removeRow(this.path()[0]);
+          println("Attempting to delete rows at path: " + this.join(","));
+          model.removeRow(this[0]);
         });
       });
 
+      var index = 0;
       $("#insert-row").click(function(event) {
         if(grid.selection.length !== 1)
         {
-          alert("Can't insert under more than one parent!");
+          alert("Can't insert under more than one parent! Length: " + grid.selection.length);
           return;
         }
 
-        var node = null;
-        grid.selection.each(function() { node = this; });
+        var path = grid.selection[0];
         var count = Math.floor(Math.random() * 6);
-        var idx = node.path()[0] + 1;
+        println("Inserting {0} rows at path: [{1}]", [ count, path.join(", ")] );
+        var idx = path[0] + 1;
+        var rows = [];
         for(var j = 0; j < count; ++j)
         {
-          model.insertRow(idx + j, { key: "New key " + j, value: null });
+          rows.add({ key: "New key " + index++, value: null });
         }
+        model.insertRows(idx, rows);
       });
     });
   </script>

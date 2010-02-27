@@ -203,10 +203,13 @@
         var node = null;
         grid.selection.each(function() { node = this; });
         var path = node.path();
-        grid.insertRow(path, 0, {
-          key: String.format("New row {0}", [ node.childCount() ]),
-          value: null
-        });
+        var count = Math.floor(Math.random() * 6);
+        println("Inserting {0} rows at path: [{1}]", [ count, path.join(", ")] );
+        var idx = path[path.length - 1];
+        for(var j = 0; j < count; ++j)
+        {
+          model.insertRow(path, -1, { key: "New key " + j, value: null });
+        }
       });
 
       var expanded = false;

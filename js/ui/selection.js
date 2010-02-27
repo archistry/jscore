@@ -102,9 +102,64 @@ archistry.ui.selection.Notifier = function(sender)
 };
 
 /**
+ * @namespace
+ *
+ * This object provides constants representing the various
+ * supported selection strategies.
+ * <p>
+ * <dl>
+ * <dt>SINGLE_SELECTION</dt>
+ * <dd>Allows only a single selection object at one time.</dd>
+ * 
+ * <dt>RANGE_SELECTION</dt>
+ * <dd>Allows a single, contiguous range to be selected
+ * between a start and an end marker.</dd>
+ *
+ * <dt>MULTI_RANGE_SELECTION</dt>
+ * <dd>Allows multiple contiguous ranges to be selected at the
+ * same time.  Each range is identified by a separate start
+ * and end marker.</dd>
+ * </dl>
+ * </p>
+ */
+
+archistry.ui.selection.Mode = {
+    /** @field */
+    SINGLE_SELECTION:       "single-selection",
+    /** @field */
+    RANGE_SELECTION:        "range-selection",
+    /** @field */
+    MULTI_RANGE_SELECTION:  "multi-range-selection"
+};
+
+/**
  * @class
  *
- * This class implements a basic single selection model.
+ * This class represents a selection range and is an immutable
+ * object once created.  The represented start-end range MUST
+ * be contiguous.
+ *
+ * @property owner the owner object of the selection
+ * @property start the start index
+ * @property end the end path
+ */
+
+archistry.ui.selection.SelectionRange = function(owner, start, end)
+{
+    this.__defineGetter__("owner", function() { return owner; });
+    this.__defineGetter__("start", function() { return start; });
+    this.__defineGetter__("end", function() { return end; });
+};
+
+/**
+ * @class
+ *
+ * This class implements a simple, single selection model.
+ * @property mode This property is part of the SelectionModel
+ *      API and is used to indicate the selection mode
+ *      supported by the instance.
+ * @property length This method is part of the SelectionModel
+ *      API and is used to retrieve the length of the selection.
  */
 
 archistry.ui.selection.SingleSelectionModel = function()
@@ -112,10 +167,20 @@ archistry.ui.selection.SingleSelectionModel = function()
 	this.mixin(new archistry.ui.selection.Notifier(this));
 
 	var _selection = null;
+    
+    this.__defineGetter__("mode", function() {
+        return archistry.ui.selection.Mode.SINGLE_SELECTION;
+    });
+	
+    this.__defineGetter__("length", function() {
+		return (_selection ? 1 : 0);
+	});
 
 	/**
 	 * This method is part of the SelectionModel API and is
-	 * used to add a new item to the selection.
+	 * used to add a new item to the selection.  In this
+     * particular case, only the last item added actually
+     * remains selected.
 	 *
 	 * @param item the item to be added
 	 */
@@ -153,26 +218,33 @@ archistry.ui.selection.SingleSelectionModel = function()
 		this.fireSelectionChanged();
 	};
 
-	/**
-	 * This method is part of the SelectionModel API and is
-	 * used to retrieve the length of the selection.
-	 */
+    /**
+     * This method is part of the SelectionModel API and is
+     * used to set the selection.
+     *
+     * @param item the item to be selected
+     */
 
-	this.__defineGetter__("length", function() {
-		return (_selection ? 1 : 0);
-	});
-	
+    this.set = function(item)
+    {
+        _selection = item;
+        this.fireSelectionChanged();
+    };
+
 	/**
 	 * This method is part of the core SelectionModel API and
 	 * is used to iterate over the items in the selection.
 	 *
 	 * @param callback the callback function to be invoked
 	 *		with each selection item as the this reference.
+     *		To abort the traversal, return a value from the
+     *		callback.
+     * @return null or the value returned from the callback
 	 */
 
 	this.each = function(callback)
 	{
-		callback.apply(_selection, [ _selection ]);
+		return callback.apply(_selection, [ _selection ]);
 	};
 
 	/**
@@ -182,6 +254,7 @@ archistry.ui.selection.SingleSelectionModel = function()
 	 *
 	 * @param callback the callback function to be invoked
 	 *		with each selection item as the this reference.
+     * @function
 	 */
 
 	this.reverseEach = this.each;
@@ -190,7 +263,9 @@ archistry.ui.selection.SingleSelectionModel = function()
 /**
  * @class
  *
- * This class implements a basic multi-select model.
+ * This class implements a basic multi-select model that
+ * allows selection of multiple, discontiguous ranges.  The
+ * items managed by this class are SelectionRange instances
  *
  * @param options a mixin object to set behavior options to
  *		control how the selection is interpreted.
@@ -265,14 +340,22 @@ archistry.ui.selection.MultiSelectionModel = function(options)
 	 *
 	 * @param callback the callback function to be invoked
 	 *		with each selection item as the this reference.
+     *		To abort the traversal, return a value from the
+     *		callback.
+     * @return null or the value returned from the callback
 	 */
 
 	this.each = function(callback)
 	{
-		for(var i = 0; i < _selection.length; ++i)
+        var clone = _selection.slice(0);
+        var rc = null;
+		for(var i = 0; i < clone.length; ++i)
 		{
-			callback.apply(_selection[i], [ _selection[i] ]);
+			rc = callback.apply(clone[i], [ clone[i] ]);
+            if(rc !== undefined)
+                return rc;
 		}
+        delete clone;
 	};
 
 	/**
@@ -286,9 +369,14 @@ archistry.ui.selection.MultiSelectionModel = function(options)
 
 	this.reverseEach = function(callback)
 	{
-		for(var i = _selection.length -1; i >= 0; --i)
+        var clone = _selection.slice(0);
+        var rc = null;
+		for(var i = clone.length -1; i >= 0; --i)
 		{
-			callback.apply(_selection[i], [ _selection[i] ]);
+            rc = callback.apply(clone[i], [ clone[i] ]);
+            if(rc !== undefined)
+                return rc;
 		}
+        delete clone;
 	};
 };

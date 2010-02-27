@@ -688,7 +688,27 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     
     var _self = this;
     var _data = data;
+    var _header = null;
     var _columns = columns;
+//    var _selection = new MultiSelectionModel({
+//        sorter: function(l, r)
+//        {
+//            var ld = l.length;
+//            var rd = r.length;
+//            if(ld === rd)
+//            {
+//                ld.each(function(i) {
+//                    if(this !== r[i])
+//                    {
+//                        if(this.compare)
+//                            return this.compare(r[i]);
+//                        return this < r[i];
+//                    }
+//                });
+//            }
+//            return 0;
+//        }
+//    });
     var _selection = new MultiSelectionModel({
         sorter: function(l, r)
         {
@@ -700,6 +720,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             return ld - rd;
         }
     });
+
+    var _regexpHidden = new RegExp(Style.Layout.HIDDEN);
 
     ////// DEFINE INTERNAL API SHARED/CALLED BY TREEROW //////
     
@@ -715,9 +737,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     function renderRow(row)
     {
+        if(!row.visible())
+            return;
+
         if(!row || typeof row.render !== 'function')
         {
-            println("row: " + row.inspect());
+            println("UNKNOWN ROW: " + row.inspect());
             throw createError("ArgumentError:  invalid row!");
         }
 
@@ -829,7 +854,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         var _expanded = false;
         var _parent = null;
         var _children = [];
-        var _visible = true;
         var _deleted = false;
         var _deletedChildren = [];
 
@@ -877,6 +901,11 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 removeAttr(row, "class", GridStyle.ROW_SELECTED);
 //                appendAttr(row, "class", Style.State.DEFAULT);
                 _selection.remove(_me);
+                _selectAll = false;
+                if(_header)
+                {
+                    _header.render(_allCols, _colsByKey);
+                }
             }
             renderRow(_me);
         });
@@ -931,7 +960,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         };
 
         /**
-         * This method is used to add a new child node at the
+         * This method is used to insert a new child node at the
          * specified index.
          *
          * @param idx the index for the new child
@@ -939,16 +968,29 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
          * @return the added child node
          */
 
-        this.addChild = function(idx, child)
+        this.insertChild = function(idx, child)
         {
             var ix = childIndex(idx, true);
             // ensure there aren't any gaps!
             if(ix > _children.length)
                 ix = _children.length;
 
-            _children[ix] = child;
+            _children.splice(ix, 0, child);
             child.parent(_me);
             return child;
+        };
+
+        /**
+         * This method is used to remove the i-th child from
+         * the parent node.
+         *
+         * @param idx the index of the child to be removed
+         * @return the child node
+         */
+
+        this.removeChildAtIndex = function(idx)
+        {
+            return _children.removeAtIndex(childIndex(idx));
         };
 
         /**
@@ -1061,9 +1103,18 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         this.visible = function(val)
         {
             if(val === undefined)
-                return _visible;
+            {
+                if(!row)
+                    return false;
 
-            _visible = val;
+                var css = row.getAttribute("class");
+                return ( css && !css.match(_regexpHidden) );
+            }
+            
+            if(val)
+                removeAttr(row, "class", Style.Layout.HIDDEN);
+            else
+                appendAttr(row, "class", Style.Layout.HIDDEN);
         };
 
         /**
@@ -1257,33 +1308,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
     }
 
-//    /**
-//     * @class
-//     *
-//     * This row class represents a user-defined row that is
-//     * not part of the underlying model.
-//     *
-//     * @param layoutRow the layoutRow of the TreeRow
-//     * @param dataNode the user-managed data node to display
-//     *      in the row
-//     * @param options mix-in options for the node (to supply
-//     *      custom rendering
-//     */
-//
-//    function UserRow(layoutRow, dataNode, options)
-//    {
-//        this.mixin(new TreeRow(layoutRow, dataNode, options));
-//        this.addChild = function() {};
-//        this.child = function(idx) { return null; };
-//        this.childCount = function(idx) { return 0; };
-//        this.clearChildren = function() {};
-//        this.expanded = function(val) { return false; }
-//        this.indexOfChild = function(node) { return -1; }
-//        this.isLeaf = function() { return true; };
-//        this.isSentinal = function() { return false; };
-//        this.rowCount = function() { return 1; };
-//    };
-
     /**
      * @class
      *
@@ -1310,7 +1334,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     }
 
     var _root = null;
-    var _headers = null;
     var _cols = [];
     var _allCols = [];
     var _colsByKey = {};
@@ -1483,7 +1506,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                     return false;
 
 //                println("Expanding node: {0}.child[{1}]: {2}", [ parent.key, idx, node.key ]);
-                removeAttr(node.row(), "class", Style.Layout.HIDDEN);
+                node.visible(true);
                 return true;
             });
             return;
@@ -1504,7 +1527,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         node.clearChildren();
         for(i = 0; i < count; ++i)
         {
-            buildRow( node.addChild(i, 
+            buildRow( node.insertChild(i, 
                 new TreeRow(rows[i], _self.data.child(node.data(), i))));
         }
 
@@ -1528,7 +1551,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 //            println("Collapsing node: {0}.child[{1}]: {2}", [ parent.key, idx, node.key ]);
             if(node.row())
             {
-                appendAttr(node.row(), "class", Style.Layout.HIDDEN);
+                node.visible(false);
                 return true;
             }
             return false;
@@ -1604,6 +1627,204 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         return { node: node, index: (row ? -1 : row) };
     }
 
+    /**
+     * @private
+     *
+     * This helper function is used to translate node index
+     * values into the proper layout index for row
+     * manipulation
+     *
+     * @param node the node to check
+     * @return the actual row index
+     */
+
+    function rowIndex(node)
+    {
+        var ri = node.rowIndex();
+        if(ri === -1 && !_header)
+        {
+            ri = 0;
+        }
+        else if(ri === -1 && _header)
+        {
+            ri = 1;
+        }
+
+        return ri;
+    }
+
+    ////// SIGNAL HANDLING CALLBACKS //////
+
+    /**
+     * @private
+     *
+     * This method is used to do repeated checks before
+     * actually processing each node in the event list.
+     *
+     * @param sender the sender of the signal
+     * @param eventlist the event list to process
+     * @param callback the callback function to be invoked
+     *      with each reference object.  The this reference
+     *      will point to the event object
+     */
+
+    function processEventList(sender, eventlist, callback)
+    {
+        if(!sender.equals(_self.data))
+            return;
+
+        eventlist.each(function(i) {
+            var tr = nodeForPath(this.path);
+            if(!tr)
+                return;
+
+            if(!this.parent.equals(tr.data()))
+            {
+                throw createError("StateError:  TreeGrid and TreeRowModel are not in sync!");
+            }
+            var event = this;
+            callback.apply(event, [ tr ]);
+        });
+    }
+
+    /**
+     * @private
+     *
+     * This method is called for 'tree-nodes-inserted' from
+     * the model.
+     */
+
+    function modelNodesInserted(eventlist)
+    {
+        processEventList(this, eventlist, function(node) {
+            println("processing insertion for parent: {0} at path [{1}]", [ node.label, this.path ] );
+            if(!node.expanded())
+            {
+                println("Parent not expanded");
+                // re-render the node for the expander state,
+                // but otherwise we don't care.
+                renderRow(node);
+                return;
+            }
+            var ri = rowIndex(node);
+            var lrows = null;
+
+            if(this.isContiguous)
+            {
+                var event = this;
+                lrows = _self.layout.insertRows(ri + event.refs[0].index, 
+                                _allCols.length, event.refs.length);
+                lrows.each(function(i) {
+                    buildRow(node.insertChild(event.refs[i].index,
+                                new TreeRow(this, event.refs[i].node)));
+                });
+            }
+            else
+            {
+                this.refs.each(function(i) {
+                    lrows = _self.layout.insertRows(ri + ref.index,
+                                                _allCols.length, 1);
+                    buildRow(node.insertChild(ref.index,
+                                new TreeRow(lrows[0], ref.node)));
+                });
+            }
+            renderRow(node);
+        });
+    }
+
+    function modelNodesRemoved(eventlist)
+    {
+        processEventList(this, eventlist, function(node) {
+            println("processing removal for parent: {0} at path [{1}]", [ node.label, this.path ] );
+            if(!node.expanded())
+            {
+                println("Parent not expanded");
+                renderRow(node);
+                return;
+            }
+            if(this.refs.length === 0)
+                return;
+
+            var ri = rowIndex(node) + this.refs[0].index;
+            if(this.isContiguous)
+            {
+                _self.layout.deleteRows(ri, this.refs.length);
+                this.refs.each(function(i) {
+                    var child = node.removeChildAtIndex(this.index);
+                    if(child)
+                    {
+                        child.selected(false);
+                        delete child;
+                    }
+                });
+            }
+            else
+            {
+                this.refs.each(function(i) {
+                    _self.layout.deleteRows(ri, 1);
+                    var child = node.removeChildAtIndex(this.index);
+                    if(child)
+                    {
+                        child.selected(false);
+                        delete child;
+                    }
+                });
+            }
+            renderRow(node);
+        });
+    }
+
+    function modelNodesChanged(eventlist)
+    {
+    }
+
+    function modelTreeChanged(eventlist)
+    {
+    }
+
+    /**
+     * @private
+     *
+     * This method is used to register ourselves with the
+     * data model so we can reflect changes in the model
+     * automatically.
+     *
+     * @param model the data model
+     */
+
+    function registerDataListeners(model)
+    {
+        if(!model.signalConnect)
+            return;
+        
+        model.signalConnect("tree-nodes-inserted", modelNodesInserted);
+        model.signalConnect("tree-nodes-removed", modelNodesRemoved);
+        model.signalConnect("tree-nodes-changed", modelNodesChanged);
+        model.signalConnect("tree-structure-changed", modelTreeChanged);
+    }
+
+    /**
+     * @private
+     *
+     * This method is used to unregister ourselves from a data
+     * model instance.
+     *
+     * @param model the data model
+     */
+
+    function unregisterDataListeners(model)
+    {
+        if(!model.signalConnect)
+            return;
+
+        model.signalDisconnect("tree-nodes-inserted");
+        model.signalDisconnect("tree-nodes-removed");
+        model.signalDisconnect("tree-nodes-changed");
+        model.signalDisconnect("tree-structure-changed");
+    }
+
+    //////// START PUBLIC API ////////
+    
 // FIXME:  I'm not sure that this one should really be here
 // either since we're going for a model-driven view....
 
@@ -1733,7 +1954,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 //        }
 //
 //        var lrows = _self.layout.insertRows(node.rowIndex() + 1, _allCols.length, 1);
-//        var child = buildRow(node.addChild(index, 
+//        var child = buildRow(node.insertChild(index, 
 //                                new UserRow(lrows[0], data, options)));
 //        node.expanded(true);
 //        renderRow(node);
@@ -1772,7 +1993,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         if(!path)
         {
             _selection.each(function() {
-                this.selected = false;
+                this.selected(false);
                 render(this);
             });
             return;
@@ -1845,11 +2066,19 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     };
 
     /**
-     * This method returns the current selection.  It should
-     * not be modified.
+     * This method returns the current tree selection as a
+     * sorted list of path references to the selected nodes.
+     * Modifications to the returned array have no effect on
+     * the tree.
      */
 
-    this.__defineGetter__("selection", function() { return _selection; });
+    this.__defineGetter__("selection", function() {
+        var paths = [];
+        _selection.each(function() {
+            paths.add(this.path());
+        });
+        return paths;
+    });
 
     /**
      * This method is used to expand all of the nodes in the
@@ -1890,7 +2119,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      */
 
     this.__defineSetter__("data", function(model) {
+        
+        // take care of event listener registration
+        unregisterDataListeners(_data);
         _data = model;
+        registerDataListeners(_data);
+
         // make sure we don't whack the header!!
         if(!_header)
         {

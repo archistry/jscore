@@ -740,10 +740,11 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
         var refs = [];
         nodes.each(function(i) {
+            println("idx ({0}) + i ({1}) = {2}", [ idx, i, idx + i ]);
             refs.add( new TreeNodeRef(this, idx + i) );
         });
 
-        this.fireNodesInserted([ new TreeChange([], _self, nodes) ]);
+        this.fireNodesInserted([ new TreeChange([], _self, refs) ]);
     };
 
     /**

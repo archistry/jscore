@@ -46,9 +46,9 @@ load('../jester.js');
 load('../../rhino-core-min.js');
 
 // load the tests
-load('test_util.js');
+//load('test_util.js');
 load('test_observer.js');
-load('test_path.js');
+//load('test_path.js');
 
 // print the results
 print(Jester.reporter.toString());
