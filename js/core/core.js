@@ -538,7 +538,7 @@ Array.prototype.removeRange = function(from, to) {
 
 Array.prototype.removeAtIndex = function(idx)
 {
-    if(idx && idx < this.length)
+    if(idx >=0 && idx < this.length)
     {
 		var mobj = this[idx];
 		var rest = this.slice(idx + 1 || this.length);
@@ -567,17 +567,23 @@ if(!Array.prototype.each)
     /**
      * This method provides an each iterator and calls the
      * callback with the this reference set to the array element
-     * and the index of the item in the array.
+     * and the index of the item in the array.  To abort the
+     * traversal of the array, the callback should return a
+     * value.
      *
      * @param callback the callback function
-     * @return reference to the array
+     * @return reference to the array or the return value of
+     *      the callback
      */
 
     Array.prototype.each = function(callback)
     {
+        var rc = null;
         for(var i = 0; i < this.length; ++i)
         {
-            callback.apply(this[i], [ i ]);
+            rc = callback.apply(this[i], [ i ]);
+            if(rc !== undefined)
+                return rc;
         }
 
         return this;
@@ -586,7 +592,9 @@ if(!Array.prototype.each)
     /**
      * This method provides an each iterator and calls the
      * callback with the this reference set to the array element
-     * and the index of the item in the array.
+     * and the index of the item in the array.  Like the
+     * forward iterator, to abort the traversal, return a
+     * value from the callback
      *
      * @param callback the callback function
      * @return reference to the array
@@ -594,9 +602,12 @@ if(!Array.prototype.each)
 
     Array.prototype.reverseEach = function(callback)
     {
+        var rc = null;
         for(var i = this.length - 1; i >= 0; --i)
         {
-            callback.apply(this[i], [ i ]);
+            rc = callback.apply(this[i], [ i ]);
+            if(rc !== undefined)
+                return rc;
         }
 
         return this;
@@ -606,6 +617,41 @@ else
 {
     throw new Error("Array#each is already defined!  Probably library incompatibility errors have been introduced.");
 }
+
+/**
+ * This method allows equality checks of array values.  If the
+ * arrays are the same length and the elements are the same,
+ * they are considered equal.
+ *
+ * @param rhs the right hand side to test
+ * @returns true if equal; false otherwise
+ */
+
+Array.prototype.equals = function(rhs)
+{
+    if(this.length != rhs.length)
+        return false;
+    
+    for(var i = 0; i < this.length; ++i)
+    {
+        var l = this[i];
+        var r = rhs[i];
+        if(!l && r)
+            return false;
+
+        if(l.equals && r.equals)
+        {
+            if(!(l.equals(r)))
+                return false;
+        }
+        else
+        {
+            if(l != r)
+                return false;
+        }
+    }
+    return true;
+};
 
 // I can't believe JS doesn't have a string trim function...or
 // a working clone...FFS!!!
