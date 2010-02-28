@@ -106,29 +106,31 @@ jester.runner.TestResult = function(test)
     {
         function objEqual(l, r)
         {
-            if((l === null && r !== null)
-                    || (r === null && l !== null))
+            if((l == null && r != null)
+                    || (l != null && r == null))
             {
-//                println("A");
                 return false;
             }
-            else if(l === null && r === null)
+            else if(l == null && r == null)
             {
-//                println("B");
-                // special handling for the undefined case
                 return true;
             }
 
-            if(l.equals === null || r.equals === null)
-            {
-//                println("c");
-                return l === r;
-            }
-            else
-            {
-//              println("d");
+            if(l.equals)
                 return l.equals(r);
-            }
+            else if(!l.equals && r.equals)
+                return r.equals(l);
+
+            var lval = l;
+            var rval = r;
+
+            if(lval.valueOf)
+                lval = l.valueOf();
+
+            if(rval.valueOf)
+                rval = r.valueOf();
+
+            return lval === rval;
         }
 
         this.name = d;

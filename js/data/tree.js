@@ -74,6 +74,58 @@ archistry.data.Indexer = {
 
         var msg = String.format("Index out of bounds: index: {0}; length: {1}\n{2}", [ idx, count, printStackTrace() ]);
         throw new Error(msg);
+    },
+
+    /**
+     * This method is a generic sort function that takes
+     * advantage of the {@link Object#compare} method if
+     * available.
+     *
+     * @param lhs the "left hand side" object
+     * @param rhs the "right hand side" object
+     * @return -1, 0 or 1
+     */
+
+    compareAsc: function(lhs, rhs)
+    {
+        if(lhs.compare && !rhs.compare)
+        {
+            return lhs.compare(rhs);
+        }
+        else if(rhs.compare && !lhs.compare)
+        {
+            return 1 - rhs.compare(lhs);
+        }
+
+        // unfortunately, this is lifted from the
+        // Object#compare implementation because if we get
+        // here, we're dealing with primitives
+
+        var lval = lhs;
+        var rval = rhs;
+        if(lhs.valueOf) { lval = lhs.valueOf(); }
+        if(rhs.valueOf) { rval = rhs.valueOf(); }
+
+        if(lval < rval)
+            return -1;
+        else if(lval > rval)
+            return 1;
+
+        return 0;
+    },
+
+    /**
+     * This method is used to provide a descending comparison
+     * sort function leveraging {@link Object#compare}.
+     *
+     * @param lhs the "left hand side"
+     * @param rhs the "right hand side"
+     * @return -1, 0 or 1
+     */
+
+    compareDesc: function(lhs, rhs)
+    {
+        return 1 - this.compareAsc(lhs, rhs);
     }
 };
 
@@ -519,6 +571,240 @@ archistry.data.tree.Notifier = function(sender)
     this.fireStructureChanged = function()
     {
         this.signalEmit("tree-structure-changed");
+    };
+};
+
+/**
+ * @class
+ *
+ * This class provides the core TreeNode API as a mix-in that
+ * may or may not be suitable for use in a specific
+ * application context.
+ *
+ * @property children a read-only view of the child node
+ *      array.  Modifications of the nodes will be possible,
+ *      but modifications to the structure of the children or
+ *      the parent will not.
+ */
+
+archistry.data.tree.TreeNode = function()
+{
+    mixin(archistry.data.Tree);
+    var _parent = null;
+    var _children = [];
+    var _childKey = "children";
+
+    /**
+     * This method is used to retrieve the actual child
+     * index based on the current child nodes.
+     */
+
+    function childIndex(idx, isNew)
+    {
+        return mapIndex(idx, (isNew ? _children.length + 1 : _children.length));
+    }
+
+    this.__defineGetter__("children", function() { return _children; });
+
+    /**
+     * This method returns true if the node has no
+     * children.
+     */
+
+    this.isLeaf = function()
+    {
+        return _children.length === 0;
+    };
+
+    /**
+     * This method is used to insert a new child node at the
+     * specified index.
+     *
+     * @param idx the index for the new child
+     * @param child the new child node
+     * @return the added child node
+     */
+
+    this.insertChild = function(idx, child)
+    {
+        var ix = childIndex(idx, true);
+        // ensure there aren't any gaps!
+        if(ix > _children.length)
+            ix = _children.length;
+
+        _children.splice(ix, 0, child);
+        child.parent(this);
+        return child;
+    };
+
+    /**
+     * This method is used to remove the i-th child from
+     * the parent node.
+     *
+     * @param idx the index of the child to be removed
+     * @return the child node
+     */
+
+    this.removeChildAtIndex = function(idx)
+    {
+        return _children.removeAtIndex(childIndex(idx));
+    };
+
+    /**
+     * This method is used to retrieve the number of
+     * children for the node.
+     */
+
+    this.childCount = function() { return _children.length; };
+
+    /**
+     * This method returns the index of the specified
+     * child.
+     */
+
+    this.indexOfChild = function(node)
+    {
+        return indexOfChild(this, _childKey, node);
+    };
+
+    /**
+     * This method is used to retrieve the current path of
+     * this node.
+     */
+
+    this.path = function()
+    {
+        var pc = [];
+        visitParents(this, "parent", function(parent, node, depth) {
+            if(parent)
+            {
+                pc.add(parent.indexOfChild(node));
+            }
+        });
+
+        return pc.reverse();
+    };
+
+    /**
+     * This method will return the i-th child of the node
+     * or null if it doesn't exist.
+     */
+
+    this.child = function(index)
+    {
+        return _children[childIndex(index)];
+    };
+
+    /**
+     * This method will reset the child references for the
+     * node.
+     */
+
+    this.clearChildren = function() { _children = []; };
+
+    /**
+     * This method is used to set/retrieve the parent of the
+     * given node.
+     */
+
+    this.parent = function(val)
+    {
+        if(val === undefined)
+            return _parent;
+
+        _parent = val;
+    };
+
+    /**
+     * This method returns the depth of the tree node
+     */
+
+    this.depth = function()
+    {
+        return visitParents(this, "parent");
+    };
+
+    /**
+     * This method is used to get the first child (if any)
+     * for the given node.
+     *
+     * @returns the node or null if no children
+     */
+
+    this.firstChild = function()
+    {
+        if(_children.count === 0)
+            return null;
+
+        return _children[0];
+    };
+
+    /**
+     * This method is used to get the last child (if any)
+     * for the given node.
+     *
+     * @returns the node or null if no children
+     */
+
+    this.lastChild = function()
+    {
+        if(_children.count === 0)
+            return null;
+
+        return _children[childIndex(-1)];
+    };
+
+    /**
+     * This method is used to get the next sibling node of
+     * this node (if any)
+     *
+     * @return the node or null if the node is the last
+     *      child
+     */
+
+    this.nextSibling = function()
+    {
+        var idx = null;
+        if(!_parent)
+            return null;
+       
+        idx = _parent.indexOfChild(this);
+        if(idx === _parent.childCount() - 1)
+            return null;
+            
+        return _parent.child(idx + 1);
+    };
+
+    /**
+     * This method is used to get the previous sibling
+     * node of this node (if any)
+     *
+     * @return the node or null if the node is the first
+     *      child
+     */
+
+    this.previousSibling = function()
+    {
+        var idx = null;
+        if(!_parent)
+            return null;
+
+        idx = _parent.indexOfChild(this);
+        if(idx === 0)
+            return null;
+
+        return _parent.child(idx - 1);
+    };
+   
+    /**
+     * This method returns the details of the tree node as a
+     * string.
+     */
+
+    this.toString = function()
+    {
+        println("TOSTRING!!!");
+        return String.format("[TreeNode parent: {0}, path: [{1}] ]", [ _parent, this.path().join(',') ]);
     };
 };
 

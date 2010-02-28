@@ -690,6 +690,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     var _data = data;
     var _header = null;
     var _columns = columns;
+    var _tasks = [];
+    var _working = false;
+
 //    var _selection = new MultiSelectionModel({
 //        sorter: function(l, r)
 //        {
@@ -829,6 +832,11 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     function TreeRow(layoutRow, modelNode, options)
     {
+        // FIXME:  can we figure out a way to leverage the
+        // implementation of the generic TreeNode class?????
+        // Right now, all of the TreeNode code was forked from
+        // here, so duplicates that might be out of sync
+        // ASAP!!  2010-02-28T19:46:16+0000
         mixin(archistry.data.Tree);
         mixin(options);
         
@@ -1224,6 +1232,78 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             _me.__atg_selected = true;
         };
 
+        /**
+         * This method is used to get the first child (if any)
+         * for the given node.
+         *
+         * @returns the node or null if no children
+         */
+
+        this.firstChild = function()
+        {
+            if(_children.count === 0)
+                return null;
+
+            return _children[0];
+        };
+
+        /**
+         * This method is used to get the last child (if any)
+         * for the given node.
+         *
+         * @returns the node or null if no children
+         */
+
+        this.lastChild = function()
+        {
+            if(_children.count === 0)
+                return null;
+
+            return _children[childIndex(-1)];
+        };
+
+        /**
+         * This method is used to get the next sibling node of
+         * this node (if any)
+         *
+         * @return the node or null if the node is the last
+         *      child
+         */
+
+        this.nextSibling = function()
+        {
+            var idx = null;
+            if(!_parent)
+                return null;
+           
+            idx = _parent.indexOfChild(_me);
+            if(idx === _parent.childCount() - 1)
+                return null;
+                
+            return _parent.child(idx + 1);
+        };
+
+        /**
+         * This method is used to get the previous sibling
+         * node of this node (if any)
+         *
+         * @return the node or null if the node is the first
+         *      child
+         */
+
+        this.previousSibling = function()
+        {
+            var idx = null;
+            if(!_parent)
+                return null;
+
+            idx = _parent.indexOfChild(_me);
+            if(idx === 0)
+                return null;
+
+            return _parent.child(idx - 1);
+        };
+
         ///////// EVENT REGISTRATION ////////
         if(!row)
             return;
@@ -1528,7 +1608,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         for(i = 0; i < count; ++i)
         {
             buildRow( node.insertChild(i, 
-                new TreeRow(rows[i], _self.data.child(node.data(), i))));
+                new TreeRow(rows[i], 
+                            _self.data.child(node.data(), i))));
         }
 
         node.expanded(true);
@@ -2056,10 +2137,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
 
         visitChildren(_root, "__atg_children", function(parent, node, i) {
-            if(!node.expanded())
-                expand(node);
-
-            node.selected(selected);
+//            _tasks.push(function() {
+//                println("processing node: " + node.name);
+                if(!node.expanded())
+                    expand(node);
+                node.selected(selected);
+//            });
             return true;
         });
         _selectAll = selected;
@@ -2286,4 +2369,19 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     
     this.columnModel = columns;
     this.data = data;
+
+//    // start the task processor
+//    setInterval(function() {
+//        // this has a race condition, but JavaScript doesn't
+//        // appropriate synchronization constructs until
+//        // version 1.7!
+//        if(_working || _tasks.length === 0)
+//            return;
+//
+//        // process the task
+//        _working = true;
+//        fn = _tasks.shift();
+//        fn();
+//        _working = false;
+//    }, 20);
 };

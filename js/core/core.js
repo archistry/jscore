@@ -318,7 +318,25 @@ Object.prototype.object_id = function()
  * <p>
  * If both objects have a #valueOf method defined, it is
  * invoked and the value is compared using the strict equality
- * operator <code>===</code>.
+ * operator <code>===</code>.  NOTE:  in this case, if you are
+ * defining a custom valueOf method that can return a mixture
+ * of boxed and unboxed value types, you MUST define the
+ * method as:
+ * <pre>
+ *   var A = function(val)
+ *   {
+ *      this.valueOf = function() { return val.valueOf(); };
+ *   }
+ * </pre>
+ * If you don't, then you might get the scenario where on
+ * instance is initialized with a this reference to a number
+ * and your comparison value is manually initialized with a
+ * number.  Since they are of different types, the
+ * <code>===</code> check will fail.  However, ensuring that
+ * the valueOf() operator is called as part of the valueOf
+ * override will prevent any ambiguity (and possibly save you
+ * an hour or two trying to figure out why things don't work
+ * quite as you might've expected).
  * </p>
  * <p>
  * If both objects do not have a #valueOf method, the strict
@@ -374,13 +392,22 @@ Object.prototype.object_id = function()
 
 Object.prototype.equals = function(rhs)
 {
-    if(rhs === undefined)
+    if(rhs === undefined || rhs === null)
         return false;
 
-    if(this.valueOf && rhs.valueOf)
-        return this.valueOf() === rhs.valueOf();
+    var lval = this;
+    var rval = rhs;
+    if(this.valueOf)
+        lval = this.valueOf();
 
-    return this === rhs;
+    if(rhs.valueOf)
+        rval = rhs.valueOf();
+
+//    println("lval: {0} vs. rval: {1}", [ lval, rval ]);
+//    println("typeof lval: " + typeof lval);
+//    println("typeof rval: " + typeof rval);
+//    println("equal? " + (lval === rval));
+    return lval === rval;
 };
 
 /**

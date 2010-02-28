@@ -104,6 +104,7 @@
     
   </style>
   <script type="text/javascript" src="../archistry-core-min.js"></script>
+  <script type="text/javascript" src="tree.js"></script>
 </head>
  
 <body>
@@ -115,32 +116,16 @@
     $(function()
     {
       var editor = new archistry.ui.editor.TextFieldEditor();
-      
-      var darray = [];
-      for(var i = 0; i < 10; ++i)
-//      for(var i = 0; i < 2; ++i)
-      {
-//        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
-        darray.add({ key: "Key " + i, value: "Value " + i, children: [
-          { key: "Child 1", value: "Child Value #1", children: [
-            { key: "Child Child 1", value: "Child Child Value #1" },
-            { key: "Child Child 2", value: "Child Child Value #2" }
-          ]},
-          { key: "Child 2", value: "Child Value #2", children: [
-            { key: "Child Child 1", value: "Child Child Value #1" },
-            { key: "Child Child 2", value: "Child Child Value #2" }
-          ]}
-        ]});
-      }
-
       archistry.ui.Console.attach("console");
       var console = archistry.ui.Console;
 
       var cols = new archistry.ui.ArrayColumnModel([
-        { key: "key", label: "Key" },
-        { key: "value", label: "Value" }
+        { key: "name", label: "Name" },
+        { key: "size", label: "Size" },
+        { key: "type", label: "Type" },
+        { key: "modified", label: "Modified" }
       ]);
-      var data = new archistry.data.tree.ObjectTreeModel({ key: "Root", value: "I'm the root!", children: darray}, "children");
+      var data = new archistry.data.tree.ObjectTreeModel(tree, "children");
       var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
         showRoot: true,
         showSelectorColumn: true,

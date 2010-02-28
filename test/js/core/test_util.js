@@ -41,6 +41,29 @@
 Jester.testing("Utility library functionality", {
 	tests: [
 		{
+			what: "Object#equals works correctly",
+			how: function(context, result)
+			{
+                var A = function(val)
+                {
+                    this.valueOf = function() { return val; };
+                };
+
+                a = new A(1);
+                a1 = new A(1);
+
+				result.check("object equals should use valueOf automatically", {
+					actual: a.equals(a1),
+					expect: true
+				});
+
+                result.check("object equals should equal primitive", {
+                    actual: a.equals(1),
+                    expect: true
+                });
+			}
+		},
+		{
 			what: "Object.mixin works correctly",
 			how: function(context, result)
 			{
@@ -335,6 +358,21 @@ Jester.testing("Utility library functionality", {
 					actual: arr.indexOf(one),
 					expect: 0
 				});
+
+                function B(arg)
+                {
+                    this.valueOf = function() { return arg; }
+                }
+
+                arr = [ new B("foo"), new B("bar") ];
+                result.check("array indexOf works for valueOf()", {
+                    actual: arr.indexOf(new B("foo")),
+                    expect: 0
+                });
+                result.check("array indexOf works for valueOf()", {
+                    actual: arr.indexOf(new B("bar")),
+                    expect: 1
+                });
 			}
 		},
 		{
