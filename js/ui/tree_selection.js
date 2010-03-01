@@ -266,19 +266,18 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     function nextNode(node)
     {
         var nxt = null;
+        if(node.childCount() !== 0)
+        {
+            return node.firstChild();
+        }
+
         if(nxt = node.nextSibling())
         {
-            if(nxt.childCount() === 0)
-            {
-                return nxt;
-            }
-            else
-            {
-                return nxt.lastChild();
-            }
+            return nxt;
         }
+        
         nxt = node.parent();
-        if(nxt)
+        if(nxt = node.parent())
         {
             return nxt.nextSibling();
         }
@@ -421,12 +420,12 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         var range = rangeForNode(node);
         if(range)
         {
-            println("found range: " + range.toString());
-            // are we going to join two ranges?
-            // FIXME:  there's gotta be a more efficient way
-            // do this (or maybe the rangeForNode stuff)
             var prev = prevNode(node);
             var nxt = nextNode(node);
+            println("prev node: [{0}], selected: {1}", [ 
+                        prev.path().join(", "), prev.selected() ]);
+            println("next node: [{0}], selected: {1}", [ 
+                        nxt.path().join(", "), nxt.selected() ]);
             if(prev.selected() && nxt.selected())
             {
                 println("join ranges!");

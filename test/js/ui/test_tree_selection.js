@@ -291,6 +291,168 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: sib.path()
                 });
 			}
+		},
+		{
+			what: "Join child node selection with parent",
+			how: function(context, result)
+			{
+                var selection = new TreeSelection(this);
+                var node = context.tree.firstChild();
+                node.selected(true);
+                selection.add(node);
+
+                var child = node.child(1);
+                child.selected(true);
+                selection.add(child);
+                
+                var range = [];
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be two selection ranges", {
+                    actual: range.length,
+                    expect: 2
+                });
+               
+                // now, we join the selection
+                child = node.firstChild();
+                child.selected(true);
+                selection.add(child);
+
+                range.clear();
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be 1 selection range", {
+                    actual: range.length,
+                    expect: 1
+                });
+               
+                result.check("The range contains correct node count", {
+                    actual: range[0].length,
+                    expect: 3
+                });
+
+                result.check("The correct node is the start of the range", {
+                    actual: range[0].start,
+                    expect: node.path()
+                });
+                
+                result.check("The correct node is the end of the range", {
+                    actual: range[0].end,
+                    expect: node.child(1).path()
+                });
+			}
+		},
+		{
+			what: "Join child node selection with parent next sibling",
+			how: function(context, result)
+			{
+                var selection = new TreeSelection(this);
+                var node = context.tree.firstChild();
+                var child = node.lastChild();
+                child.selected(true);
+                selection.add(child);
+                var sibling = node.nextSibling();
+                child = sibling.firstChild();
+                child.selected(true);
+                selection.add(child);
+
+                var range = [];
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be two selection ranges", {
+                    actual: range.length,
+                    expect: 2
+                });
+               
+                // now, we join the selection
+                sibling.selected(true);
+                selection.add(sibling);
+
+                range.clear();
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be 1 selection range", {
+                    actual: range.length,
+                    expect: 1
+                });
+               
+                result.check("The range contains correct node count", {
+                    actual: range[0].length,
+                    expect: 3
+                });
+
+                result.check("The correct node is the start of the range", {
+                    actual: range[0].start,
+                    expect: node.lastChild().path()
+                });
+                
+                result.check("The correct node is the end of the range", {
+                    actual: range[0].end,
+                    expect: sibling.firstChild().path()
+                });
+			}
+		},
+		{
+			what: "Join child node selection with parent prev sibling last child",
+			how: function(context, result)
+			{
+                var selection = new TreeSelection(this);
+                var node = context.tree.firstChild();
+                var sibling = node.nextSibling();
+                var child = sibling.firstChild();
+                child.selected(true);
+                selection.add(child);
+                child = node.lastChild();
+                child.selected(true);
+                selection.add(child);
+
+                var range = [];
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be two selection ranges", {
+                    actual: range.length,
+                    expect: 2
+                });
+               
+                // now, we join the selection
+                sibling.selected(true);
+                selection.add(sibling);
+
+                range.clear();
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be 1 selection range", {
+                    actual: range.length,
+                    expect: 1
+                });
+               
+                result.check("The range contains correct node count", {
+                    actual: range[0].length,
+                    expect: 3
+                });
+
+                result.check("The correct node is the start of the range", {
+                    actual: range[0].start,
+                    expect: node.lastChild().path()
+                });
+                
+                result.check("The correct node is the end of the range", {
+                    actual: range[0].end,
+                    expect: sibling.firstChild().path()
+                });
+			}
 		}
 	]
 });
