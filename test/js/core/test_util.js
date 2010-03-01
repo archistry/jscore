@@ -556,6 +556,22 @@ Jester.testing("Core library functionality", {
 			}
 		},
 		{
+			what: "ensure Array.clear works correctly",
+			how: function(context, result)
+			{
+				var arr0 = [];
+				arr0.add("one");
+				arr0.add(1);
+				arr0.add(2);
+				arr0.add(3);
+
+				result.check("array clear removes all elements and returns this", {
+					actual: arr0.clear(),
+					expect: []
+				});
+			}
+		},
+		{
 			what: "ensure String trim methods work correctly",
 			how: function(context, result)
 			{

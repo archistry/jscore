@@ -653,13 +653,11 @@ Array.prototype.remove = function(obj)
  * another array instance.
  */
 
-if(!Array.prototype.clear)
+Array.prototype.clear = function()
 {
-    Array.prototype.clear = function()
-    {
-        this.splice(0, this.length);
-    };
-}
+    this.splice(0, this.length);
+    return this;
+};
 
 if(!Array.prototype.each)
 {
@@ -949,7 +947,7 @@ String.format = function(source, params) {
         return rval;
     };
 
-    if(arguments.length === 1)
+    if(arguments.length === 1 || !params)
     {
         return source.toString();
     }

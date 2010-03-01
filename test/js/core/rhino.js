@@ -52,6 +52,7 @@ load('../../rhino-core-min.js');
 
 // load the tests
 load('test_util.js');
+load('test_string_format.js');
 load('test_observer.js');
 load('test_path.js');
 
