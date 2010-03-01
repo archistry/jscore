@@ -795,7 +795,7 @@ String.prototype.trim = function()
  * href="http://msdn.microsoft.com/en-us/library/system.string.format%28VS.71%29.aspx">C#
  * String#format method</a> and was originally written by <a
  * href="http://blairmitchelmore.com/javascript/string.format">Blair
- * Mitchelmore</a> and downloaded on 210-01-15T19:29.
+ * Mitchelmore</a> (<em>accessed on 210-01-15T19:29</em>).
  * However, it has been mostly rewritten to more closely implement
  * the C# String#format specification and to "do the right
  * thing" when giving it a single object argument that isn't a
@@ -805,9 +805,10 @@ String.prototype.trim = function()
  * </h3>
  * <p>
  * Format specifiers take the basic form of { <em>N [, M ][:
- * format ]} where:
+ * format ]</em> } where:
  * <ul>
  * <li>
+ * <p>
  * <em>N</em> is a zero-based reference to parameters
  * specified after the format string.  This implementation
  * allows all parameters to be specified as either members of
@@ -816,8 +817,10 @@ String.prototype.trim = function()
  * method.  If the requested parameter is not present in the
  * argument list, the empty string will be substituted in its
  * place.
+ * </p>
  * </li>
  * <li>
+ * <p>
  * <em>M</em> is an optional integer indicating the
  * minimum width of the formatted value.  If <em>M</em> is
  * negative, then the value will be left justified.  If
@@ -826,6 +829,7 @@ String.prototype.trim = function()
  * the length of the value is greater than specified, the
  * value is ignored and the width of the substition will be
  * the width of the formatted value.
+ * </p>
  * </li>
  * <li>
  * <p>
@@ -856,7 +860,7 @@ String.prototype.trim = function()
  * <code>{</code> or <code>}</code> in the resulting string,
  * it must be doubled, e.g. <code>String.format("{{my
  * braces}}")</code> will generate the string:
- * <code>"{}"</code>.
+ * <code>"{my braces}"</code>.
  * </p>
  * <p>
  * Unlike the original version, if the first argument to the
