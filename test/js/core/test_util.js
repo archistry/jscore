@@ -38,7 +38,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-Jester.testing("Utility library functionality", {
+Jester.testing("Core library functionality", {
 	tests: [
 		{
 			what: "Object#equals works correctly",
@@ -60,6 +60,98 @@ Jester.testing("Utility library functionality", {
                 result.check("object equals should equal primitive", {
                     actual: a.equals(1),
                     expect: true
+                });
+			}
+		},
+		{
+			what: "Object#keys works correctly",
+			how: function(context, result)
+			{
+                var obj = {};
+                obj["key1"] = true;
+                obj[context] = "context";
+                obj.method1 = function() {};
+
+                var functionlist = [];
+                var proplist = [];
+                for(k in obj)
+                {
+                    if(typeof obj[k] === 'function')
+                        functionlist.add(k);
+                    else
+                        proplist.add(k);
+                }
+                functionlist.sort();
+                proplist.sort();
+                var allprops = functionlist.concat(proplist);
+                allprops.sort();
+
+                var keys = obj.keys().sort();
+				result.check("default object key count", {
+					actual: keys.length,
+					expect: 2
+				});
+
+                result.check("default object key values are correct", {
+                    actual: keys,
+                    expect: proplist
+                });
+
+                keys = obj.keys(true).sort();
+				result.check("object key count", {
+					actual: keys.length,
+					expect: allprops.length
+				});
+
+                result.check("object key values are correct", {
+                    actual: keys,
+                    expect: allprops
+                });
+			}
+		},
+		{
+			what: "Object#clear works correctly",
+			how: function(context, result)
+			{
+                var obj = {};
+                obj["key1"] = true;
+                obj[context] = "context";
+                obj["key2"] = "value";
+                obj.method1 = function() {};
+
+                var functionlist = [];
+                var proplist = [];
+                for(k in obj)
+                {
+                    if(typeof obj[k] === 'function')
+                        functionlist.add(k);
+                    else
+                        proplist.add(k);
+                }
+                functionlist.sort();
+                proplist.sort();
+                var allprops = functionlist.concat(proplist).sort();
+
+                var keys = obj.keys(true).sort();
+				result.check("initial object key count", {
+					actual: keys.length,
+					expect: allprops.length
+				});
+
+                result.check("pre-clear object key values are correct", {
+                    actual: keys,
+                    expect: allprops
+                });
+
+                keys = obj.clear().keys(true).sort();
+				result.check("object key count", {
+					actual: keys.length,
+					expect: functionlist.length
+				});
+
+                result.check("post-clear object key values are correct", {
+                    actual: keys,
+                    expect: functionlist
                 });
 			}
 		},

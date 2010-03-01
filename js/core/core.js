@@ -455,6 +455,62 @@ Object.prototype.compare = function(rhs)
         return 1;
 };
 
+/**
+ * This method provides "clearing" of object properties which
+ * are not methods/functions.  It is intended mainly for use
+ * on Object instances used as associative arrays or hashes to
+ * easily clear the keys.
+ * <p>
+ * WARNING:  The criteria for deletion of the object
+ * properties is only that they are not functions, so any
+ * nested objects will also be cleared.  Therefore, using this
+ * method on objects representing complex structures like
+ * namespaces can be catastrophic!
+ * </p>
+ *
+ * @returns this
+ */
+
+Object.prototype.clear = function()
+{
+    for(k in this)
+    {
+        var val = this[k];
+        if(typeof val !== 'function')
+            delete this[k];
+    }
+
+    return this;
+};
+
+/**
+ * This method is used to retrieve all of the property keys
+ * for an object as an array.
+ * <p>
+ * By default, only non-method keys are returned.  However,
+ * this behavior can be changed by passing 'true' as the
+ * optional argument to retrieve all properties of the object.
+ * </p>
+ *
+ * @param includeMethods (optional) set to true to include
+ *      property keys whose values are functions.
+ * @return the property key values as an array
+ */
+
+Object.prototype.keys = function(includeMethods)
+{
+    var keys = [];
+    for(k in this)
+    {
+        if(typeof this[k] === 'function' && !includeMethods)
+            continue;
+
+        keys.add(k);
+    }
+
+    return keys;
+};
+
 ///**
 // * This method redefines the default toString to display the
 // * object id rather than the meaningless [object Object]
