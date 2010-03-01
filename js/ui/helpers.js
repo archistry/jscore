@@ -378,13 +378,7 @@ archistry.ui.Helpers = {
 	 *		key set.
 	 */
 
-	setDefault: function(key, val)
-	{
-		if(this[key] === undefined)
-		{
-			this[key] = val;
-		}
-	},
+	setDefault: archistry.core.Util.setDefault,
 
     /**
      * This method is used to create a new error object with
@@ -396,12 +390,5 @@ archistry.ui.Helpers = {
      * @return an Error object
      */
 
-    createError: function(fmt)
-    {
-        var msg = String.format("{0}\n{1}", [
-                String.format.apply(this, arguments),
-                printStackTrace()
-            ]);
-        return new Error(msg);
-    }
+    createError: archistry.core.Util.createError
 };
