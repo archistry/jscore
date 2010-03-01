@@ -329,7 +329,8 @@ Jester.testing("TreeSelectionRange functionality", {
                     actual: range.length,
                     expect: 1
                 });
-               
+             
+                println(range.length);
                 result.check("The range contains correct node count", {
                     actual: range[0].length,
                     expect: 3

@@ -61,9 +61,20 @@ archistry.ui.selection.Notifier = function(sender)
 {
 	this.mixin(new archistry.core.SignalSource(sender));
 	this.addValidSignals([
+		"selection-cleared",
 		"selection-changed",
 		"selection-extended"
 	]);
+
+    /**
+     * This method is used to fire the "selection-cleared"
+     * signal to the registered observers.
+     */
+
+    this.fireSelectionCleared = function()
+    {
+        this.signalEmit("selection-cleared");
+    };
 
 	/**
 	 * This method is used to fire the "selection-changed"
@@ -89,10 +100,8 @@ archistry.ui.selection.Notifier = function(sender)
 	 *		// this === selection
 	 *   }
 	 * </pre>
-	 * <p>
-	 * The delta parameter represents the item added to the
-	 * selection.
-	 * </p>
+     * @param delta an array of the items added to the
+     *      selection.
 	 */
 
 	this.fireSelectionExtended = function(delta)

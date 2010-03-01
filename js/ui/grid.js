@@ -664,7 +664,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     var CheckboxRenderer = archistry.ui.CheckboxRenderer;
     var GridStyle = archistry.ui.GridStyles;
     var Style = archistry.ui.Styles;
-    var MultiSelectionModel = archistry.ui.selection.MultiSelectionModel;
+    var TreeSelection = archistry.ui.selection.TreeSelection;
 
     if(!this.layout)
     {
@@ -712,18 +712,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 //            return 0;
 //        }
 //    });
-    var _selection = new MultiSelectionModel({
-        sorter: function(l, r)
-        {
-            var ld = l.depth();
-            var rd = r.depth();
-            if(ld === rd)
-                return l.rowIndex() - r.rowIndex();
-
-            return ld - rd;
-        }
-    });
-
+    var _selection = new TreeSelection(this);
     var _regexpHidden = new RegExp(Style.Layout.HIDDEN);
 
     ////// DEFINE INTERNAL API SHARED/CALLED BY TREEROW //////
@@ -1493,7 +1482,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     function clearSelection()
     {
         _selectAll = false;
-        _selection.each(function() { this.selected(false); });
         _selection.clear();
         if(_header)
         {
@@ -2073,10 +2061,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         // FIXME:  selecting cells is not currently supported
         if(!path)
         {
-            _selection.each(function() {
-                this.selected(false);
-                render(this);
-            });
+            _selection.clear();
             return;
         }
         
@@ -2156,9 +2141,15 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      */
 
     this.__defineGetter__("selection", function() {
+        // FIXME:  We're kinda ignoring the whole selection
+        // range thing doing it this way, but I suppose that's
+        // really what the callers want--just the list of
+        // paths. *sigh*
         var paths = [];
         _selection.each(function() {
-            paths.add(this.path());
+            this.each(function() { 
+                paths.add(this.path());
+            });
         });
         return paths;
     });

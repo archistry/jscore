@@ -56,6 +56,12 @@ namespace("archistry.ui.selection");
  * ordering to actually represent the logically contiguous
  * range.  All management in this respect must be handled
  * elsewhere.
+ * </p>
+ * <p>
+ * Also, right now we DO NOT support cell selection events.
+ * Therefore, the API should be considered somewhat draft and
+ * likely to change.
+ * </p>
  *
  * @property owner the owner of the selection
  * @property start the start path of the selection range
@@ -109,7 +115,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
         idx = _nodes.indexOf(node);
         if(idx === -1)
         {
-            println("Node not found in range");
+//            println("Node not found in range");
             return null;
         }
 
@@ -125,7 +131,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
         }
 
         // we're in the middle of the list somewhere
-        println("last: {0}; idx: {1}", [ last, idx ]);
+//        println("last: {0}; idx: {1}", [ last, idx ]);
         var ns = _nodes.splice(idx, _nodes.length - idx);
         ns.shift(); // get rid of the first node
 
@@ -207,9 +213,11 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
 archistry.ui.selection.TreeSelection = function(owner, options)
 {
-    this.mixin(archistry.ui.Helpers);
+    this.mixin(archistry.core.Util);
+    this.mixin(new archistry.ui.selection.Notifier(this));
 	this.mixin(options);
-    
+    var _self = this;
+
     /**
      * This variable is used to hold the mapping between tree
      * nodes and their member selection (if any) so that we
@@ -298,7 +306,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
     function rowOrder(lhs, rhs)
     {
-        println("checking row order for [{0}] vs. [{1}]", [ lhs, rhs ]);
+//        println("checking row order for [{0}] vs. [{1}]", [ lhs, rhs ]);
         if(rhs.length > lhs.length)
         {
             for(var i = 0; i < lhs.length; ++i)
@@ -311,7 +319,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             return -1; // lhs is shorter, but equal pc's
         }
         var rc = lhs.each(function(i) {
-            println("i: " + i);
+//            println("i: " + i);
             if(rhs[i] !== undefined)
             {
                 if(this < rhs[i])
@@ -325,7 +333,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             }
         });
 
-        println("returning: " + (rc === undefined ? 0 : rc));
+//        println("returning: " + (rc === undefined ? 0 : rc));
         if(rc === undefined)
             return 0;
 
@@ -355,9 +363,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         var prev = prevNode(node);
         var nxt = nextNode(node);
 
-        println("prev: " + prev.path().join(", "));
-        println("node: " + node.path().join(", "));
-        println("next: " + nxt.path().join(", "));
+//        println("prev: " + prev.path().join(", "));
+//        println("node: " + node.path().join(", "));
+//        println("next: " + nxt.path().join(", "));
         var tmp = null;
         if(prev && prev.selected())
         {
@@ -397,14 +405,21 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
     function join(r1, node, r2)
     {
+        var delta = [ node.path() ];
+
         r1.insert(-1, node);
         _nodeIndex[node] = r1;
         r2.each(function(i) {
+            delta.add(this.path());
             r1.insert(-1, this);
             _nodeIndex[this] = r1;
         });
         _rangelist.remove(r2);
         delete r2;
+        
+        _self.fireSelectionExtended(delta);
+
+        return r1;
     }
 
 	/**
@@ -422,22 +437,22 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         {
             var prev = prevNode(node);
             var nxt = nextNode(node);
-            println("prev node: [{0}], selected: {1}", [ 
-                        prev.path().join(", "), prev.selected() ]);
-            println("next node: [{0}], selected: {1}", [ 
-                        nxt.path().join(", "), nxt.selected() ]);
+//            println("prev node: [{0}], selected: {1}", [ 
+//                        prev.path().join(", "), prev.selected() ]);
+//            println("next node: [{0}], selected: {1}", [ 
+//                        nxt.path().join(", "), nxt.selected() ]);
             if(prev.selected() && nxt.selected())
             {
-                println("join ranges!");
+//                println("join ranges!");
                 // FIXME:  need to join ranges!
                 range = join(rangeForNode(prev), node, rangeForNode(nxt));
             }
             else
             {
                 var path = node.path();
-                println("insert node into range. check1: {0}, check2: {1}", 
-                        [ rowOrder(range.start, path), 
-                          rowOrder(range.end, path) ]);
+//                println("insert node into range. check1: {0}, check2: {1}", 
+//                        [ rowOrder(range.start, path), 
+//                          rowOrder(range.end, path) ]);
                 // put the node in the correct spot
                 if(rowOrder(range.start, path) > 0)
                 {
@@ -447,8 +462,10 @@ archistry.ui.selection.TreeSelection = function(owner, options)
                 {
                     range.insert(-1, node);
                 }
+
+                // Selection extended is sent by join too
+                this.fireSelectionExtended([ node.path() ]);
             }
-            // fire selection extended!
         }
         else
         {
@@ -457,8 +474,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             range.insert(0, node);
             _rangelist.add(range);
         }
+//        println("range: {0}", range);
         _nodeIndex[node] = range;
-        // fire selection changed!
+        this.fireSelectionChanged();
 	};
 
 	/**
@@ -483,6 +501,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             });
             _rangelist.add(r2);
         }
+        this.fireSelectionChanged();
 	};
 
     /**
@@ -522,8 +541,13 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
 	this.clear = function()
 	{
-		_selection = [];
-//		this.fireSelectionChanged();
+        // make sure we deselect the individual nodes
+        _nodeIndex.keys().each(function(i) {
+            this.selected(false);
+        });
+		_selection.clear();
+        _nodeIndex.clear();
+		this.fireSelectionCleared();
 	};
 
     /**
