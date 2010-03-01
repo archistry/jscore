@@ -2,24 +2,24 @@
 //
 // Copyright (c) 2009 Archistry Limited
 // All rights reserved.
-// 
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions
 // are met:
-// 
+//
 //     * Redistributions of source code must retain the above
 //     copyright notice, this list of conditions and the following
 //     disclaimer.
-// 
+//
 //     * Redistributions in binary form must reproduce the above
 //     copyright notice, this list of conditions and the following
 //     disclaimer in the documentation and/or other materials provided
 //     with the distribution.
-// 
+//
 //     * Neither the name Archistry Limited nor the names of its
-//     contributors may be used to endorse or promote products derived 
-//     from this software without specific prior written permission.  
-// 
+//     contributors may be used to endorse or promote products derived
+//     from this software without specific prior written permission.
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -48,20 +48,20 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 
+ *
  *     * Redistributions of source code must retain the above
  *       copyright notice, this list of conditions and the following
  *       disclaimer.
- * 
+ *
  *     * Redistributions in binary form must reproduce the above
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- * 
+ *
  *     * Neither the name Archistry Limited nor the names of its
- *       contributors may be used to endorse or promote products derived 
- *       from this software without specific prior written permission.  
- * 
+ *       contributors may be used to endorse or promote products derived
+ *       from this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -97,7 +97,7 @@
  *
  * @param ns the namespace string to create
  */
- 
+
 namespace = function(ns)
 {
 	if('string' != typeof ns)
@@ -269,7 +269,7 @@ Object.prototype.inspect = function()
 	for(var p in this)
 	{
 		// fix required for Firefox/jQuery
-		if("domConfig" === p)	
+		if("domConfig" === p)
 			return "";
 
 		s += " " + p + "=";
@@ -614,7 +614,7 @@ Array.prototype.removeRange = function(from, to) {
 
 /**
  * This method will remove the specified object at the given
- * index.  It is based on the above implementation 
+ * index.  It is based on the above implementation
  * of removeRange (I changed the name), but it returns the
  * object that was removed.
  *
@@ -660,7 +660,7 @@ if(!Array.prototype.clear)
         this.splice(0, this.length);
     };
 }
-        
+
 if(!Array.prototype.each)
 {
     /**
@@ -730,7 +730,7 @@ Array.prototype.equals = function(rhs)
 {
     if(this.length != rhs.length)
         return false;
-    
+
     for(var i = 0; i < this.length; ++i)
     {
         var l = this[i];
@@ -789,54 +789,207 @@ String.prototype.trim = function()
 	return s.ltrim().rtrim();
 };
 
-// This implementation is from Blair Mitchelmore and was
-// downloaded from http://blairmitchelmore.com/javascript/string.format
-// on 2010-01-15T19:29 by ast
-
-String.prototype.format = function() {
-  return String.format(this, arguments.length == 1 ? arguments[0] : arguments);
-};
+/**
+ * This method provides a way to format strings in a similar
+ * manner to the <a
+ * href="http://msdn.microsoft.com/en-us/library/system.string.format%28VS.71%29.aspx">C#
+ * String#format method</a> and was originally written by <a
+ * href="http://blairmitchelmore.com/javascript/string.format">Blair
+ * Mitchelmore</a> and downloaded on 210-01-15T19:29.
+ * However, it has been mostly rewritten to more closely implement
+ * the C# String#format specification and to "do the right
+ * thing" when giving it a single object argument that isn't a
+ * string.
+ * <h3>
+ * Format Specifiers
+ * </h3>
+ * <p>
+ * Format specifiers take the basic form of { <em>N [, M ][:
+ * format ]} where:
+ * <ul>
+ * <li>
+ * <em>N</em> is a zero-based reference to parameters
+ * specified after the format string.  This implementation
+ * allows all parameters to be specified as either members of
+ * a single array parameter, or as a variable-length list of
+ * parameters that should be used as the arguments to this
+ * method.  If the requested parameter is not present in the
+ * argument list, the empty string will be substituted in its
+ * place.
+ * </li>
+ * <li>
+ * <em>M</em> is an optional integer indicating the
+ * minimum width of the formatted value.  If <em>M</em> is
+ * negative, then the value will be left justified.  If
+ * <em>M</em> is positive, the the value will be right
+ * justified.  If the vaule of <em>M</em> is not specified or
+ * the length of the value is greater than specified, the
+ * value is ignored and the width of the substition will be
+ * the width of the formatted value.
+ * </li>
+ * <li>
+ * <p>
+ * <em>format</em> is an optional string that is passed to
+ * either a custom formatter or the toString method of the
+ * specific object to allow further formatting to be performed
+ * in a class-specific manner.  Custom formatters may be
+ * defined for either the object or the class prototype, but
+ * they MUST have the following signature:
+ * <pre>
+ *   function formatString(<em>format</em>) {
+ *     // apply custom formatting to this reference
+ *     return formattedString;
+ *   }
+ * </pre>
+ * </p>
+ * <p>
+ * If the <code>#formatString</code> method exists in either
+ * the object or the prototype, it will be used in preference
+ * to the <code>#toString</code> method, as per Blair's
+ * original implementation.
+ * </p>
+ * </li>
+ * </ul>
+ * </p>
+ * <p>
+ * Like the C# implementation, to include a literal
+ * <code>{</code> or <code>}</code> in the resulting string,
+ * it must be doubled, e.g. <code>String.format("{{my
+ * braces}}")</code> will generate the string:
+ * <code>"{}"</code>.
+ * </p>
+ * <p>
+ * Unlike the original version, if the first argument to the
+ * method is not a string, it will be automatically converted
+ * to the string representation of the object and no
+ * additional formatting will be performed.
+ * </p>
+ *
+ * @param fmt either a format string following the format
+ *      specifiers above or one of a literal or an object
+ *      instance to be converted as a string.
+ * @param args the remaining arguments (if any) will be
+ *      treated as objects to be formatted.  If the second
+ *      argument is a single array, it MUST contain the
+ *      objects referenced by the format string.
+ * @returns the formatted string
+ */
 
 String.format = function(source, params) {
-  var _toString = function(obj, format) {
-    var ctor = function(o) {
-      if (typeof o == 'number')
-        return Number;
-      else if (typeof o == 'boolean')
-        return Boolean;
-      else if (typeof o == 'string')
-        return String;
-      else
-        return o.constructor;
-    }(obj);
-    var proto = ctor.prototype;
-    var formatter = typeof obj != 'string' ? proto ? proto.format || proto.toString : obj.format || obj.toString : obj.toString;
-    if (formatter)
-      if (typeof format == 'undefined' || format == "") 
-        return formatter.call(obj);
-      else
-        return formatter.call(obj,format);
-    else
-      return "";
-  };
-  if ( arguments.length == 1 )
-    return function() {
-      return String.format.apply( null, [source].concat( Array.prototype.slice.call( arguments, 0 ) ) );
+    var val = null;
+    var _toString = function(obj, width, format) {
+        if(typeof obj === 'number')
+        {
+            obj = new Number(obj);
+        }
+        else if(typeof obj === 'boolean')
+        {
+            obj = new Boolean(obj);
+        }
+
+//        print("obj: " + obj);
+//        print("typeof obj: " + typeof obj);
+//        print("width: " + width);
+//        print("format: " + format);
+
+        var rval = "";
+        if(obj.formatString)
+        {
+            rval = obj.formatString(format);
+        }
+        else
+        {
+            if(format)
+            {
+                if(format.match(/^\d+$/))
+                {
+                    format = parseInt(format);
+                }
+                else if(format.match(/^\d+.\d+$/))
+                {
+                    format = parseFloat(format);
+                }
+                rval = obj.toString(format);
+            }
+            else
+            {
+                rval = obj.toString();
+            }
+        }
+        
+        if(width !== undefined)
+        {
+            width = parseInt(width);
+            var pad = 0;
+//            print("rval.length: " + rval.length);
+//            print("pad: " + (width + rval.length));
+//            print("pad2: " + (rval.length - width));
+            if(width < 0 && (pad = width + rval.length) < 0)
+            {
+                for(var i = pad; i < 0; ++i)
+                {
+                    rval += " ";
+                }
+            }
+            else if(width > 0 && (pad = rval.length - width) < 0)
+            {
+                var s = "";
+                for(var i = pad; i < 0; ++i)
+                {
+                    s += " ";
+                }
+                rval = s + rval;
+            }
+        }
+
+        return rval;
     };
-  if ( arguments.length == 2 && typeof params != 'object' && typeof params != 'array')
-    params = [ params ];
-  if ( arguments.length > 2 ) 
-    params = Array.prototype.slice.call(arguments, 1);
-  source = source.replace(/\{\{|\}\}|\{([^}: ]+?)(?::([^}]*?))?\}/g, function(match, num, format) {
-    if (match == "{{") return "{";
-    if (match == "}}") return "}";
-    if (typeof params[num] != 'undefined' && params[num] !== null) {
-      return _toString(params[num], format);
-    } else {
-      return "";
+
+    if(arguments.length === 1)
+    {
+        return source.toString();
     }
-  });
-  return source;
+    else if(arguments.length === 2 && !(params instanceof Array))
+    {
+        params = [ params ];
+    }
+    else if(arguments.length > 2)
+    {
+        params = [].slice.call(arguments, 1);
+    }
+//    print("\n\nparams: " + params.join(", "));
+//    print("params: " + params.inspect());
+//    print("params.length: " + params.length);
+
+    val = source.replace(/\{\{|\}\}|\{(\d+)(?:,(-?\d+))?(?::([^}]*))?\}/g,
+            function(match, index, width, format) {
+        if("{{" === match) return "{";
+        if("}}" === match) return "}";
+//        print("typeof index: " + typeof index);
+        index = parseInt(index);
+        if(params[index] !== undefined)
+        {
+            return _toString(params[index], width, format);
+        }
+        else
+        {
+            return "";
+        }
+    });
+
+//    print("returning: " + val);
+    return val;
 };
 
-// end code from Blair Mitchelmore
+/**
+ * This method allows the string instance to be
+ * directly used as the format specifier to format the
+ * arguments per {@link String#format}.
+ *
+ * @param args the arguments to {@link String#format}
+ * @return the formatted string
+ */
+
+String.prototype.format = function() {
+    return String.format(this, arguments);
+};
