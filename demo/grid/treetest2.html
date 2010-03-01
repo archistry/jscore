@@ -187,7 +187,7 @@
       $("#delete-rows").click(function(event) {
         grid.selection.reverseEach(function() {
 //        grid.selection.each(function() {
-          var path = this.path();
+          var path = this;
 //          println("node: {0}; path: {1}", [ this.key, printPath(path) ]);
           grid.deleteRow(path);
         });

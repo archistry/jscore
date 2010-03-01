@@ -68,6 +68,11 @@ Jester.testing("String#format functionality", {
                     actual: String.format("{1}", "test"),
                     expect: ""
                 });
+
+                result.check("second arg of 3 is array", {
+                    actual: String.format("my array: {0} is {1}", [ 0, 1 ], 2),
+                    expect: "my array: 0,1 is 2"
+                });
 			}
 		},
 		{

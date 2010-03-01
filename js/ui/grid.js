@@ -853,6 +853,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         var _children = [];
         var _deleted = false;
         var _deletedChildren = [];
+        var _indexOfChild = indexOfChild;
 
         /**
          * This method is used to retrieve the actual column
@@ -1004,7 +1005,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
         this.indexOfChild = function(node)
         {
-            return indexOfChild(_me, _childKey, node);
+            return _indexOfChild(_me, _childKey, node);
         };
 
         /**
@@ -1218,7 +1219,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 return;
             }
 
-            _me.__atg_selected = true;
+            return _me.__atg_selected;
         };
 
         /**
@@ -1287,6 +1288,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 return null;
 
             idx = _parent.indexOfChild(_me);
+            ____archistry.ui.Console.println("index of {0} is {1}", this.path(), idx);
             if(idx === 0)
                 return null;
 

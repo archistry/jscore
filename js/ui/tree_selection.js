@@ -40,6 +40,16 @@
 
 namespace("archistry.ui.selection");
 
+// This variable is a total hack to allow me access to the
+// archistry namespace from within the browser so I can create
+// references to objects within instance methods defined
+// within closures.  It appears that the global and the window
+// namespaces are parallel but sometimes exclusive, because
+// archistry is clearly defined at the global scope, but it
+// just isn't available IN THE BROWSER to instance methods.
+
+var ____archistry = archistry;
+
 /**
  * @class
  *
@@ -71,9 +81,9 @@ namespace("archistry.ui.selection");
 
 archistry.ui.selection.TreeSelectionRange = function(owner)
 {
-    mixin(archistry.data.Indexer);
+    mixin(____archistry.data.Indexer);
+    var TreeSelectionRange = ____archistry.ui.selection.TreeSelectionRange;
 
-    var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
     var _nodes = [];
 
     function index(val, forInsert)
@@ -216,6 +226,8 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     this.mixin(archistry.core.Util);
     this.mixin(new archistry.ui.selection.Notifier(this));
 	this.mixin(options);
+    
+    var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
     var _self = this;
 
     /**
@@ -388,7 +400,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         
         // no nearby nodes selected
         return null;
-    };
+    }
 
 
     /**
@@ -441,7 +453,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 //                        prev.path().join(", "), prev.selected() ]);
 //            println("next node: [{0}], selected: {1}", [ 
 //                        nxt.path().join(", "), nxt.selected() ]);
-            if(prev.selected() && nxt.selected())
+            if(prev && prev.selected() && nxt && nxt.selected())
             {
 //                println("join ranges!");
                 // FIXME:  need to join ranges!
@@ -581,6 +593,6 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     };
 
     this.__defineGetter__("length", function() {
-		return _selection.length;
+		return _rangelist.length;
 	});
 };
