@@ -592,6 +592,19 @@ Array.prototype.remove = function(obj)
 	return this.removeAtIndex(this.indexOf(obj));
 };
 
+/**
+ * This method allows the array to be cleared without creating
+ * another array instance.
+ */
+
+if(!Array.prototype.clear)
+{
+    Array.prototype.clear = function()
+    {
+        this.splice(0, this.length);
+    };
+}
+        
 if(!Array.prototype.each)
 {
     /**
