@@ -159,7 +159,18 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
     {
         return _nodes.reverseEach(callback);
     };
-   
+ 
+    /**
+     * This method returns the value of the range for both
+     * equality and comparison purposes.  The value is
+     * returned as an array of <code>[ start, end, length ]</code>.
+     */
+
+    this.valueOf = function()
+    {
+        return [ this.start, this.end, _nodes.length ];
+    };
+
     this.toString = function()
     {
         return String.format("[TreeSelectionRange start: {0}, end: {1}, nodes: [{2}] ]", [ this.start, this.end, _nodes.join(", ") ]);
@@ -480,7 +491,15 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             _rangelist.add(range);
 //            println("#add: added range to rangelist: {0}", range);
 //            println("rangelist length: " + _rangelist.length);
+            _rangelist.sort(function(lhs, rhs) {
+                var rval = lhs.compare(rhs);
+                println("rval: " + rval);
+                println("comparison of {0} vs. {1} => {2}", [ lhs, rhs, rval ]);
+                return rval;
+            });
         }
+//        println("Range after adding node {0} is: {1}", node, range);
+//        println("Rangelist is: [ {0} ]", _rangelist.join(", ") );
         _nodeIndex[node] = range;
         this.fireSelectionChanged();
 	};

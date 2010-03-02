@@ -465,18 +465,11 @@ Object.prototype.equals = function(rhs)
 
 Object.prototype.compare = function(rhs)
 {
-    var tval = null;
-    var rval = null;
+    var tval = this;
+    var rval = rhs;
 
-    if(this.valueOf)
-        tval = this.valueOf();
-    else
-        tval = this;
-
-    if(rhs.valueOf)
-        rval = rhs.valueOf();
-    else
-        rval = rhs;
+    if(this.valueOf) tval = this.valueOf();
+    if(rhs.valueOf) rval = rhs.valueOf();
 
     if(tval === rval)
         return 0;
@@ -744,6 +737,60 @@ Array.prototype.equals = function(rhs)
         }
     }
     return true;
+};
+
+/**
+ * This method is used to compare two arrays.  The rules for
+ * ordering will be as follows:
+ * <ul>
+ * <li>Shorter arrays will be ordered first</li>
+ * <li>If the arrays are the same length, they will be ordered
+ * by comparing the elements in them</li>
+ * </ul>
+ *
+ * @param rhs the "right hand side" array
+ * @return -1, 0, or 1
+ */
+
+Array.prototype.compare = function(rhs)
+{
+    if(!rhs.length)
+        return 1;
+
+    if(this.length < rhs.length)
+        return -1;
+    else if(this.length > rhs.length)
+        return 1;
+
+    var rval = this.each(function(i) {
+        var l = this;
+        var r = rhs[i];
+        var rc = 0;
+        if(l.compare)
+        {
+            rc = l.compare(r);
+            if(rc !== 0)
+                return rc;
+        }
+        else if(r.compare)
+        {
+            rc = r.compare(l);
+            if(rc !== 0)
+                return 1 - rc;
+        }
+        if(l.valueOf) l = l.valueOf();
+        if(r.valueOf) r = r.valueOf();
+
+        if(l < r)
+            return -1;
+        else if(l > r)
+            return 1;
+    });
+
+    if(rval === undefined)
+        return 0;
+
+    return rval;
 };
 
 // I can't believe JS doesn't have a string trim function...or

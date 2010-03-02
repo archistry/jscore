@@ -58,7 +58,7 @@ TestTreeNode = function(data)
     this.toString = function()
     {
         var parent = this.parent();
-        return String.format("[TestTreeNode parent: {0}, path: [{1}], data: {2} ]", [ (parent ? parent : "(null)"), this.path().join(", "), data ]);
+        return String.format("[TestTreeNode parent: {0}, path: [{1}], data: {2} ]", [ (parent ? parent.path() : "(null)"), this.path().join(", "), data ]);
     };
 };
 
@@ -78,19 +78,19 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.insertChild(i, new TestTreeNode("L1 Child" + this));
             });
 
-            println("---- Dumping tree ----");
-            println(root.toString());
-            Tree.visitChildren(root, "children", function(p, node, i) {
-                var depth = node.depth();
-                var s = "";
-                for(var i = 0; i < depth; ++i)
-                {
-                    s += "  ";
-                }
-                println(s + node);
-                return true;
-            });
-            println("---- Dumping tree complete ----");
+//            println("---- Dumping tree ----");
+//            println(root.toString());
+//            Tree.visitChildren(root, "children", function(p, node, i) {
+//                var depth = node.depth();
+//                var s = "";
+//                for(var i = 0; i < depth; ++i)
+//                {
+//                    s += "  ";
+//                }
+//                println(s + node);
+//                return true;
+//            });
+//            println("---- Dumping tree complete ----");
             context.tree = root;
     },
 	tests: [
@@ -147,8 +147,6 @@ Jester.testing("TreeSelectionRange functionality", {
                     range.add(this);
                 });
 
-                println("range: " + range[0].toString());
-
                 result.check("There should only be one selection range", {
                     actual: range.length,
                     expect: 1
@@ -186,8 +184,6 @@ Jester.testing("TreeSelectionRange functionality", {
                 selection.each(function() {
                     range.add(this);
                 });
-
-                println("range: " + range[0].toString());
 
                 result.check("There should only be one selection range", {
                     actual: range.length,
@@ -228,8 +224,6 @@ Jester.testing("TreeSelectionRange functionality", {
                     range.add(this);
                 });
 
-                println("range: " + range[0].toString());
-
                 result.check("There should only be one selection range", {
                     actual: range.length,
                     expect: 1
@@ -268,8 +262,6 @@ Jester.testing("TreeSelectionRange functionality", {
                 selection.each(function() {
                     range.add(this);
                 });
-
-                println("range: " + range[0].toString());
 
                 result.check("There should only be one selection range", {
                     actual: range.length,
@@ -486,10 +478,40 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: 0
                 });
             }
-        }
+        },
+		{
+			what: "Select disconnected ranges in inverse order has ordered ranges",
+			how: function(context, result)
+			{
+                var selection = new TreeSelection(this);
+                var node = context.tree.firstChild();
+                node.lastChild().selected(true);
+                selection.add(node.lastChild());
+                node.firstChild().selected(true);
+                selection.add(node.firstChild());
+                
+                var range = [];
+                selection.each(function() {
+                    range.add(this);
+                });
 
-        // need to add tests for ranges that aren't contiguous
-        // to ensure that they remain in sorted order for the
-        // selection.  Bug currently.
+                result.check("There should be two ranges selected", {
+                    actual: range.length,
+                    expect: 2
+                });
+             
+                var paths = [];
+                range.each(function() {
+                    this.each(function() {
+                        paths.add(this.path());
+                    });
+                });
+
+                result.check("The paths should be in ascending order", {
+                    actual: paths,
+                    expect: [ [ 0, 0 ], [ 0, 2 ] ]
+                });
+            }
+        }
 	]
 });
