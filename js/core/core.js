@@ -138,7 +138,11 @@ namespace = function(ns)
     // NOTE:  this is necessary to ensure that the namespace
     // reference is defined "globally" so that it will be
     // available across window contexts in the browser
-    // environment.
+    // environment.  The _global reference above is only the
+    // *initial* thing that happens to be global (depending on
+    // the environment).  It WILL NOT always be the global,
+    // because in the browser, new Window objects get created
+    // and set as the global scope.
     if(!Window.prototype[base])
         Window.prototype[base] = __ajs_ns[base];
 };
