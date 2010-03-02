@@ -1288,7 +1288,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 return null;
 
             idx = _parent.indexOfChild(_me);
-            ____archistry.ui.Console.println("index of {0} is {1}", this.path(), idx);
+            println("index of {0} is {1}", this.path(), idx);
             if(idx === 0)
                 return null;
 

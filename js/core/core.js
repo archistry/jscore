@@ -76,6 +76,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// this variable is a hack for working namespace support in
+// all browser contexts.  "Global" isn't "global" in
+// JavaScript unless it's created with the var keyword or as a
+// regular variable declaration.
+
+var __ajs_ns = {};
+
 /**
  * This function is used to define an object hierarchy that
  * represents a "namespace" entry.  It will create
@@ -105,8 +112,15 @@ namespace = function(ns)
 		throw new ReferenceError("Must specify namespace path to be defined as a string!");
 	}
 
-	var global = (function(){return this;}).call();
+    if(!ns.match(/^[_a-zA-Z]+[_.a-zA-Z0-9]*$/))
+    {
+        throw new Error("Syntax error:  Illegal namespace declaration");
+    }
+
+	var _global = (function(){return this;}).call();
+	var global = __ajs_ns;
 	var nspath = ns.split(".");
+    var base = nspath[0];
 	var root = global;
 	var pc = "";
 	for(var i = 0; i < nspath.length; ++i)
@@ -118,6 +132,14 @@ namespace = function(ns)
 		}
 		root = root[pc];
 	}
+
+    if(!_global[base]) _global[base] = __ajs_ns[base];
+
+    // NOTE:  this is necessary to ensure that the namespace
+    // reference is defined "globally" so that it will be
+    // available across window contexts in the browser
+    // environment.
+    eval("if(!Window.prototype.{0}) Window.prototype.{0} = __ajs_ns.{0};".format(base));
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -473,7 +495,7 @@ Object.prototype.compare = function(rhs)
 
 Object.prototype.clear = function()
 {
-    for(k in this)
+    for(var k in this)
     {
         var val = this[k];
         if(typeof val !== 'function')
@@ -500,7 +522,7 @@ Object.prototype.clear = function()
 Object.prototype.keys = function(includeMethods)
 {
     var keys = [];
-    for(k in this)
+    for(var k in this)
     {
         if(typeof this[k] === 'function' && !includeMethods)
             continue;
@@ -510,6 +532,47 @@ Object.prototype.keys = function(includeMethods)
 
     return keys;
 };
+
+///**
+// * This method is used to iterate over all of the property
+// * keys and values with the specified callback.
+// * <p>
+// * By default, only non-method keys are returned.  However,
+// * this behavior can be changed by passing 'true' as the
+// * optional argument to retrieve all properties of the object.
+// * </p>
+// * <p>
+// * The callback's this reference will be to the object and the
+// * key and value will be passed as the parameters.
+// * </p>
+// *
+// * @param callback the callback function of the form:
+// *      <pre>
+// *      callback(key, value) {
+// *          // this === object
+// *      };
+// *      </pre>
+// *      Returning a value from the callback will stop the
+// *      iteration.
+// * @param includeMethods (optional) set to true to include
+// *      property keys whose values are functions.
+// * @return the property key values as an array
+// */
+//
+//Object.prototype.each = function(callback, includeMethods)
+//{
+//    var rc = null;
+//
+//    for(var k in this)
+//    {
+//        if(typeof this[k] === 'function' && !includeMethods)
+//            continue;
+//
+//        alert(printStackTrace());
+//        if((rc = callback.apply(this, [ k, this[k] ])) !== undefined)
+//            return rc;
+//    }
+//};
 
 ///**
 // * This method redefines the default toString to display the
@@ -659,61 +722,54 @@ Array.prototype.clear = function()
     return this;
 };
 
-if(!Array.prototype.each)
+/**
+ * This method provides an each iterator and calls the
+ * callback with the this reference set to the array element
+ * and the index of the item in the array.  To abort the
+ * traversal of the array, the callback should return a
+ * value.
+ *
+ * @param callback the callback function
+ * @return reference to the array or the return value of
+ *      the callback
+ */
+
+Array.prototype.each = function(callback)
 {
-    /**
-     * This method provides an each iterator and calls the
-     * callback with the this reference set to the array element
-     * and the index of the item in the array.  To abort the
-     * traversal of the array, the callback should return a
-     * value.
-     *
-     * @param callback the callback function
-     * @return reference to the array or the return value of
-     *      the callback
-     */
-
-    Array.prototype.each = function(callback)
+    var rc = null;
+    for(var i = 0; i < this.length; ++i)
     {
-        var rc = null;
-        for(var i = 0; i < this.length; ++i)
-        {
-            rc = callback.apply(this[i], [ i ]);
-            if(rc !== undefined)
-                return rc;
-        }
+        rc = callback.apply(this[i], [ i ]);
+        if(rc !== undefined)
+            return rc;
+    }
 
-        return this;
-    };
+    return this;
+};
 
-    /**
-     * This method provides an each iterator and calls the
-     * callback with the this reference set to the array element
-     * and the index of the item in the array.  Like the
-     * forward iterator, to abort the traversal, return a
-     * value from the callback
-     *
-     * @param callback the callback function
-     * @return reference to the array
-     */
+/**
+ * This method provides an each iterator and calls the
+ * callback with the this reference set to the array element
+ * and the index of the item in the array.  Like the
+ * forward iterator, to abort the traversal, return a
+ * value from the callback
+ *
+ * @param callback the callback function
+ * @return reference to the array
+ */
 
-    Array.prototype.reverseEach = function(callback)
-    {
-        var rc = null;
-        for(var i = this.length - 1; i >= 0; --i)
-        {
-            rc = callback.apply(this[i], [ i ]);
-            if(rc !== undefined)
-                return rc;
-        }
-
-        return this;
-    };
-}
-else
+Array.prototype.reverseEach = function(callback)
 {
-    throw new Error("Array#each is already defined!  Probably library incompatibility errors have been introduced.");
-}
+    var rc = null;
+    for(var i = this.length - 1; i >= 0; --i)
+    {
+        rc = callback.apply(this[i], [ i ]);
+        if(rc !== undefined)
+            return rc;
+    }
+
+    return this;
+};
 
 /**
  * This method allows equality checks of array values.  If the
@@ -993,5 +1049,5 @@ String.format = function(source, params) {
  */
 
 String.prototype.format = function() {
-    return String.format(this, arguments);
+    return String.format(this, [].slice.call(arguments));
 };

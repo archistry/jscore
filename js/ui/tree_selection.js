@@ -40,16 +40,6 @@
 
 namespace("archistry.ui.selection");
 
-// This variable is a total hack to allow me access to the
-// archistry namespace from within the browser so I can create
-// references to objects within instance methods defined
-// within closures.  It appears that the global and the window
-// namespaces are parallel but sometimes exclusive, because
-// archistry is clearly defined at the global scope, but it
-// just isn't available IN THE BROWSER to instance methods.
-
-var ____archistry = archistry;
-
 /**
  * @class
  *
@@ -81,8 +71,8 @@ var ____archistry = archistry;
 
 archistry.ui.selection.TreeSelectionRange = function(owner)
 {
-    mixin(____archistry.data.Indexer);
-    var TreeSelectionRange = ____archistry.ui.selection.TreeSelectionRange;
+    mixin(archistry.data.Indexer);
+    var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
     var _nodes = [];
 

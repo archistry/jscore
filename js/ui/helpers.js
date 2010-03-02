@@ -335,8 +335,7 @@ archistry.ui.Helpers = {
 
 	println: function()
 	{
-//		archistry.ui.Console.println(arguments);
-		____archistry.ui.Console.println(arguments);
+        archistry.ui.Console.println(arguments);
 	},
 
 	/**
