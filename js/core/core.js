@@ -139,7 +139,8 @@ namespace = function(ns)
     // reference is defined "globally" so that it will be
     // available across window contexts in the browser
     // environment.
-    eval("if(!Window.prototype.{0}) Window.prototype.{0} = __ajs_ns.{0};".format(base));
+    if(!Window.prototype[base])
+        Window.prototype[base] = __ajs_ns[base];
 };
 
 ///////////////////////////////////////////////////////////////////////
