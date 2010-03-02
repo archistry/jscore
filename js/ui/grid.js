@@ -654,6 +654,7 @@ archistry.ui.BrowserGridLayout = function(id)
 
 archistry.ui.TreeGrid = function(id, columns, data, options)
 {
+    mixin(archistry.core.Util);
     mixin(archistry.data.Tree);
     mixin(archistry.ui.Styles);
     mixin(archistry.ui.Helpers);
@@ -803,7 +804,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             d = (d > 0) ? d - 1 : 0;
         }
 //        println("width: {0}; d: {1}; width * d: {2}", [ width, d, width * d]);
-        span.setAttribute("style", String.format("margin-left: {0}px;", [width * d ]));
+        if(d > 0)
+        {
+            span.setAttribute("style", "margin-left: {0}px;".format(width * d));
+        }
 
         cell.insertBefore(span, cell.firstChild);
     }
@@ -1293,6 +1297,11 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 return null;
 
             return _parent.child(idx - 1);
+        };
+
+        this.toString = function()
+        {
+            return "[TreeRow path: [{0}], data: {1} ]".format(this.path().join(","), toHashString(modelNode));
         };
 
         ///////// EVENT REGISTRATION ////////
@@ -1806,7 +1815,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     function modelNodesRemoved(eventlist)
     {
         processEventList(this, eventlist, function(node) {
-            println("processing removal for parent: {0} at path [{1}]", [ node.label, this.path ] );
+            println("processing removal for parent: {0} at path [{1}]", node.label, this.path);
             if(!node.expanded())
             {
                 println("Parent not expanded");
@@ -1821,24 +1830,26 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             {
                 _self.layout.deleteRows(ri, this.refs.length);
                 this.refs.each(function(i) {
-                    var child = node.removeChildAtIndex(this.index);
+                    var child = node.child(this.index);
                     if(child)
                     {
                         child.selected(false);
-                        delete child;
                     }
+                    child = node.removeChildAtIndex(this.index);
+                    println("removed child: " + child);
                 });
             }
             else
             {
                 this.refs.each(function(i) {
                     _self.layout.deleteRows(ri, 1);
-                    var child = node.removeChildAtIndex(this.index);
+                    var child = node.child(this.index);
                     if(child)
                     {
                         child.selected(false);
-                        delete child;
                     }
+                    child = node.removeChildAtIndex(this.index);
+                    println("removed child: " + child);
                 });
             }
             renderRow(node);
@@ -2148,7 +2159,9 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         // really what the callers want--just the list of
         // paths. *sigh*
         var paths = [];
+        println("selection contains {0} ranges", _selection.length);
         _selection.each(function() {
+            println("selection() processing range: {0}", this);
             this.each(function() { 
                 paths.add(this.path());
             });

@@ -454,6 +454,38 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: sibling.firstChild().path()
                 });
 			}
-		}
+		},
+		{
+			what: "Select and then unselect removes selection range",
+			how: function(context, result)
+			{
+                var selection = new TreeSelection(this);
+                var node = context.tree.firstChild();
+                node.selected(true);
+                selection.add(node);
+                
+                var range = [];
+                selection.each(function() {
+                    range.add(this);
+                });
+
+                result.check("There should be one node selected", {
+                    actual: range[0].length,
+                    expect: 1
+                });
+              
+                node.selected(false);
+                selection.remove(node);
+                
+                range.clear();
+                selection.each(function() {
+                    range.add(this);
+                });
+                result.check("There should be 0 selection ranges", {
+                    actual: range.length,
+                    expect: 0
+                });
+            }
+        }
 	]
 });

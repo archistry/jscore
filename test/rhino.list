@@ -11,6 +11,7 @@
 - ../js/ext/stacktrace.js
 - ../js/ext/date.format.js
 - ../js/core/core.js
+- ../js/core/hash.js
 - ../js/core/util.js
 - ../js/core/path.js
 - ../js/core/observer.js

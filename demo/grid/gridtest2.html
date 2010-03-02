@@ -156,10 +156,12 @@
         // this is trickier because it depends on the new
         // range-related functionality.  We can only delete in valid
         // range blocks!
-        grid.selection.reverseEach(function() {
-          println("Attempting to delete rows at path: " + this.join(","));
-          model.removeRow(this[0]);
-        });
+        alert("Hello");
+//        println("deleting {0} rows\n\n", grid.selection.length);
+//        grid.selection.reverseEach(function() {
+ //         println("Attempting to delete rows at path: " + this.join(","));
+  //        model.removeRow(this[0]);
+   //     });
       });
 
       var index = 0;

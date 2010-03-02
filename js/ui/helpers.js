@@ -335,7 +335,7 @@ archistry.ui.Helpers = {
 
 	println: function()
 	{
-        archistry.ui.Console.println(arguments);
+        archistry.ui.Console.println.apply(archistry.ui.Console, arguments);
 	},
 
 	/**
@@ -366,29 +366,5 @@ archistry.ui.Helpers = {
 			return width;
 
 		return parseInt(width.replace(/px$/, ""));
-	},
-
-	/**
-	 * This method is used to ensure default values are set
-	 * which don't override any options already set via mixin
-	 * calls.
-	 *
-	 * @param key the property key that is to be checked
-	 * @param val the default value if there is not already a
-	 *		key set.
-	 */
-
-	setDefault: archistry.core.Util.setDefault,
-
-    /**
-     * This method is used to create a new error object with
-     * the specified arguments.
-     *
-     * @param fmt the message format (per String#format)
-     * @param args variable length arguments to String#format
-     *
-     * @return an Error object
-     */
-
-    createError: archistry.core.Util.createError
+	}
 };

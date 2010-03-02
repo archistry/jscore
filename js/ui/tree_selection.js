@@ -110,12 +110,12 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
             return null;
         }
 
-//println("node: " + node);
-//println("nodes: [{0}]", [ _nodes.join(", ") ]); 
+println("node: " + node);
+println("nodes: [{0}]", _nodes.join(", ")); 
         idx = _nodes.indexOf(node);
         if(idx === -1)
         {
-//            println("Node not found in range");
+            println("Node not found in range");
             return null;
         }
 
@@ -217,6 +217,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     this.mixin(new archistry.ui.selection.Notifier(this));
 	this.mixin(options);
     
+    var Hash = archistry.core.Hash;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
     var _self = this;
 
@@ -226,7 +227,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
      * can optimize the range operations.
      */
 
-    var _nodeIndex = {};
+    var _nodeIndex = new Hash();
 
     /** 
      * This variable tracks whether the entire tree is
@@ -416,7 +417,8 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             r1.insert(-1, this);
             _nodeIndex[this] = r1;
         });
-        _rangelist.remove(r2);
+        var obj = _rangelist.remove(r2);
+        println("#join: deleted {0} from rangelist", obj);
         delete r2;
         
         _self.fireSelectionExtended(delta);
@@ -437,6 +439,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         var range = rangeForNode(node);
         if(range)
         {
+            println("range: {0}", range);
             var prev = prevNode(node);
             var nxt = nextNode(node);
 //            println("prev node: [{0}], selected: {1}", [ 
@@ -475,8 +478,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             range = new TreeSelectionRange(owner);
             range.insert(0, node);
             _rangelist.add(range);
+            println("#add: added range to rangelist: {0}", range);
+            println("rangelist length: " + _rangelist.length);
         }
-//        println("range: {0}", range);
         _nodeIndex[node] = range;
         this.fireSelectionChanged();
 	};
@@ -492,7 +496,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
 	this.remove = function(node)
 	{
+        println("#remove( {0} )", node);
         var range = rangeForNode(node);
+        println("range: {0}", range);
         var r2 = range.split(node);
         if(r2)
         {
@@ -502,7 +508,19 @@ archistry.ui.selection.TreeSelection = function(owner, options)
                 _nodeIndex[this] = r2;
             });
             _rangelist.add(r2);
+            println("#remove: added range to rangelist: {0}", r2);
         }
+        else
+        {
+            println("#remove: node {0} removed from range: {1}", node, range);
+            if(range.length === 0)
+            {
+                _rangelist.remove(range);
+                println("#remove: removed range: {0}", range);
+            }
+        }
+
+        delete _nodeIndex[node];
         this.fireSelectionChanged();
 	};
 

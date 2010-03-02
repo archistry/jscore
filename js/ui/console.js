@@ -69,18 +69,6 @@ archistry.ui.ConsoleImpl = function()
 	};
 
 	/**
-	 * This method is used to write messages to the console.
-	 *
-	 * @param fmt the format specifier
-	 * @param args the arguments (as per string.format())
-	 */
-
-	this.println = function(fmt, args)
-	{
-		this.print(fmt + "\n", [].slice.call(arguments, 1));
-	};
-
-	/**
 	 * This method is used to write a string to the console
 	 * without the trailing newline.
 	 *
@@ -95,6 +83,18 @@ archistry.ui.ConsoleImpl = function()
 			this.text.value += String.format(fmt, args);
 			this.text.scrollTop = this.text.scrollHeight;
 		}
+	};
+
+	/**
+	 * This method is used to write messages to the console.
+	 *
+	 * @param fmt the format specifier
+	 * @param args the arguments (as per string.format())
+	 */
+
+	this.println = function(fmt, args)
+	{
+		this.print.apply(this, [ fmt + "\n", [].slice.call(arguments, 1) ]);
 	};
 
 	/**

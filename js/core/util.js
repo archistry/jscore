@@ -84,5 +84,29 @@ archistry.core.Util = {
                 printStackTrace()
             ]);
         return new Error(msg);
+    },
+
+    /**
+     * This method is used to represent the given object as a
+     * hash using similar notation to Ruby.
+     *
+     * @param obj the object to format
+     * @return the string represetnation of the object
+     */
+
+    toHashString: function(obj)
+    {
+        var s = "{";
+        var keys = obj.keys().sort();
+        keys.each(function(i) {
+            var key = (typeof this === 'string') ? '"{0}"'.format(this) : this;
+            var val = obj[this];
+            val = (typeof val === 'string') ? '"{0}"'.format(val) : val;
+
+            s += "{0} => {1}".format(key, val);
+            if(i < keys.length - 1)
+                s += ", ";
+        });
+        return s += "}";
     }
 };

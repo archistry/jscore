@@ -113,7 +113,7 @@ Jester.testing("Core library functionality", {
 			what: "Object#clear works correctly",
 			how: function(context, result)
 			{
-                var obj = {};
+                var obj = new archistry.core.Hash();
                 obj["key1"] = true;
                 obj[context] = "context";
                 obj["key2"] = "value";
