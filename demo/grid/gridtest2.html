@@ -156,26 +156,33 @@
         // this is trickier because it depends on the new
         // range-related functionality.  We can only delete in valid
         // range blocks!
-        alert("Hello");
-//        println("deleting {0} rows\n\n", grid.selection.length);
-//        grid.selection.reverseEach(function() {
- //         println("Attempting to delete rows at path: " + this.join(","));
-  //        model.removeRow(this[0]);
-   //     });
+        var selection = grid.selection;
+        println("deleting {0} rows\n\n", selection.length);
+        selection.reverseEach(function() {
+          println("Attempting to delete rows at path: " + this.join(","));
+          model.removeRow(this[0]);
+        });
       });
 
       var index = 0;
       $("#insert-row").click(function(event) {
-        if(grid.selection.length !== 1)
+        var selection = grid.selection;
+        if(selection.length > 1)
         {
           alert("Can't insert under more than one parent! Length: " + grid.selection.length);
           return;
         }
 
-        var path = grid.selection[0];
+        var path = [];
+        var idx = -1;
+        if(selection.length === 1)
+        {
+          path = selection[0];
+          idx = path[0] + 1;
+        }
+
         var count = Math.floor(Math.random() * 6);
-        println("Inserting {0} rows at path: [{1}]", [ count, path.join(", ")] );
-        var idx = path[0] + 1;
+        println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
         var rows = [];
         for(var j = 0; j < count; ++j)
         {

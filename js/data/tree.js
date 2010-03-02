@@ -803,7 +803,6 @@ archistry.data.tree.TreeNode = function()
 
     this.toString = function()
     {
-        println("TOSTRING!!!");
         return String.format("[TreeNode parent: {0}, path: [{1}] ]", [ _parent, this.path().join(',') ]);
     };
 };
@@ -1026,7 +1025,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
         var refs = [];
         nodes.each(function(i) {
-            println("idx ({0}) + i ({1}) = {2}", [ idx, i, idx + i ]);
+//            println("idx ({0}) + i ({1}) = {2}", [ idx, i, idx + i ]);
             refs.add( new TreeNodeRef(this, idx + i) );
         });
 

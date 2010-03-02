@@ -487,5 +487,9 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
             }
         }
+
+        // need to add tests for ranges that aren't contiguous
+        // to ensure that they remain in sorted order for the
+        // selection.  Bug currently.
 	]
 });

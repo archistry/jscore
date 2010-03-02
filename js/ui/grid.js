@@ -735,7 +735,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
         if(!row || typeof row.render !== 'function')
         {
-            println("UNKNOWN ROW: " + row.inspect());
+//            println("UNKNOWN ROW: " + row.inspect());
             throw createError("ArgumentError:  invalid row!");
         }
 
@@ -1292,7 +1292,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 return null;
 
             idx = _parent.indexOfChild(_me);
-            println("index of {0} is {1}", this.path(), idx);
+//            println("index of {0} is {1}", this.path(), idx);
             if(idx === 0)
                 return null;
 
@@ -1777,10 +1777,16 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     function modelNodesInserted(eventlist)
     {
         processEventList(this, eventlist, function(node) {
-            println("processing insertion for parent: {0} at path [{1}]", [ node.label, this.path ] );
+            if(this.refs.length === 0)
+            {
+                // nothing to do
+                return;
+            }
+
+//            println("processing insertion for parent: {0} at path [{1}]", [ node.label, this.path ] );
             if(!node.expanded())
             {
-                println("Parent not expanded");
+//                println("Parent not expanded");
                 // re-render the node for the expander state,
                 // but otherwise we don't care.
                 renderRow(node);
@@ -1815,10 +1821,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     function modelNodesRemoved(eventlist)
     {
         processEventList(this, eventlist, function(node) {
-            println("processing removal for parent: {0} at path [{1}]", node.label, this.path);
+//            println("processing removal for parent: {0} at path [{1}]", node.label, this.path);
             if(!node.expanded())
             {
-                println("Parent not expanded");
+//                println("Parent not expanded");
                 renderRow(node);
                 return;
             }
@@ -1836,7 +1842,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                         child.selected(false);
                     }
                     child = node.removeChildAtIndex(this.index);
-                    println("removed child: " + child);
+//                    println("removed child: " + child);
                 });
             }
             else
@@ -1849,7 +1855,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                         child.selected(false);
                     }
                     child = node.removeChildAtIndex(this.index);
-                    println("removed child: " + child);
+//                    println("removed child: " + child);
                 });
             }
             renderRow(node);
@@ -1937,12 +1943,12 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
         if(ri === -1 && node.deleted())
         {
-            println("row at path [ {1} ] already deleted from the layout", [ path.join(", ") ]);
+//            println("row at path [ {1} ] already deleted from the layout", [ path.join(", ") ]);
             return;
         }
         else if(ri === -1 && !node.deleted())
         {
-            println("path: " + path.inspect());
+//            println("path: " + path.inspect());
             throw createError("No layout row found for node at path [ {0} ]!", [ path.join(", ") ]);
         }
 
@@ -1954,7 +1960,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             renderRow(parent);
         }
 
-        println("selection length: " + _selection.length);
+//        println("selection length: " + _selection.length);
         if(_selection.length === 0 && _selectAll)
         {
             clearSelection();
@@ -2158,10 +2164,13 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         // range thing doing it this way, but I suppose that's
         // really what the callers want--just the list of
         // paths. *sigh*
+        //
+        // FIXME:  also need to cache the paths until the
+        // selection changes
         var paths = [];
-        println("selection contains {0} ranges", _selection.length);
+//        println("selection contains {0} ranges", _selection.length);
         _selection.each(function() {
-            println("selection() processing range: {0}", this);
+//            println("selection() processing range: {0}", this);
             this.each(function() { 
                 paths.add(this.path());
             });
