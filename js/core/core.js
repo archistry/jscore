@@ -143,8 +143,12 @@ namespace = function(ns)
     // the environment).  It WILL NOT always be the global,
     // because in the browser, new Window objects get created
     // and set as the global scope.
-    if(!Window.prototype[base])
-        Window.prototype[base] = __ajs_ns[base];
+    if(typeof load !== 'function')
+    {
+        // only do this if not running console Rhino runtime
+        if(!Window.prototype[base])
+            Window.prototype[base] = __ajs_ns[base];
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////
