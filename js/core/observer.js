@@ -197,13 +197,11 @@ archistry.core.SignalSource = function(sender)
 	 * specific signal.  Variable arguments are used so that a
 	 * variety of signal types can be supported.
 	 * <p>
-	 * <p>
-	 * By convention, the first argument SHOULD be the sender
-	 * of the signal.
-	 * </p>
-	 * NOTE:  this WILL NOT work correctly with array
-	 * arguments passed to the emit signal due to the way that
-	 * Array.slice seems to flatten the array first.  FFS!!!
+     * Signals are delivered asynchronously, and any return
+     * value specified by the signal handler will be ignored.
+     * To capture the return value of the signal handler, use
+     * {@link archistry.core.SignalSource#signalEmitImmediate}
+     * instead.
 	 * </p>
 	 *
 	 * @param signal the signal of interest
@@ -212,12 +210,13 @@ archistry.core.SignalSource = function(sender)
 
 	this.signalEmit = function(signal)
 	{
-		var args = [].slice.call(arguments, 1);
-		var listeners = sigarray(signal);
-		var fn = null;
-		for(var i = 0; i < listeners.length; ++i)
-		{
-			var fn = listeners[i];
+		var args = [];
+        for(var i = 1; i < arguments.length; ++i)
+        {
+            args[i-1] = arguments[i];
+        }
+		sigarray(signal).each(function() {
+			var fn = this;
 
 			// allow immediate sending of the signal for unit
 			// testing
@@ -229,7 +228,58 @@ archistry.core.SignalSource = function(sender)
 			{
 				setTimeout(function() { fn.apply(sender, args); }, 50);
 			}
-		}
+		});
+	};
+
+	/**
+	 * This method is used to fire the notification for the
+	 * specific signal immediately and process the signal
+     * handler's return value.  Unlike {@link
+     * archistry.core.SignalSource#signalEmit}, the signals
+     * are not processed asynchronously nor is the return
+     * value from the signal handler ignored.
+	 * <p>
+     * This method is intended to be used primarily for
+     * cancelable operations or for testing whether an
+     * operation could be performed.  As such, if ANY listener
+     * returns false, the traversal will stop and the value
+     * will be returned to the sender.
+     * </p>
+     * <p>
+     * The callback MUST have the form:
+     * <pre>
+     *   callback([argument list]) {
+     *      // this reference is for the sender of the signal
+     *      // return true; continue propagation
+     *      // return false; cancel propagation and return to
+     *      // sender
+     *   }
+     * </pre>
+     * </p>
+     *
+	 * @param signal the signal of interest
+	 * @param arguments (implied)
+     * @returns true or false, depending on whether a listener
+     *      has vetoed (or handled) the signal or not
+	 */
+
+	this.signalEmitImmediate = function(signal)
+	{
+        var args = [];
+        
+        // we can't use slice here because it will flatten
+        // arrays
+        for(var i = 1; i < arguments.length; ++i)
+        {
+            args[i-1] = arguments[i];
+        }
+
+        var rval = sigarray(signal).each(function(i) {
+            if(!this.apply(sender, args))
+                return false;
+        });
+        
+        return (rval === undefined ? true : false);
 	};
 
 	/**

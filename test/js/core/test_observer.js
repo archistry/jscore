@@ -52,7 +52,7 @@ Jester.testing("Observer functionality", {
 
 					this.emit = function()
 					{
-						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 });
+						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 }, [ 0, 1, 2 ]);
 					};
 				};
 
@@ -61,12 +61,12 @@ Jester.testing("Observer functionality", {
 					var _this = this;
                     _this.count = 0;
 
-					var handler = function(arg1, arg2, arg3)
+					var handler = function(arg1, arg2, arg3, arg4)
 					{
 						var name = this.name;
 						result.check("signal handler called", {
-							actual: [ this, name, arg1, arg2, arg3.one, arg3.two ],
-							expect: [ actor, actor.name, "one", 2, 3, 4 ]
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two, arg4 ],
+							expect: [ actor, actor.name, "one", 2, 3, 4, [ 0, 1, 2 ] ]
 						});
                         _this.count++;
 					}
@@ -186,8 +186,74 @@ Jester.testing("Observer functionality", {
                 });
 
                 result.check("handler was returned to caller", {
-                    actual: handler,
-                    expect: obs.handler 
+                    actual: handler === obs.handler,
+                    expect: true
+                });
+			}
+		},
+		{
+			what: "Using immediate signal emmitting returns value",
+			how: function(context, result)
+			{
+				var Actor = function(name)
+				{
+					this.mixin(new archistry.core.SignalSource(this));
+					this.name = name;
+					this.immediate = true;
+
+					this.emit = function()
+					{
+						this.signalEmit("signal1", "one", 2, { one: 3, two: 4 }, [ 0, 1, 2 ]);
+					};
+
+                    this.immediate = function()
+                    {
+						return this.signalEmitImmediate("signal2", "one", 2, { one: 3, two: 4 }, [ 0, 1, 2 ]);
+                    };
+				};
+
+				var Observer = function(actor)
+				{
+					var _this = this;
+                    _this.count = 0;
+
+					var handler = function(arg1, arg2, arg3, arg4)
+					{
+						var name = this.name;
+						result.check("signal handler called", {
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two, arg4 ],
+							expect: [ actor, actor.name, "one", 2, 3, 4, [ 0, 1, 2 ] ]
+						});
+                        _this.count++;
+					};
+
+                    var vetoable = function(arg1, arg2, arg3, arg4)
+					{
+						var name = this.name;
+						result.check("signal handler called", {
+							actual: [ this, name, arg1, arg2, arg3.one, arg3.two, arg4 ],
+							expect: [ actor, actor.name, "one", 2, 3, 4, [ 0, 1, 2 ] ]
+						});
+                        _this.count++;
+                        return false;
+					};
+					
+					actor.signalConnect("signal1", handler);
+					actor.signalConnect("signal2", vetoable);
+				};
+
+				var actor = new Actor("sam");
+				var obs = new Observer(actor);
+				actor.emit();
+
+                result.check("immediate returned value from handler", {
+                    actual: actor.immediate(),
+                    expect: false
+                });
+                
+                result.check("signal handler was called for both signals", {
+                    actual: obs.count,
+                    expect: 2
                 });
 			}
 		}
