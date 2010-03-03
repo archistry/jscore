@@ -923,7 +923,7 @@ String.format = function(source, params) {
     var _toString = function(obj, width, format) {
         if(obj === null || obj === undefined)
         {
-            return "(null)";
+            return "";
         }
 
         if(typeof obj === 'number')

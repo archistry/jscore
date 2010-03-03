@@ -344,6 +344,11 @@ archistry.ui.editor.TextFieldEditor = function()
 	{
 		var width = ewidth(cell);
 		var height = getStyle(cell, "height");
+        if("0px" === height)
+        {
+            height = getStyle(cell.parentNode, "height");
+        }
+        println("height: " + height);
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
 		var editor = e(name);
@@ -376,6 +381,10 @@ archistry.ui.editor.TextAreaEditor = function()
 	{
 		var width = ewidth(cell);
 		var height = getStyle(cell, "height");
+        if("0px" === height)
+        {
+            height = getStyle(cell.parentNode, "height");
+        }
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
 		var editor = e(name);
