@@ -423,6 +423,7 @@ Object.prototype.object_id = function()
 
 Object.prototype.equals = function(rhs)
 {
+//    println("Object#equals called for: {0} vs. {1}".format(this, rhs));
     if(rhs === undefined || rhs === null)
         return false;
 
@@ -434,10 +435,6 @@ Object.prototype.equals = function(rhs)
     if(rhs.valueOf)
         rval = rhs.valueOf();
 
-//    println("lval: {0} vs. rval: {1}", [ lval, rval ]);
-//    println("typeof lval: " + typeof lval);
-//    println("typeof rval: " + typeof rval);
-//    println("equal? " + (lval === rval));
     return lval === rval;
 };
 
@@ -465,6 +462,7 @@ Object.prototype.equals = function(rhs)
 
 Object.prototype.compare = function(rhs)
 {
+//    println("Object#compare called for: {0} vs. {1}".format(this, rhs));
     var tval = this;
     var rval = rhs;
 
@@ -1041,5 +1039,10 @@ String.format = function(source, params) {
  */
 
 String.prototype.format = function() {
-    return String.format(this, [].slice.call(arguments));
+    var args = [ this ];
+    for(var i = 0; i < arguments.length; ++i)
+    {
+        args.add(arguments[i]);
+    }
+    return String.format.apply(this, args);
 };
