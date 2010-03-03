@@ -75,6 +75,11 @@ archistry.ui.CheckboxRenderer = function()
 {
 	this.render = function(node, val, options)
 	{
+        if(!node)
+        {
+            throw createError("ArgumentError:  rendering node is NULL!");
+        }
+
 		if(val)
 		{
 			node.innerHTML = '<input type="checkbox" checked="true"/>';

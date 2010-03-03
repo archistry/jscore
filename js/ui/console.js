@@ -94,7 +94,7 @@ archistry.ui.ConsoleImpl = function()
 
 	this.println = function(fmt, args)
 	{
-		this.print.apply(this, [ fmt + "\n", [].slice.call(arguments, 1) ]);
+		this.print((fmt + "\n").format(args));
 	};
 
 	/**

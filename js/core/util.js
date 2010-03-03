@@ -96,17 +96,19 @@ archistry.core.Util = {
 
     toHashString: function(obj)
     {
-        var s = "{";
+        var s = "{ ";
         var keys = obj.keys().sort();
         keys.each(function(i) {
             var key = (typeof this === 'string') ? '"{0}"'.format(this) : this;
             var val = obj[this];
             val = (typeof val === 'string') ? '"{0}"'.format(val) : val;
+            if(val instanceof Array)
+                val = "[{0}]".format(val.join(','));
 
             s += "{0} => {1}".format(key, val);
             if(i < keys.length - 1)
                 s += ", ";
         });
-        return s += "}";
+        return s += " }";
     }
 };

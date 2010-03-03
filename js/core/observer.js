@@ -266,6 +266,9 @@ archistry.core.SignalSource = function(sender)
 	this.signalEmitImmediate = function(signal)
 	{
         var args = [];
+        var listeners = sigarray(signal);
+        if(listeners.length === 0)
+            return true;
         
         // we can't use slice here because it will flatten
         // arrays
@@ -274,12 +277,12 @@ archistry.core.SignalSource = function(sender)
             args[i-1] = arguments[i];
         }
 
-        var rval = sigarray(signal).each(function(i) {
+        var rval = listeners.each(function(i) {
             if(!this.apply(sender, args))
                 return false;
         });
         
-        return (rval === undefined ? true : false);
+        return (rval === undefined ? true : rval);
 	};
 
 	/**

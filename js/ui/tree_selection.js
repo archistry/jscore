@@ -33,8 +33,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		tree_selection.js
-// Created:		Sun Feb 28 10:58:03 GMT 2010
+// Name:        tree_selection.js
+// Created:        Sun Feb 28 10:58:03 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -212,21 +212,21 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
  * @param owner the "owner" object of the selection contents
  *      (tree nodes)
  * @param options a mixin object to set behavior options to
- *		control how the selection is interpreted.  The
- *		supported options are:
- *		<ul>
- *		<li>mode - determines the mode of the tree selection
- *		    and must be one of the values defined in {@link
- *		    archistry.selection.Mode}.
- *		</li>
- *		</ul>
+ *        control how the selection is interpreted.  The
+ *        supported options are:
+ *        <ul>
+ *        <li>mode - determines the mode of the tree selection
+ *            and must be one of the values defined in {@link
+ *            archistry.selection.Mode}.
+ *        </li>
+ *        </ul>
  */
 
 archistry.ui.selection.TreeSelection = function(owner, options)
 {
     this.mixin(archistry.core.Util);
     this.mixin(new archistry.ui.selection.Notifier(this));
-	this.mixin(options);
+    this.mixin(options);
     
     var Hash = archistry.core.Hash;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
@@ -370,7 +370,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         var range = null;
 
         // check if we already have a reference to the node
-        range = _nodeIndex[node];
+        range = _nodeIndex.get(node);
         if(range)
             return range;
 
@@ -392,7 +392,7 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
         if(tmp)
         {
-            range = _nodeIndex[tmp];
+            range = _nodeIndex.get(tmp);
             if(!range)
             {
                 throw createError("StateError:  neighbor of node [{0}] is marked selected, but is not part of a selection range!", [node.path()]);
@@ -422,11 +422,11 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         var delta = [ node.path() ];
 
         r1.insert(-1, node);
-        _nodeIndex[node] = r1;
+        _nodeIndex.set(node, r1);
         r2.each(function(i) {
             delta.add(this.path());
             r1.insert(-1, this);
-            _nodeIndex[this] = r1;
+            _nodeIndex.set(this, r1);
         });
         var obj = _rangelist.remove(r2);
 //        println("#join: deleted {0} from rangelist", obj);
@@ -437,16 +437,16 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         return r1;
     }
 
-	/**
+    /**
      * This method is used by TreeNodes to add themselves to
      * the selection.  Once added, the selection instance
      * works out the appropriate signal that should be fired.
-	 *
-	 * @param node the node to be added
-	 */
+     *
+     * @param node the node to be added
+     */
 
-	this.add = function(node) 
-	{
+    this.add = function(node) 
+    {
         var range = rangeForNode(node);
         if(range)
         {
@@ -500,31 +500,37 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         }
 //        println("Range after adding node {0} is: {1}", node, range);
 //        println("Rangelist is: [ {0} ]", _rangelist.join(", ") );
-        _nodeIndex[node] = range;
+        _nodeIndex.set(node, range);
         this.fireSelectionChanged();
-	};
+    };
 
-	/**
+    /**
      * This method is used by TreeNodes to remove themselves
      * from the selection.  The selection instance manages the
      * effect on the selection and fires the appropriate
      * events.
      *
-	 * @param node the node to be removed
-	 */
+     * @param node the node to be removed
+     */
 
-	this.remove = function(node)
-	{
+    this.remove = function(node)
+    {
 //        println("#remove( {0} )", node);
         var range = rangeForNode(node);
 //        println("range: {0}", range);
+        if(!range)
+        {
+            println("Node index: " + archistry.core.Util.toHashString(_nodeIndex));
+            throw createError("StateError:  node {0} is not in any range!", node);
+        }
+
         var r2 = range.split(node);
         if(r2)
         {
             // update the row index references for the new
             // range for all nodes in the split range
             r2.each(function(i) {
-                _nodeIndex[this] = r2;
+                _nodeIndex.set(this, r2);
             });
             _rangelist.add(r2);
 //            println("#remove: added range to rangelist: {0}", r2);
@@ -539,9 +545,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
             }
         }
 
-        delete _nodeIndex[node];
+        _nodeIndex.remove(node);
         this.fireSelectionChanged();
-	};
+    };
 
     /**
      * This method is called by the tree and indicates that
@@ -573,21 +579,21 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         }
     };
 
-	/**
-	 * This method is part of the SelectionModel API and is
-	 * used to clear the selection.
-	 */
+    /**
+     * This method is part of the SelectionModel API and is
+     * used to clear the selection.
+     */
 
-	this.clear = function()
-	{
+    this.clear = function()
+    {
         // make sure we deselect the individual nodes
         _nodeIndex.keys().each(function(i) {
             this.selected(false);
         });
-		_selection.clear();
+        _selection.clear();
         _nodeIndex.clear();
-		this.fireSelectionCleared();
-	};
+        this.fireSelectionCleared();
+    };
 
     /**
      * This method is used to iterate over each of the
@@ -620,6 +626,6 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     };
 
     this.__defineGetter__("length", function() {
-		return _rangelist.length;
-	});
+        return _rangelist.length;
+    });
 };

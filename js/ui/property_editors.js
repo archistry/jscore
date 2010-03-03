@@ -84,7 +84,7 @@ archistry.ui.editor.ValidatingCellEditor = {
 
 	onBeforeEditingCompleted: function(obj, key, old, newVal, helper)
 	{
-		archistry.ui.Console.println("checking values '{0}' vs '{1}'", [old, newVal]);
+		archistry.ui.Console.println("checking values '{0}' vs '{1}'", old, newVal);
 		var validator = null;
 		if(helper)
 		{

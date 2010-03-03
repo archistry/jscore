@@ -222,24 +222,22 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
         var thisCell = parentWithTag(eventTarget(event), "td");
         var nextCell = findNextCell(thisCell, !event.shiftKey, down)
-//        println(nextCell.tagName + ": " + nextCell.innerHTML);
+//        println("nextCell: " + nextCell.toXML());
         if(nextCell)
         {
-            var row = parseInt(nextCell.getAttribute("row"));
-            var col = parseInt(nextCell.getAttribute("col"));
-            while(!grid.isCellEditable(row, col))
+            var path = grid.pathForElement(nextCell);
+            while(!grid.isCellEditable(path))
             {
 //                println("<<<< Cell({0}, {1}) is not editable", [row, col]);
                 nextCell = findNextCell(nextCell, !event.shiftKey, down)
                 if(!nextCell)
                     return true;
 
-                row = parseInt(nextCell.getAttribute("row"));
-                col = parseInt(nextCell.getAttribute("col"));
+                path = grid.pathForElement(nextCell);
             }
             if(grid.completeEditing())
             {
-                grid.editCell(row, col);
+                grid.editCell(path);
             }
             return false;
         }
@@ -644,7 +642,7 @@ archistry.ui.BrowserGridLayout = function(id)
  * used.
  * </p>
  *
- * @param id the element ID where the grid should be located
+ * @param divId the element ID where the grid should be located
  * @param columns the column model to be used for the
  *        control
  * @param data the row model to be used.
@@ -652,7 +650,7 @@ archistry.ui.BrowserGridLayout = function(id)
  *        the grid
  */
 
-archistry.ui.TreeGrid = function(id, columns, data, options)
+archistry.ui.TreeGrid = function(divId, columns, data, options)
 {
     mixin(archistry.core.Util);
     mixin(archistry.data.Tree);
@@ -660,21 +658,23 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     mixin(archistry.ui.Helpers);
     this.mixin(options);
     
-    var Renderer = archistry.ui.Renderer;
-    var CellRenderer = archistry.ui.CellRenderer;
-    var CheckboxRenderer = archistry.ui.CheckboxRenderer;
-    var GridStyle = archistry.ui.GridStyles;
-    var Style = archistry.ui.Styles;
-    var TreeSelection = archistry.ui.selection.TreeSelection;
+    var CellRenderer        = archistry.ui.CellRenderer;
+    var CheckboxRenderer    = archistry.ui.CheckboxRenderer;
+    var GridStyle           = archistry.ui.GridStyles;
+    var Hash                = archistry.core.Hash;
+    var Renderer            = archistry.ui.Renderer;
+    var Style               = archistry.ui.Styles;
+    var TreeCellPath        = archistry.data.tree.TreeCellPath;
+    var TreeSelection       = archistry.ui.selection.TreeSelection;
 
     if(!this.layout)
     {
-        this.layout = new archistry.ui.BrowserGridLayout(id);
+        this.layout = new archistry.ui.BrowserGridLayout(divId);
     }
 
     if(!this.nav)
     {
-        this.nav = new archistry.ui.DefaultKeyNavStrategy(_self);
+        this.nav = new archistry.ui.DefaultKeyNavStrategy(this);
     }
 
     if(this.showRoot === undefined)
@@ -686,35 +686,115 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
     {
         this.showExpanders = true;
     }
-    
+   
     var _self = this;
     var _data = data;
     var _header = null;
     var _columns = columns;
     var _tasks = [];
     var _working = false;
-
-//    var _selection = new MultiSelectionModel({
-//        sorter: function(l, r)
-//        {
-//            var ld = l.length;
-//            var rd = r.length;
-//            if(ld === rd)
-//            {
-//                ld.each(function(i) {
-//                    if(this !== r[i])
-//                    {
-//                        if(this.compare)
-//                            return this.compare(r[i]);
-//                        return this < r[i];
-//                    }
-//                });
-//            }
-//            return 0;
-//        }
-//    });
+    var _root = null;
+    var _cols = [];
+    var _allCols = [];
+    var _colByKey = {};
+    var _colIndexByKey = {};
+    var _nodeById = new Hash();
+    var _checkRenderer = new CheckboxRenderer();
+    var _renderer = new Renderer();
+    var _selectAll = false;
     var _selection = new TreeSelection(this);
     var _regexpHidden = new RegExp(Style.Layout.HIDDEN);
+    var _signaler = new archistry.core.SignalSource(this);
+
+    _signaler.addValidSignals([
+        ////// cell editing events //////
+        
+        /**
+         * @name sentinal_activated
+         * @memberOf archistry.ui.TreeGrid
+         * @signal
+         *
+         * This signal is sent when a sentinal row is
+         * activated either via mouse or keyboard events.
+         *
+         * @param parent the parent tree node of the sentinal
+         *      row
+         * @param path the path to the node to be created in
+         *      the model in place of the sentinal row
+         */
+
+        "sentinal-activated",
+
+        /**
+         * @name cell_editing_requested
+         * @memberOf archistry.ui.TreeGrid
+         * @signal
+         *
+         * This signal is sent when editing of a cell is
+         * requested from either keyboard navigation or mouse
+         * events.  It is only sent for cells that would
+         * otherwise be editable.
+         *
+         * @param parent the parent TreeRow instance of the
+         *      row to be edited
+         * @param row the TreeRow instance for the specific
+         *      row to be edited
+         * @param cellPath the TreeCellPath of the cell to be
+         *      edited
+         * @return true to allow editing to take place; false
+         *      to prevent the edit for this cell
+         */
+
+        "cell-editing-requested",
+
+        /**
+         * @name cell_editing_started
+         * @memberOf archistry.ui.TreeGrid
+         * @signal
+         *
+         * This signal is sent when editing of a tree cell has
+         * started.
+         *
+         * @param parent the parent TreeRow instance
+         * @param row the TreeRow instance being edited
+         * @param path the TreeCellPath of the cell being
+         *      edited
+         */
+
+        "cell-editing-started",
+
+        /**
+         * @name cell_editing_completed
+         * @memberOf archistry.ui.TreeGrid
+         * @signal
+         *
+         * This signal is sent when editing of the tree cell
+         * has been completed.
+         *
+         * @param parent the parent TreeRow instance
+         * @param row the TreeRow instance being edited
+         * @param path the TreeCellPath of the cell
+         * @param oldVal the original cell value
+         * @param newVal the new cell value
+         */
+
+        "cell-editing-completed",
+
+        /**
+         * @name cell_editing_cancelled
+         * @memberOf archistry.ui.TreeGrid
+         * @signal
+         *
+         * This signal is sent when the edit of a particular
+         * cell has been cancelled by the user.
+         *
+         * @param parent the parent TreeRow instance
+         * @param row the TreeRow instance being edited
+         * @param path the TreeCellPath of the cell
+         */
+
+        "cell-editing-cancelled"
+    ]);
 
     ////// DEFINE INTERNAL API SHARED/CALLED BY TREEROW //////
     
@@ -739,7 +819,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             throw createError("ArgumentError:  invalid row!");
         }
 
-        row.render(_allCols, _colsByKey);
+        row.render(_colIndexByKey);
 
         // render the special columns/expanders
         // FIXME: should this stuff be done in the row
@@ -752,11 +832,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
         
         // FIXME:  need a better way to do this!
-        var span = ne("span");
-//        println("showExpanders: " + _self.showExpanders);
+        var span = cell.firstChild;
         if(_self.showExpanders)
         {
-            span.setAttribute("class", "ui-icon");
+            appendAttr(span, "class", "ui-icon");
             appendAttr(cell, "class", "ui-icon-left");
         }
         if(!row.isLeaf())
@@ -766,26 +845,14 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             {
                 if(row.expanded())
                 {
-                    appendAttr(span, "class", "aui-grid-expander aui-grid-expander-open");
+                    removeAttr(span, "class", "aui-grid-expander-closed");
+                    appendAttr(span, "class", "aui-grid-expander-open");
                 }
                 else
                 {
-                    appendAttr(span, "class", "aui-grid-expander aui-grid-expander-closed");
+                    removeAttr(span, "class", "aui-grid-expander-open");
+                    appendAttr(span, "class", "aui-grid-expander-closed");
                 }
-                span.onclick = function(event) {
-//                    println("key: {0}; rowCount: {1}", [ row.key, row.rowCount() ]);
-                    if(row.expanded())
-                    {
-                        collapse(row);
-                    }
-                    else
-                    {
-                        expand(row);
-                    }
-                    event.cancelBubble = true;
-                    if(event.stopPropagation)
-                        event.stopPropagation();
-                };
             }
         }
         else
@@ -808,8 +875,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         {
             span.setAttribute("style", "margin-left: {0}px;".format(width * d));
         }
-
-        cell.insertBefore(span, cell.firstChild);
     }
 
     /**
@@ -838,9 +903,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             var sentinal = false;
         if(header === undefined)
             var header = false;
-        if(dirty === undefined)
-            var dirty = false;
-
 
 // FIXME:  not sure why this doesn't seem to work!
 //        mixin(layoutRow)
@@ -858,6 +920,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         var _deleted = false;
         var _deletedChildren = [];
         var _indexOfChild = indexOfChild;
+        var _dirty = false;
+        var _cellState = {};
 
         /**
          * This method is used to retrieve the actual column
@@ -879,15 +943,26 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             return mapIndex(idx, (isNew ? _children.length + 1 : _children.length));
         }
 
+        function updateDirty(dirty)
+        {
+            if(dirty !== undefined && dirty)
+            {
+                _dirty = dirty;
+                if(_dirty)
+                {
+                    appendAttr(row, "class", GridStyle.ROW_DIRTY);
+                }
+                else
+                {
+                    removeAttr(row, "class", GridStyle.ROW_DIRTY);
+                }
+            }
+        }
+
         this.__defineGetter__("__atg_children", function()
         {
             return _children;
         });
-
-        // Ok, so this is a bit of a hack, but I can't do
-        // crazy things with accessors, and I don't want to
-        // totally screw up the API...
-        this.mixin(modelNode)
 
         this.__defineSetter__("__atg_selected", function(val)
         {
@@ -906,7 +981,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 _selectAll = false;
                 if(_header)
                 {
-                    _header.render(_allCols, _colsByKey);
+                    _header.render(_colIndexByKey);
                 }
             }
             renderRow(_me);
@@ -958,6 +1033,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
         this.cell = function(idx)
         {
+            if(!cell) println("TreeNode#cell({0}) is undefined!  me: {1}\n{2}".format(idx, this.toString(), printStackTrace()));
             return cell[colIndex(idx)];
         };
 
@@ -1047,7 +1123,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             var expander = cell[0].firstChild;
             if(_self.showSelectorColumn)
             {
-//                println("Using column 2 for the expander!");
                 expander = cell[1].firstChild;
             }
             if(!val)
@@ -1304,39 +1379,136 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             return "[TreeRow path: [{0}], data: {1} ]".format(this.path().join(","), toHashString(modelNode));
         };
 
+        /**
+         * This method is used to tell the grid how many
+         * columns are actually required for this row.
+         *
+         * @return the column count
+         */
+
+        this.columnCount = function()
+        {
+            return _allCols.length;
+        };
+
+        this.valueOf = function()
+        {
+//            println("valueOf called! \n" + printStackTrace());
+            return this.object_id();
+        };
+
         ///////// EVENT REGISTRATION ////////
         if(!row)
             return;
 
         /**
+         * This method is used to render the specific cell in
+         * the row without re-rendering the whole row.
+         *
+         * @param colDef the column definition of the column
+         *      to be rendered.
+         * @param dirty (optional) indicates that the column is
+         *      to be rendered as dirty
+         */
+
+        this.renderColumn = function(colDef, dirty)
+        {
+            var cdef = colDef;
+            var i = _colIndexByKey[cdef.key];
+            var cel = cell[i];
+            if(!cel)
+            {
+                println("*** Warning :TreeNode.render: no cell for {0}\n{1}",
+                        [ i , printStackTrace() ])
+                return;
+            }
+
+            // track the dirty state of the cell
+            var _isDirty = _cellState[cdef.key];
+            if(dirty !== undefined && dirty)
+            {
+                _cellState[cdef.key] = dirty;
+                _isDirty = dirty;
+                updateDirty(dirty);
+            }
+//            println("cell[{0}] XML: {1}", i, cel.toXML());
+            // locate the data span in which to render
+            var elem = cel.firstChild.nextSibling;
+            if(!elem || !elem.getAttribute("class").match(/aui-grid-cell-data/))
+            {
+                throw createError("Unable to find the cell data span!");
+            }
+            var n = modelNode;
+            if("__atg_selected" === cdef.key)
+                n = _me;
+
+            cdef.renderer.render(_self, n, cdef, elem);
+            if(_isDirty)
+            {
+                appendAttr(cel, "class", GridStyle.CELL_DIRTY);
+            }
+            else
+            {
+                removeAttr(cel, "class", GridStyle.CELL_DIRTY);
+            }
+        };
+
+        /**
          * This method is used to render the rows given the
          * specified array of column definitions.
          *
-         * @param cols the column array
          * @param keyIndex the column-by-key index mapping
+         * @param dirty (optional) indicates that the column is
+         *      to be rendered as dirty
          */
 
-        this.render = function(cols, keyIndex)
+        this.render = function(keyIndex, dirty)
         {
-            cols.each(function(i) {
-                var cel = cell[keyIndex[this.key]];
-                if(!cel)
+            _allCols.each(function(i) {
+                _me.renderColumn(this, dirty);
+            });
+
+            updateDirty(dirty);
+        };
+
+        /**
+         * This method is used to initialize/build out the
+         * physical layout row for this particular row.
+         * Specific row types should alter this implementation
+         * as required.
+         *
+         * @param callback a function that will be called with
+         *      a reference to each cell built by the row.  It
+         *      MUST have the form:
+         *      <pre>
+         *        callback(index, columnDef) {
+         *          // this === cell
+         *        }
+         *      </pre>
+         *      And the columnDef MAY be null depending on the
+         *      type of row being built.
+         */
+
+        this.initRow = function(callback)
+        {
+            appendAttr(row, "class", GridStyle.ROW);
+            _allCols.each(function(i) {
+                var cel = cell[i];
+                var style = [ GridStyle.CELL, this.style ];
+                cel.setAttribute("class", style.join(" "));
+                if(callback)
                 {
-//                    println("TreeNode.render: no cell for {0}\n{1}",
-//                            [ i , printStackTrace() ])
-                }
-                this.renderer.render(_self, _me, this, cel);
-                if(dirty)
-                {
-                    appendAttr(cel, "class", GridStyle.CELL_DIRTY);
-                }
-                else
-                {
-                    removeAttr(cel, "class", GridStyle.CELL_DIRTY);
+                    callback.apply(cel, [ i ]);
                 }
             });
-        }
+        };
 
+        // make sure that we're part of the mapping scheme
+        var rowid = "{0}-node-{1}".format(divId, this.object_id());
+        _nodeById.set(rowid, this);
+        row.id = rowid;
+
+        /////// HACK //////
         row.onclick = function(event)
         {
             _me.__atg_selected = !_selected;
@@ -1366,10 +1538,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
          * than regular tree rows.
          */
 
-        this.render = function(cols, keyIndex)
+        this.render = function(keyIndex)
         {
 //            println("KeyIndex: " + keyIndex.inspect());
-            cols.each(function(i) {
+            _allCols.each(function(i) {
                 var cel = cell[keyIndex[this.key]];
                 if(!cel)
                 {
@@ -1413,14 +1585,6 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         }
     }
 
-    var _root = null;
-    var _cols = [];
-    var _allCols = [];
-    var _colsByKey = {};
-    var _checkRenderer = new CheckboxRenderer();
-    var _renderer = new Renderer();
-    var _selectAll = false;
-
     /**
      * @private
      *
@@ -1430,7 +1594,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      * @param index the column index
      */
 
-    function col(index)
+    function getCol(index)
     {
         var ci = mapIndex(index, _cols.length);
         return _cols[ci];
@@ -1464,21 +1628,45 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     function buildRow(treerow)
     {
-        appendAttr(treerow.row(), "class", GridStyle.ROW);
-        _allCols.each(function(i) {
-            var cell = treerow.cell(i);
-            var style = [ GridStyle.CELL, this.style ];
-            cell.setAttribute("class", style.join(" "));
-
-//            println("treerow.isLeaf() {0}; depth: {1}", 
-//                    [ treerow.isLeaf(), treerow.depth() ]);
-
-            if(colEditable(this))
+        treerow.initRow(function(i, col) {
+            if(col && colEditable(col))
             {
-                bindEdit(cell, onStartCellEdit);
+                // hook up events?
             }
-            _self.nav.onCellAdded(cell);
+            // set up the special span elements in each cell
+            var span = ne("span");
+            span.setAttribute("class", "aui-grid-cell-meta");
+            if(_self.showExpanders && i === (_self.showSelectorColumn ? 1 : 0))
+            {
+                if(!treerow.isLeaf())
+                {
+                    appendAttr(span, "class", "aui-grid-expander");
+                    span.onclick = function(event) {
+                        if(treerow.expanded())
+                        {
+                            collapse(treerow);
+                        }
+                        else
+                        {
+                            expand(treerow);
+                        }
+                        event.cancelBubble = true;
+                        if(event.stopPropagation)
+                            event.stopPropagation();
+                    };
+                }
+            }
+            this.appendChild(span);
+            span = ne("span");
+            span.setAttribute("class", "aui-grid-cell-data");
+            this.appendChild(span);
+
+            _self.nav.onCellAdded(this);
         });
+
+        // ADD THE EVENT LISTENERS FOR THE ROW
+        var lrow = treerow.row();
+
         renderRow(treerow);
         return treerow;
     }
@@ -1496,7 +1684,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         _selection.clear();
         if(_header)
         {
-            _header.render(_allCols, _colsByKey);
+            _header.render(_colIndexByKey);
         }
     }
 
@@ -1557,7 +1745,7 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
             }
         };
 
-        _header.render(_allCols, _colsByKey);
+        _header.render(_colIndexByKey);
     }
 
     /**
@@ -1911,7 +2099,45 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         model.signalDisconnect("tree-structure-changed");
     }
 
+    //////// INTERNAL EVENT TRIGGERS ////////
+
+    function fireEditRequested(parent, node, path)
+    {
+        return _signaler.signalEmitImmediate("cell-editing-requested",
+                                parent, node, path);
+    }
+
+    function fireEditStarted(parent, node, path)
+    {
+        _signaler.signalEmit("cell-editing-started", parent, node, path);
+    }
+
+    function fireEditCompleted(parent, node, path, oval, nval)
+    {
+        _signaler.signalEmit("cell-editing-completed", parent, node, path, oval, nval);
+    }
+
+    function fireEditCancelled(parent, node, path)
+    {
+        _signaler.signalEmit("cell-editing-cancelled", parent, node, path);
+    }
+
     //////// START PUBLIC API ////////
+    
+    /**
+     * @function
+     * @see archistry.core.SignalSource#signalConnect
+     */
+
+    this.signalConnect = _signaler.signalConnect;
+
+    /**
+     * @function
+     * @see archistry.core.SignalSource#signalDisconnect
+     */
+
+    this.signalDisconnect = _signaler.signalDisconnect;
+
     
 // FIXME:  I'm not sure that this one should really be here
 // either since we're going for a model-driven view....
@@ -1974,28 +2200,65 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      * target path and column index.  Normally, this method
      * will only be triggered for keyboard navigation/editing.
      *
-     * @param path the path to the row object to edit
+     * @param path the path to the row object to edit as
+     *      either an array or a TreeCellPath instance.  If
+     *      the path is a TreeCellPath, the col parameter is
+     *      ignored.
      * @param col the column index to edit
+     * @return true if editing started, false otherwise
      */
 
     this.editCell = function(path, col)
     {
-        kol = col(col);
+//        println("TreeGrid#editCell( {0}, {1} )".format(path, col));
+        var kol = null;
+        var cellPath = null;
+
+        if(col === undefined || path instanceof TreeCellPath)
+        {
+            kol = _colByKey[path.key];
+            cellPath = path;
+        }
+        else
+        {
+            kol = getCol(col);
+            cellPath = new TreeCellPath(path, kol.key);
+        }
+        
         if(!_self.data.editable || !kol.editor)
-            return;
+        {
+            println("Model is not editable or no editor defined. Aborted.");
+            return false;
+        }
 
         // make sure the path is expanded
-        var info = getNodeInfo(path, true);
+        var info = getNodeInfo(cellPath.path, true);
         if(!info.node)
-            throw new Error("Path error:  no row for the specified path " + path.inspect());
-        
+        {
+            throw createError("Path error:  no row for the specified path [{0}]", cellPath);
+        }
+    
+        var parent = info.node.parent();
+        if(!fireEditRequested(parent, info.node, cellPath))
+        {
+            println("edit vetoed by listener(s).  Aborted.");
+            return false;
+        }
+
         setTimeout(function() {
-            _self.editing = info;
+            _self.editing = {
+                parent: parent,
+                node: info.node,
+                column: kol,
+                path: cellPath,
+                editor: kol.editor
+            };
+            fireEditStarted(parent, info.node, cellPath);
             kol.editor.startEditing(_self, 
                     info.node.data(),
                     kol.key,
-                    info.node.cell(_colsByKey[kol.key]),
-                { path: path, col: kol });
+                    info.node.cell(_colIndexByKey[kol.key]).firstChild.nextSibling,
+                    _self.editing);
         }, 50);
     };
 
@@ -2054,14 +2317,33 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
      * This method returns true or false depending on whether
      * the cell is editable or not.
      *
-     * @param path the path to the row
+     * @param path the path to the row as either an array or a
+     *      TreeCellPath instance.  If a TreeCellPath is
+     *      provided, the colIdx parameter is ignored
      * @param colIdx the column index of the cell
      * @return true or false
      */
 
     this.isCellEditable = function(path, colIdx)
     {
-        return colEditable(col(colIdx));
+//        println("TreeGrid#isCellEditable( {0}, {1} )".format(path, colIdx));
+        var kol = null;
+        if(colIdx === undefined || path instanceof TreeCellPath)
+        {
+            kol = _colByKey[path.key];
+        }
+        else
+        {
+            kol = getCol(colIdx);
+        }
+
+        if(!kol)
+        {
+            // this is probably the selector
+            return false;
+        }
+
+        return colEditable(kol);
     };
 
     /**
@@ -2264,7 +2546,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         _columns = model;
         _cols = [];
         _allCols = [];
-        _colsByKey = {};
+        _colIndexByKey = {};
+        _colByKey = {};
 
         if(this.showSelectorColumn)
         {
@@ -2280,7 +2563,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
                 style: "aui-grid-col-selector ui-widget-header"
                 })
             ];
-            _colsByKey["__atg_selected"] = 0;
+            _colIndexByKey["__atg_selected"] = 0;
+            _colByKey["__atg_selected"] = _allCols[0];
         }
 
         // load the column definitions
@@ -2288,7 +2572,8 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
         {
             var c = new TreeColumn(columns.col(i));
             _cols.add(c);
-            _colsByKey[c.key] = _allCols.length;
+            _colByKey[c.key] = c;
+            _colIndexByKey[c.key] = _allCols.length;
             _allCols.add(c);
         }
 
@@ -2341,8 +2626,10 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     this.editingCancelled = function(context)
     {
+        fireEditCancelled(context.parent, context.node, context.path);
+        context.node.renderColumn(context.column);
         _self.editing = null;
-        _self.renderCell(context.rowIndex, context.col);
+        fireEditingCancelled
     };
 
     /**
@@ -2356,24 +2643,76 @@ archistry.ui.TreeGrid = function(id, columns, data, options)
 
     this.editingCompleted = function(context)
     {
-        var row = _self.data.row(context.rowIndex);
-        var old = row[context.col.key];
-        var newVal = context.col.editor.value();
+        var row = context.node.data();
+        var old = row[context.column.key];
+        var newVal = context.column.editor.value();
         var dirty = false;
 
         if(old != newVal)
         {
-            row[context.col.key] = newVal;
+            row[context.column.key] = newVal;
             dirty = true;
-            if(_self.changeSet)
-            {
-                _self.changeSet.add(new archistry.data.ChangeMemento(row,
-                            archistry.data.ChangeOp.PROPERTY_CHANGED,
-                            context.col.key, old));
-            }
+
+//            println("New value for {0} is '{1}'", context.path, row[context.column.key]);
         }
+        context.node.renderColumn(context.column, dirty);
+        fireEditCompleted(context.parent, context.node, context.path, old, newVal);
         _self.editing = null;
-        _self.renderCell(context.rowIndex, context.col, dirty);
+    };
+
+    /**
+     * This method is used to get the map the specified
+     * element to TreeCellPath instance that can be used to
+     * identify the given cell.
+     *
+     * @param element an Element reference
+     * @return the path or null if the row is not part of the
+     *      grid
+     */
+
+    this.pathForElement = function(element)
+    {
+        var rowid = null;
+        var colid = null;
+        var el = element;
+        var m = null;
+
+//        println("element: {0}", element.toXML());
+//        println("element.tagName: {0}", element.tagName);
+
+        switch(el.tagName.toLowerCase())
+        {
+            case "span":
+                el = parentWithTag(el, "td");
+            case "td":
+                if(!el)
+                    return null;
+
+                m = el.getAttribute("class").match(/aui-grid-col-([^\s]*)/);
+                if(m.length > 0)
+                    colid = m[1];
+
+                el = parentWithTag(el, "tr");
+            case "tr":
+                if(!el)
+                    return null;
+
+                rowid = el.id;
+                break;
+            default:
+                return null;
+        }
+
+//        println("found rowid: {0} and colid: {1}".format(rowid, colid));
+        node = _nodeById.get(rowid);
+        if(!node)
+            throw createError("StateError:  unable to find a node for rowid: {0}".format(rowid));
+
+        var path = new TreeCellPath(node.path(), colid);
+        // FIXME:  this is cheating....
+        path.index = _colIndexByKey[colid];
+//        println("returning " + path);
+        return path;
     };
 
     // FIXME:  show/hide/reorder of columns is not yet

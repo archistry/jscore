@@ -366,6 +366,11 @@ archistry.data.tree.TreeCellPath = function(path, key)
 {
     this.__defineGetter__("path", function() { return path; });
     this.__defineGetter__("key", function() { return key; });
+
+    this.toString = function()
+    {
+        return "[TreeCellPath {0}".format(archistry.core.Util.toHashString(this));
+    };
 };
 
 /**

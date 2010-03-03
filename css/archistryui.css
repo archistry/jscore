@@ -79,3 +79,8 @@
 {
 	vertical-align: middle !important;
 }
+
+.aui-grid-cell-data
+{
+	display: block;
+}

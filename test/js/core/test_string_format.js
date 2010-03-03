@@ -248,6 +248,41 @@ Jester.testing("String#format functionality", {
                     expect: "'arf    '"
                 });
 			}
+		},
+		{
+			what: "String instance#format basic functionality",
+			how: function(context, result)
+			{
+                result.check("simple string with no format specifier", {
+                    actual: "Hello world!".format(),
+                    expect: "Hello world!"
+                });
+
+                result.check("parameter substitution with array arguments", {
+                    actual: "Hello {0}.  Welcome to {1}!".format([ "Frank", "Hell" ]),
+                    expect: "Hello Frank.  Welcome to Hell!"
+                });
+
+                result.check("parameter substitution with variable argument list", {
+                    actual: "Hello {0}.  Welcome to {1}!".format("Frank", "Hell"),
+                    expect: "Hello Frank.  Welcome to Hell!"
+                });
+
+                result.check("parameter substitution with non-string args", {
+                    actual: "{0}, {1}, {2}".format({}, 1, 3.14159),
+                    expect: "[object Object], 1, 3.14159"
+                });
+
+                result.check("missing arg substitution is correct", {
+                    actual: "{1}".format("test"),
+                    expect: ""
+                });
+
+                result.check("second arg of 3 is array", {
+                    actual: "my array: {0} is {1}".format([ 0, 1 ], 2),
+                    expect: "my array: 0,1 is 2"
+                });
+			}
 		}
 	]
 });

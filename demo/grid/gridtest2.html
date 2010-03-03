@@ -121,6 +121,7 @@
   </p>
 
   <div class="controls">
+    <button id="edit-row" type="button">Edit Selected Row</button><br />
     <button id="delete-rows" type="button">Delete Selection</button><br />
     <button id="insert-row" type="button">Insert Rows at Selection</button><br />
   </div>
@@ -143,13 +144,21 @@
       var console = archistry.ui.Console;
 
       var cols = new archistry.ui.ArrayColumnModel([
-        { key: "key", label: "Key" },
-        { key: "value", label: "Value" }
+        { key: "key", label: "Key", editor: editor },
+        { key: "value", label: "Value", editor: editor }
       ]);
       var grid = new archistry.ui.TreeGrid("testgrid", cols, model, {
         showExpanders: false,
         showSelectorColumn: true,
         showHeader: true
+      });
+
+      $("#edit-row").click(function(event) {
+        var selection = grid.selection;
+        if(selection.length === 1)
+        {
+          grid.editCell(selection[0], 0);
+        }
       });
 
       $("#delete-rows").click(function(event) {
@@ -190,6 +199,26 @@
         }
         model.insertRows(idx, rows);
       });
+
+      var observer = function()
+      {
+        function handler(name)
+        {
+          this.fn = function()
+          {
+            println("\nreceived signal '{0}' with args: ({1})", name, [].join.call(arguments, ", "));
+            return true;
+          };
+        }
+
+        grid.signalConnect("sentinal-activated", new handler("sentinal-activated").fn);
+        grid.signalConnect("cell-editing-requested", new handler("cell-editing-requested").fn);
+        grid.signalConnect("cell-editing-started", new handler("cell-editing-started").fn);
+        grid.signalConnect("cell-editing-completed", new handler("cell-editing-completed").fn);
+        grid.signalConnect("cell-editing-cancelled", new handler("cell-editing-cancelled").fn);
+      };
+
+      new observer();
     });
   </script>
 </body>
