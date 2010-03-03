@@ -831,10 +831,14 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     var TreeChange = archistry.data.tree.TreeChange;
     var TreeNodeRef = archistry.data.tree.TreeNodeRef;
 
+    mixin(archistry.core.Util);
     mixin(archistry.data.Indexer);
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
-    
+   
+    if(this.editable === undefined)
+        this.editable = true;
+
     var _self = this;
 
     // define the column interface since we're going to be the
@@ -952,7 +956,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
         if(path.length > 1)
             return false;
 
-        if(this.editable)
+        if(this.editable !== undefined)
             return this.editable;
 
         return true;
@@ -1119,9 +1123,13 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
 archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 {
+    mixin(archistry.core.Util);
     mixin(archistry.data.Tree);
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
+
+    if(this.editable === undefined)
+        this.editable = true;
 
     // support user-defined key definitions
     if(!this.keys)
@@ -1146,11 +1154,6 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
      */
 
     this.__defineGetter__("root", function() { return obj; });
-
-    if(this.editable === undefined)
-    {
-        this.editable = true;
-    }
 
     /**
      * This method determines if the indicated node is a leaf
