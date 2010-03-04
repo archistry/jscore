@@ -211,6 +211,14 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
  *
  * @param owner the "owner" object of the selection contents
  *      (tree nodes)
+ * @param selectfn a callback function that is used to
+ *      select/deselct the specific nodes.  It MUST have the
+ *      following form:
+ *      <pre>
+ *        callback(item, selected) {
+ *          // if selected, then select the item and re-render
+ *        }
+ *      </pre>
  * @param options a mixin object to set behavior options to
  *        control how the selection is interpreted.  The
  *        supported options are:
@@ -222,7 +230,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
  *        </ul>
  */
 
-archistry.ui.selection.TreeSelection = function(owner, options)
+archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
 {
     this.mixin(archistry.core.Util);
     this.mixin(new archistry.ui.selection.Notifier(this));
@@ -447,6 +455,12 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 
     this.add = function(node) 
     {
+        if(_nodeIndex.get(node))
+            return; // node already in the range
+
+        // ensure the node is selected
+        selectfn(node, true);
+
         var range = rangeForNode(node);
         if(range)
         {
@@ -501,7 +515,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
 //        println("Range after adding node {0} is: {1}", node, range);
 //        println("Rangelist is: [ {0} ]", _rangelist.join(", ") );
         _nodeIndex.set(node, range);
-        this.fireSelectionChanged();
+
+        if(arguments.length === 1)
+            this.fireSelectionChanged();
     };
 
     /**
@@ -546,6 +562,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
         }
 
         _nodeIndex.remove(node);
+
+        // ensure the node is not selected
+        selectfn(node, false);
         this.fireSelectionChanged();
     };
 
@@ -558,6 +577,8 @@ archistry.ui.selection.TreeSelection = function(owner, options)
      * single signal is emitted for the event.
      *
      * @param node the root node of the selection
+     * @param children the property reference to return the
+     *      children of the specified node
      * @param excludeRoot (optional) if set to true, the root
      *      node WILL NOT be included in the selection.  This
      *      is most often used with simple grids since the
@@ -565,17 +586,28 @@ archistry.ui.selection.TreeSelection = function(owner, options)
      *      the control.
      */
 
-    this.selectAll = function(node, excludeRoot)
+    this.selectAll = function(node, children, excludeRoot)
     {
         // FIXME:  if we do this with large trees, how do we
         // make sure that the UI remains responsive????
+        if(excludeRoot !== undefined && !excludeRoot)
+        {
+            this.add(node, false);
+        }
+
+        var selection = this;
+        visitChildren(node, children, function(parent, node, i) {
+            selection.add(node, false);
+        });
+
         if(node.path().length === 0)
         {
-            // fire select-all
+            // FIXME: fire select-all
+            this.fireSelectionChanged();
         }
         else
         {
-            // fire selection changed
+            this.fireSelectionChanged();
         }
     };
 
@@ -588,9 +620,9 @@ archistry.ui.selection.TreeSelection = function(owner, options)
     {
         // make sure we deselect the individual nodes
         _nodeIndex.keys().each(function(i) {
-            this.selected(false);
+            selectfn(this, false);
         });
-        _selection.clear();
+        _rangelist.clear();
         _nodeIndex.clear();
         this.fireSelectionCleared();
     };

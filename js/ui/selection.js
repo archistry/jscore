@@ -169,11 +169,24 @@ archistry.ui.selection.SelectionRange = function(owner, start, end)
  *      supported by the instance.
  * @property length This method is part of the SelectionModel
  *      API and is used to retrieve the length of the selection.
+ *
+ * @param owner the signal sender
+ * @param selectfn the callback to be invoked when the item is
+ *      to be selected or unselected.  It has the form:
+ *      <pre>
+ *        callback(item, selected) {
+ *          // set the item to value of selected
+ *        }
+ *      </pre>
  */
 
-archistry.ui.selection.SingleSelectionModel = function()
+archistry.ui.selection.SingleSelectionModel = function(owner, selectfn)
 {
-	this.mixin(new archistry.ui.selection.Notifier(this));
+    this.mixin(archistry.core.Util);
+	this.mixin(new archistry.ui.selection.Notifier(owner));
+
+    if(!unselect)
+        throw createError("ArgumentError: No unselect callback specified");
 
 	var _selection = null;
     
@@ -196,7 +209,11 @@ archistry.ui.selection.SingleSelectionModel = function()
 
 	this.add = function(item) 
 	{
+        if(_selection)
+            selectfn(_selection, false);
+
 		_selection = item
+        selectfn(item, true);
 		this.fireSelectionChanged();
 	};
 
@@ -211,6 +228,7 @@ archistry.ui.selection.SingleSelectionModel = function()
 	{
 		if(item === _selection)
 		{
+            selectfn(_selection, false);
 			_selection = null;
 			this.fireSelectionChanged();
 		}
@@ -223,6 +241,9 @@ archistry.ui.selection.SingleSelectionModel = function()
 
 	this.clear = function()
 	{
+        if(_selection)
+            selectfn(_selection, false);
+
 		_selection = null;
 		this.fireSelectionChanged();
 	};
@@ -236,8 +257,7 @@ archistry.ui.selection.SingleSelectionModel = function()
 
     this.set = function(item)
     {
-        _selection = item;
-        this.fireSelectionChanged();
+        this.add(item);
     };
 
 	/**

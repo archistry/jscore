@@ -269,9 +269,11 @@ archistry.ui.editor.AbstractEditor = function()
 	 *		rendered
 	 * @param context an opaque context object that is sent to
 	 *		the observer when the editing operation ends
+     * @param size (optional) allows the caller to override the default
+     *      size of the editor
 	 */
 
-	this.startEditing = function(observer, obj, key, cell, context)
+	this.startEditing = function(observer, obj, key, cell, context, size)
 	{
 		if(_editing)
 		{
@@ -293,7 +295,7 @@ archistry.ui.editor.AbstractEditor = function()
 		_cell = cell;
 		_context = context;
 
-		_editor = this.createEditor(cell, "editor-" + _key, _obj[_key]);
+		_editor = this.createEditor(cell, "editor-" + _key, _obj[_key], size);
 		setTimeout(function() { _editor.focus(); }, 50);
 		_editor.onkeydown = this.onKeyDown;
 		_editor.onblur = this.onBlur;
@@ -340,15 +342,19 @@ archistry.ui.editor.TextFieldEditor = function()
 	 * control.
 	 */
 
-	this.createEditor = function(cell, name, value)
+	this.createEditor = function(cell, name, value, size)
 	{
 		var width = ewidth(cell);
+        if(size && size.width)
+            width = size.width;
+
 		var height = getStyle(cell, "height");
         if("0px" === height)
         {
             height = getStyle(cell.parentNode, "height");
         }
-        println("height: " + height);
+        if(size && size.height)
+            height = size.height;
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);
 		var editor = e(name);
@@ -377,13 +383,18 @@ archistry.ui.editor.TextAreaEditor = function()
 	 * control.
 	 */
 
-	this.createEditor = function(cell, name, value)
+	this.createEditor = function(cell, name, value, size)
 	{
 		var width = ewidth(cell);
 		var height = getStyle(cell, "height");
         if("0px" === height)
         {
             height = getStyle(cell.parentNode, "height");
+        }
+        if(size)
+        {
+            if(size.width) width = size.width;
+            if(size.height) height = size.height;
         }
 
 		cell.innerHTML = String.format(INPUTFMT, [ name, value, width, height ]);

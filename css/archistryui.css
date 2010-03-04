@@ -80,7 +80,13 @@
 	vertical-align: middle !important;
 }
 
-.aui-grid-cell-data
+.aui-grid-cell-meta
+{
+}
+
+td.ui-icon-left .aui-grid-cell-data
 {
 	display: block;
+	/* border: 1px solid green; */
+	min-width: 5em;
 }

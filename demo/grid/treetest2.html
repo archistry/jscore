@@ -21,7 +21,8 @@
 
     .aui-grid td input
     {
-      border: 1px solid #e0aa0f;
+/*      border: 1px solid #e0aa0f; */
+      border: 0;
       padding: 0;
       margin: 0;
     }
@@ -34,7 +35,7 @@
 
     .aui-grid > table td, .aui-grid > table th
     {
-      padding: 3px;
+      /*padding: 3px; */
     }
 
     td.aui-grid-cell
@@ -124,6 +125,7 @@
   </p>
 
   <div class="controls">
+    <button id="edit-row" type="button">Edit Selected Row</button><br />
     <button id="delete-rows" type="button">Delete Selection</button><br />
     <button id="insert-row" type="button">Insert Row Selection</button><br />
     <button id="expand-all" type="button">Expand All</button>
@@ -163,8 +165,8 @@
       var console = archistry.ui.Console;
 
       var cols = new archistry.ui.ArrayColumnModel([
-        { key: "key", label: "Key" },
-        { key: "value", label: "Value" }
+        { key: "key", label: "Key", editor: editor },
+        { key: "value", label: "Value", editor: editor }
       ]);
       var grid = new archistry.ui.TreeGrid("testgrid", cols, buildModel(), {
         showRoot: false,
@@ -183,6 +185,14 @@
         }
         return s += " ]";
       }
+      
+      $("#edit-row").click(function(event) {
+        var selection = grid.selection;
+        if(selection.length === 1)
+        {
+          grid.editCell(selection[0], 0);
+        }
+      });
 
       $("#delete-rows").click(function(event) {
         grid.selection.reverseEach(function() {

@@ -658,14 +658,15 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     mixin(archistry.ui.Helpers);
     this.mixin(options);
     
-    var CellRenderer        = archistry.ui.CellRenderer;
-    var CheckboxRenderer    = archistry.ui.CheckboxRenderer;
-    var GridStyle           = archistry.ui.GridStyles;
-    var Hash                = archistry.core.Hash;
-    var Renderer            = archistry.ui.Renderer;
-    var Style               = archistry.ui.Styles;
-    var TreeCellPath        = archistry.data.tree.TreeCellPath;
-    var TreeSelection       = archistry.ui.selection.TreeSelection;
+    var CellRenderer            = archistry.ui.CellRenderer;
+    var CheckboxRenderer        = archistry.ui.CheckboxRenderer;
+    var GridStyle               = archistry.ui.GridStyles;
+    var Hash                    = archistry.core.Hash;
+    var Renderer                = archistry.ui.Renderer;
+    var Style                   = archistry.ui.Styles;
+    var TreeCellPath            = archistry.data.tree.TreeCellPath;
+    var TreeSelection           = archistry.ui.selection.TreeSelection;
+    var SingleSelectionModel    = archistry.ui.selection.SingleSelectionModel;
 
     if(!this.layout)
     {
@@ -702,7 +703,14 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     var _checkRenderer = new CheckboxRenderer();
     var _renderer = new Renderer();
     var _selectAll = false;
-    var _selection = new TreeSelection(this);
+    var _selection = new TreeSelection(this, function(item, sel) {
+        item.selected(sel);
+        item.render();
+    });
+//    var _selection = new SingleSelectionModel(this, function(item) {
+//        item.selected(false);
+//        item.render();
+//    });
     var _regexpHidden = new RegExp(Style.Layout.HIDDEN);
     var _signaler = new archistry.core.SignalSource(this);
 
@@ -819,7 +827,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             throw createError("ArgumentError:  invalid row!");
         }
 
-        row.render(_colIndexByKey);
+        row.render();
 
         // render the special columns/expanders
         // FIXME: should this stuff be done in the row
@@ -874,6 +882,12 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         if(d > 0)
         {
             span.setAttribute("style", "margin-left: {0}px;".format(width * d));
+        }
+        if(_self.showExpanders)
+        {
+            // make sure we have a proper text wrapping margin
+            // around the expander
+            span.nextSibling.setAttribute("style", "margin-left: {0}px;".format(width * (d + 1) + 2));
         }
     }
 
@@ -969,7 +983,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             _selected = val;
             if(val)
             {
-                _selection.add(_me);
 //                removeAttr(row, "class", Style.State.DEFAULT);
                 appendAttr(row, "class", GridStyle.ROW_SELECTED);
             }
@@ -977,14 +990,12 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             {
                 removeAttr(row, "class", GridStyle.ROW_SELECTED);
 //                appendAttr(row, "class", Style.State.DEFAULT);
-                _selection.remove(_me);
                 _selectAll = false;
                 if(_header)
                 {
                     _header.render(_colIndexByKey);
                 }
             }
-            renderRow(_me);
         });
 
         this.__defineGetter__("__atg_selected", function() { return _selected; });
@@ -1457,12 +1468,11 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
          * This method is used to render the rows given the
          * specified array of column definitions.
          *
-         * @param keyIndex the column-by-key index mapping
          * @param dirty (optional) indicates that the column is
          *      to be rendered as dirty
          */
 
-        this.render = function(keyIndex, dirty)
+        this.render = function(dirty)
         {
             _allCols.each(function(i) {
                 _me.renderColumn(this, dirty);
@@ -1507,12 +1517,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var rowid = "{0}-node-{1}".format(divId, this.object_id());
         _nodeById.set(rowid, this);
         row.id = rowid;
-
-        /////// HACK //////
-        row.onclick = function(event)
-        {
-            _me.__atg_selected = !_selected;
-        }
     }
 
     /**
@@ -1538,16 +1542,11 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
          * than regular tree rows.
          */
 
-        this.render = function(keyIndex)
+        this.render = function()
         {
 //            println("KeyIndex: " + keyIndex.inspect());
             _allCols.each(function(i) {
-                var cel = cell[keyIndex[this.key]];
-                if(!cel)
-                {
-//                    println("TreeNode.render: no cell for {0}\n{1}",
-//                            [ i , printStackTrace() ])
-                }
+                var cel = cell[_colIndexByKey[this.key]];
                 if(this.headerRenderer)
                 {
                     this.headerRenderer.render(_self, this, cel);
@@ -1666,6 +1665,15 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         // ADD THE EVENT LISTENERS FOR THE ROW
         var lrow = treerow.row();
+        if(_self.showSelectorColumn)
+        {
+            treerow.cell(0).onclick = function(event) {
+                if(treerow.selected())
+                    _selection.remove(treerow);
+                else
+                    _selection.add(treerow);
+            };
+        }
 
         renderRow(treerow);
         return treerow;
@@ -1684,7 +1692,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         _selection.clear();
         if(_header)
         {
-            _header.render(_colIndexByKey);
+            _header.render();
         }
     }
 
@@ -1745,7 +1753,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             }
         };
 
-        _header.render(_colIndexByKey);
+        _header.render();
     }
 
     /**
@@ -2027,7 +2035,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                     var child = node.child(this.index);
                     if(child)
                     {
-                        child.selected(false);
+                        _selection.remove(child);
                     }
                     child = node.removeChildAtIndex(this.index);
 //                    println("removed child: " + child);
@@ -2040,7 +2048,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                     var child = node.child(this.index);
                     if(child)
                     {
-                        child.selected(false);
+                        _selection.remove(child);
                     }
                     child = node.removeChildAtIndex(this.index);
 //                    println("removed child: " + child);
@@ -2254,11 +2262,36 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 editor: kol.editor
             };
             fireEditStarted(parent, info.node, cellPath);
+            var cell = info.node.cell(_colIndexByKey[kol.key]);
+            var meta = cell.firstChild;
+            var dcell = meta.nextSibling;
+            var cellw = ewidth(cell, true);
+            var cellh = getStyle(cell, "height");
+            var metaw = ewidth(meta, true);
+            var metah = getStyle(meta, "height");
+            var dataw = ewidth(dcell, true);
+            var datah = getStyle(dcell, "height");
+
+            println("Cell {0}x{1}; Meta: {2}x{3}; Data: {4}x{5}", cellw, cellh, metaw, metah, dataw, datah);
+            var size = {};
+            if(0 === metaw)
+            {
+                size.width = cellw + "px";
+                size.height = cellh;
+            }
+            else
+            {
+                size.width = (dataw - 2) + "px";
+            }
+
+            println("size: {0}", toHashString(size));
+            // calculate the width
             kol.editor.startEditing(_self, 
                     info.node.data(),
                     kol.key,
-                    info.node.cell(_colIndexByKey[kol.key]).firstChild.nextSibling,
-                    _self.editing);
+                    meta.nextSibling, 
+                    _self.editing,
+                    size);
         }, 50);
     };
 
@@ -2413,24 +2446,25 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     this.selectAll = function(selected)
     {
+        var excludeRoot = true;
         if(_self.showRoot)
         {
             if(!_root.expanded())
             {
                 expand(_root);
             }
-            _root.selected(selected);
+            excludeRoot = false;
         }
 
-        visitChildren(_root, "__atg_children", function(parent, node, i) {
-//            _tasks.push(function() {
-//                println("processing node: " + node.name);
-                if(!node.expanded())
-                    expand(node);
-                node.selected(selected);
-//            });
-            return true;
-        });
+        if(selected !== undefined && selected)
+        {
+            _selection.selectAll(_root, "__atg_children", excludeRoot);
+        }
+        else
+        {
+            _selection.clear();
+        }
+
         _selectAll = selected;
     };
 
