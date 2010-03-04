@@ -145,9 +145,16 @@ namespace = function(ns)
     // and set as the global scope.
     if(typeof load !== 'function')
     {
-        // only do this if not running console Rhino runtime
-        if(!Window.prototype[base])
-            Window.prototype[base] = __ajs_ns[base];
+        try
+        {
+            // only do this if not running console Rhino runtime
+            if(Window !== undefined && !Window.prototype[base])
+                Window.prototype[base] = __ajs_ns[base];
+        }
+        catch(e)
+        {
+            // Opera pukes because Window isn't defined...
+        }
     }
 };
 
@@ -993,7 +1000,7 @@ String.format = function(source, params) {
         return rval;
     };
 
-    if(arguments.length === 1 || !params)
+    if(arguments.length <= 1 || !params || typeof source !== 'string')
     {
         return source.toString();
     }
@@ -1005,9 +1012,14 @@ String.format = function(source, params) {
     {
         params = [].slice.call(arguments, 1);
     }
+//    if(!source.replace)
+//    {
+//    print("source: " + source);
+//    print("arguments.length: " + arguments.length);
 //    print("\n\nparams: " + params.join(", "));
 //    print("params: " + params.inspect());
 //    print("params.length: " + params.length);
+//    }
 
     val = source.replace(/\{\{|\}\}|\{(\d+)(?:,(-?\d+))?(?::([^}]*))?\}/g,
             function(match, index, width, format) {
