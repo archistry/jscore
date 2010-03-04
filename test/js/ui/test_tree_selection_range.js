@@ -59,17 +59,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 range.insert(0, new TestTreeNode(0));
 
                 result.check("node inserted at front of the list", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 0
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 1
                 });
 
                 result.check("node is also the end of the list", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 0
                 });
 			}
@@ -85,17 +85,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 range.insert(-1, new TestTreeNode(4));
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 0
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 5
                 });
 
                 result.check("node is at the end of the list", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 4
                 });
 			}
@@ -111,17 +111,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 range.insert(0, new TestTreeNode(4));
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 4
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 5
                 });
 
                 result.check("node is at the end of the list", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 3
                 });
 			}
@@ -137,17 +137,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 range.insert(2, new TestTreeNode(4));
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 0
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 5
                 });
 
                 result.check("node is at the end of the list", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 3
                 });
 			}
@@ -160,12 +160,12 @@ Jester.testing("TreeSelectionRange functionality", {
                 var r2 = range.split(new TestTreeNode(4));
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: null
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 0
                 });
 
@@ -186,12 +186,12 @@ Jester.testing("TreeSelectionRange functionality", {
                 var r2 = range.split(new TestTreeNode(0));
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 1
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 3
                 });
 
@@ -212,12 +212,12 @@ Jester.testing("TreeSelectionRange functionality", {
                 var r2 = range.split(new TestTreeNode(3));
 
                 result.check("end path is correct", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 2
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 3
                 });
 
@@ -240,32 +240,32 @@ Jester.testing("TreeSelectionRange functionality", {
                 println(r2.toString());
 
                 result.check("start path is correct", {
-                    actual: range.start,
+                    actual: range.start(),
                     expect: 0
                 });
                
                 result.check("list length is correct", {
-                    actual: range.length,
+                    actual: range.length(),
                     expect: 1
                 });
 
                 result.check("end path is correct", {
-                    actual: range.end,
+                    actual: range.end(),
                     expect: 0 
                 });
 
                 result.check("new range start path is correct", {
-                    actual: r2.start,
+                    actual: r2.start(),
                     expect: 2
                 });
                
                 result.check("new range list length is correct", {
-                    actual: r2.length,
+                    actual: r2.length(),
                     expect: 2
                 });
 
                 result.check("new range end path is correct", {
-                    actual: r2.end,
+                    actual: r2.end(),
                     expect: 3 
                 });
 			}

@@ -46,7 +46,7 @@ TestTreeNode = function(data)
 {
     this.mixin(TreeNode);
     var _selected = false;
-    this.__defineGetter__("data", function() { return data; });
+    this.data = function() { return data; };
     this.selected = function(val)
     {
         if(val === undefined)
@@ -113,17 +113,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range should have 1 element", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 1
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: node.path()
                 });
 			}
@@ -153,17 +153,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 3
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.firstChild().path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: node.lastChild().path()
                 });
 			}
@@ -191,17 +191,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 2
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: child.path()
                 });
 			}
@@ -230,17 +230,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 2
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: child.path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: sib.path()
                 });
 			}
@@ -269,17 +269,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 2
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: child.path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: sib.path()
                 });
 			}
@@ -322,19 +322,19 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: 1
                 });
              
-                println(range.length);
+//                println("range length: " + range.length);
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 3
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: node.child(1).path()
                 });
 			}
@@ -378,17 +378,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 3
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.lastChild().path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: sibling.firstChild().path()
                 });
 			}
@@ -432,17 +432,17 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
                
                 result.check("The range contains correct node count", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 3
                 });
 
                 result.check("The correct node is the start of the range", {
-                    actual: range[0].start,
+                    actual: range[0].start(),
                     expect: node.lastChild().path()
                 });
                 
                 result.check("The correct node is the end of the range", {
-                    actual: range[0].end,
+                    actual: range[0].end(),
                     expect: sibling.firstChild().path()
                 });
 			}
@@ -462,7 +462,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 });
 
                 result.check("There should be one node selected", {
-                    actual: range[0].length,
+                    actual: range[0].length(),
                     expect: 1
                 });
               

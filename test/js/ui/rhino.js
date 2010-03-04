@@ -41,8 +41,13 @@
 load('/opt/devel/env-js/src/env.rhino.js');
 load('../jester.js');
 
-function println(fmt, args)
+function println(fmt)
 {
+    args = [];
+    for(i = 1; i < arguments.length; ++i)
+    {
+        args[i - 1] = arguments[i];
+    }
     print(String.format(fmt, args));
 }
 
