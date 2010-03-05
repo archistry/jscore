@@ -282,6 +282,23 @@ Jester.testing("String#format functionality", {
                     actual: "my array: {0} is {1}".format([ 0, 1 ], 2),
                     expect: "my array: 0,1 is 2"
                 });
+
+                var s = "{0} {1}"
+                var x = s.format(1, "foo");
+                result.check("original string is not modified", {
+                    actual: s,
+                    expect: "{0} {1}" 
+                });
+
+                result.check("can handle values that are zero as first argument", {
+                    actual: "{0}".format(0),
+                    expect: "0"
+                });
+
+                result.check("can handle values that are false as first argument", {
+                    actual: "{0}".format(false),
+                    expect: "false"
+                });
 			}
 		}
 	]

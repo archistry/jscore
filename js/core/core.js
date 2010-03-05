@@ -1000,7 +1000,7 @@ String.format = function(source, params) {
         return rval;
     };
 
-    if(arguments.length <= 1 || !params || typeof source !== 'string')
+    if(arguments.length <= 1 || params === undefined)
     {
         return source.toString();
     }
@@ -1020,6 +1020,10 @@ String.format = function(source, params) {
 //    print("params: " + params.inspect());
 //    print("params.length: " + params.length);
 //    }
+
+    // FIXME:  not sure why this is needed, but sometimes it is...
+    if(!source.replace)
+        source = source.toString();
 
     val = source.replace(/\{\{|\}\}|\{(\d+)(?:,(-?\d+))?(?::([^}]*))?\}/g,
             function(match, index, width, format) {
