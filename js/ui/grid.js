@@ -214,7 +214,7 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
         var down = null;
         var keyCode = kc(event);
-        Console.println("KeyCode: " + keyCode);
+//        Console.println("KeyCode: " + keyCode);
         switch(keyCode)
         {
             case 9:        // TAB
@@ -228,16 +228,16 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
         var thisCell = parentWithTag(eventTarget(event), "td");
         var nextCell = findNextCell(thisCell, !event.shiftKey, down)
-        if(nextCell && nextCell.outerHTML)
-            Console.println("nextCell: " + nextCell.outerHTML);
-        else
-            Console.println("nextCell: " + nextCell.toXML());
+//        if(nextCell && nextCell.outerHTML)
+//            Console.println("nextCell: " + nextCell.outerHTML);
+//        else
+//            Console.println("nextCell: " + nextCell.toXML());
         if(nextCell)
         {
             var path = grid.pathForElement(nextCell);
             while(!grid.isCellEditable(path))
             {
-                Console.println("<<<< Cell({0}) is not editable", [ path ]);
+//                Console.println("<<<< Cell({0}) is not editable", [ path ]);
                 nextCell = findNextCell(nextCell, !event.shiftKey, down)
                 if(!nextCell)
                     return true;
@@ -260,6 +260,11 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
         return true;
     }
 
+    this.pushEvent = function(event)
+    {
+        return onKeyDown(event);
+    };
+
     /**
      * This is the public API that is used to notify the key
      * navigation strategy that a new cell has been added to
@@ -270,18 +275,20 @@ archistry.ui.DefaultKeyNavStrategy = function(grid)
 
     this.onCellAdded = function(cell)
     {
+        // We only register this handler if we're able to
+        // capture the events
         if(cell.addEventListener)
         {
             cell.addEventListener("keydown", onKeyDown, true);
         }
-        else if(cell.attachEvent)
-        {
-            cell.attachEvent("onkeydown", onKeyDown);
-        }
-        else
-        {
-            cell.onkeydown = onKeyDown;
-        }
+//        else if(cell.attachEvent)
+//        {
+//            cell.attachEvent("onkeydown", onKeyDown);
+//        }
+//        else
+//        {
+//            cell.onkeydown = onKeyDown;
+//        }
     };
 };
 
@@ -2062,7 +2069,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             var ri = rowIndex(node) + this.refs()[0].index();
             if(this.isContiguous())
             {
-                _self.layout.deleteRows(ri, this.refs().length);
                 this.refs().each(function(i) {
                     var child = node.child(this.index());
                     if(child)
@@ -2072,11 +2078,11 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                     child = node.removeChildAtIndex(this.index());
 //                    Console.println("removed child: " + child);
                 });
+                _self.layout.deleteRows(ri, this.refs().length);
             }
             else
             {
                 this.refs().each(function(i) {
-                    _self.layout.deleteRows(ri, 1);
                     var child = node.child(this.index());
                     if(child)
                     {
@@ -2084,6 +2090,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                     }
                     child = node.removeChildAtIndex(this.index());
 //                    Console.println("removed child: " + child);
+                    _self.layout.deleteRows(ri, 1);
                 });
             }
             renderRow(node);
@@ -2322,6 +2329,12 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
 //            Console.println("size: {0}", toHashString(size));
             // calculate the width
+            if(!cell.addEventListener && cell.attachEvent)
+            {
+//                Console.println("added event forwarder");
+                kol.editor.fakeCapture = _self.nav.pushEvent;
+            }
+
             kol.editor.startEditing(_self, 
                     info.node.data(),
                     kol.key,

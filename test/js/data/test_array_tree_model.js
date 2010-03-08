@@ -77,12 +77,12 @@ Jester.testing("Concrete TreeRowModel functionality", {
 
                 result.check("child is a leaf node", {
                     actual: model.isLeaf(child),
-                    expect: true,
+                    expect: true
                 });
 
                 result.check("child count of child is correct", {
                     actual: model.childCount(child),
-                    expect: 0,
+                    expect: 0
                 });
 
                 result.check("child request for child is null", {

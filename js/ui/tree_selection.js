@@ -248,6 +248,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
 
     var Hash = archistry.core.Hash;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
+    var visitChildren = archistry.data.Tree.visitChildren;
     var _self = this;
 
     /**
@@ -606,7 +607,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
         }
 
         var selection = this;
-        visitChildren(node, children, function(parent, node, i) {
+        visitChildren(node, function(parent, node, i) {
             selection.add(node, false);
         });
 

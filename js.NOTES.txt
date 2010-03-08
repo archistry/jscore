@@ -1,0 +1,65 @@
+JavaScript Observational Behaior Notes
+======================================
+
+2010-03-07T09:47:17+0000 ast
+
+IE's window Object
+
+IE's DOM objects aren't part of the JavaScript object hierarchy,
+meaning that they don't have prototypes and they aren't affected by
+adding methods to the Object prototype.  You CAN add methods and
+properties to them, but you can't do it on the global basis.  This is
+apparently well known, but I didn't understand the implications for
+the overall core framework.
+
+Mixin Behavior
+
+I mistakenly assumed that since all functions were objects, doing
+this:
+
+  function A()
+  {
+    mixin(B);
+  };
+
+Would result in "private" include within the scope of the function
+itself and not the resulting instance objects.  This was just flat
+wrong.  What is really the scope/target of the mixin is the global
+object, so what you're doing is mixing in B into the global
+namespace--directly.  Bad idea.
+
+This only came to light actually thanks to IE's screwy behavior with
+the core DOM objects.  Since Window didn't get modified by the
+Object.prototype, the above code resulted in the ubiquitous 'Object
+expected' message, because window isn't an object, and window is the
+default scope of the function here because it is the enclosing scope.
+On the whole, it makes sense, but we still need a solution for the
+'private mixin' scenario, but it won't be as syntactically clean.
+Seems like it's inevitable.
+
+This refactoring MUST be completed before it will work in IE, and
+library code using the above syntax should be considered in error.
+
+Getters/Setters
+
+IE doesn't support defining getters/setters on user-defined objects it
+seems.  It implements draft EMCAScript behavior that isn't supported
+in any other browser which makes it much more awkward to define
+protected access getters/setters than with the de-facto standard
+__define[GS]etter__ syntax.  IE8 "hopes" to extend this support to
+user-defined objects in a future release, but that just means that
+it's pretty-much imposible to use properties effectively in
+frameworks.
+
+(see: http://msdn.microsoft.com/en-us/library/dd229916%28VS.85%29.aspx#propkinds)
+
+As a result, all of the core objects MUST NOT use properties at all.
+Everything must use accessor functions with variable argument lists or
+specific [gs]etProperty calls like Java bean objects.  Unfortunately,
+the library needs to use both approaches to fully implement the
+functionalty we need.  This refactoring is on-going and MUST be
+completed before the existing code will work in any version of IE.
+
+On the plus side, that probably means that it'll work in IE5.5+, so
+that's a good thing.  Then it'll just be about CSS issues, and
+hopefully, we can leverage jQuery for that.

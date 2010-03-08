@@ -38,7 +38,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-var __jester_console = "";
+Jester.console = "";
 
 if(this.println === undefined)
 {
@@ -50,6 +50,6 @@ if(this.println === undefined)
             args[i-1] = arguments[i];
         }
 //        alert("println: fmt: '{3}'; arguments.length: {0}; args.length: {1}; args: {2}".format(arguments.length, args.length, args.inspect(), fmt));
-        __jester_console += "{0}<br />".format(fmt.format(args));
+        Jester.console += "{0}<br />".format(fmt.format(args));
     }
 }

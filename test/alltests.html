@@ -20,7 +20,8 @@
   <script type="text/javascript">
     $(function()
     {
-      $("#console").html(__jester_console);
+      $("#console").html(Jester.console);
+
       new jester.reporter.WebReporter("output");
     });
   </script>

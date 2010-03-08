@@ -143,7 +143,7 @@ Jester.testing("Core library functionality", {
                 keys = obj.clear().keys();
 				result.check("object key count", {
 					actual: keys.length,
-					expect: 0,
+					expect: 0
 				});
 
                 result.check("post-clear object key values are correct", {

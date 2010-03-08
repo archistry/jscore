@@ -1588,6 +1588,9 @@ Sizzle.filter = function(expr, set, inplace, not){
 
 	while ( expr && set.length ) {
 		for ( var type in Expr.filter ) {
+            if(!Expr.filter.hasOwnProperty(type))
+                continue;
+
 			if ( (match = Expr.match[ type ].exec( expr )) != null ) {
 				var filter = Expr.filter[ type ], found, item;
 				anyFound = false;

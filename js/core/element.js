@@ -43,77 +43,84 @@
 // include core.js in command-line applications)
 ///////////////////////////////////////////////////////////////////////
 
-/**
- * This method allows you to approximate some of the
- * functionality in XPath DOM navigation by specifying
- * intermediate element names where you wish to locate a
- * nodelist of child elements.
- *
- * NOTE:  if any of the intermediate path elements contain
- * more than one instance, the results of the path will be
- * merged.
- *
- * FIXME:  this should really use XPath if it's available
- * rather than walking the DOM tree for performance.
- * Effectively, what this is doing is similar to the 
- * XPath: ".//path0//path1//...//pathN"
- *
- * @param path an array containing intermediate nodes
- * @return an Array containing the specified result nodes.
- */
-
-Element.prototype.childElementsWithPath = function(path, lvl)
+try
 {
-	var l = 0;
-	var nodes = new Array();
+    /**
+     * This method allows you to approximate some of the
+     * functionality in XPath DOM navigation by specifying
+     * intermediate element names where you wish to locate a
+     * nodelist of child elements.
+     *
+     * NOTE:  if any of the intermediate path elements contain
+     * more than one instance, the results of the path will be
+     * merged.
+     *
+     * FIXME:  this should really use XPath if it's available
+     * rather than walking the DOM tree for performance.
+     * Effectively, what this is doing is similar to the 
+     * XPath: ".//path0//path1//...//pathN"
+     *
+     * @param path an array containing intermediate nodes
+     * @return an Array containing the specified result nodes.
+     */
 
-	if(lvl != null)
-	{
-		l = lvl;
-	}
-	
-	var tag = path[l];
-	var list = this.getElementsByTagName(tag);
-	
-	l += 1;
-	for(var i = 0; i < list.length; ++i)
-	{
-		if(l == path.length)
-		{
-			// we're at the leaf, so add the nodes
-			nodes[nodes.length] = list[i];
-		}
-		else
-		{
-			// keep walking the tree path
-			nodes = nodes.concat(list[i].childElementsWithPath(path, l));
-		}
-	}
+    Element.prototype.childElementsWithPath = function(path, lvl)
+    {
+        var l = 0;
+        var nodes = new Array();
 
-	return nodes;
-};
+        if(lvl != null)
+        {
+            l = lvl;
+        }
+        
+        var tag = path[l];
+        var list = this.getElementsByTagName(tag);
+        
+        l += 1;
+        for(var i = 0; i < list.length; ++i)
+        {
+            if(l == path.length)
+            {
+                // we're at the leaf, so add the nodes
+                nodes[nodes.length] = list[i];
+            }
+            else
+            {
+                // keep walking the tree path
+                nodes = nodes.concat(list[i].childElementsWithPath(path, l));
+            }
+        }
 
-/**
- * This method is simply a shortcut to get XML out of an
- * arbitrary element.
- *
- * @param str the optional string to use to append the XML
- * @return the XML for this element and all of its children as
- *		a String
- */
+        return nodes;
+    };
 
-Element.prototype.toXML = function(str)
+    /**
+     * This method is simply a shortcut to get XML out of an
+     * arbitrary element.
+     *
+     * @param str the optional string to use to append the XML
+     * @return the XML for this element and all of its children as
+     *		a String
+     */
+
+    Element.prototype.toXML = function(str)
+    {
+        if(this.xml != null)
+        {
+            return this.xml;
+        }
+
+        // do it ourselves...
+        if(str == null)
+        {
+            str = "";
+        }
+        var xmls = new XMLSerializer();
+        return str + xmls.serializeToString(this);
+    };
+}
+catch(e)
 {
-	if(this.xml != null)
-	{
-		return this.xml;
-	}
-
-	// do it ourselves...
-	if(str == null)
-	{
-		str = "";
-	}
-	var xmls = new XMLSerializer();
-	return str + xmls.serializeToString(this);
-};
+    // must be IE... :(
+}

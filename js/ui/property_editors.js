@@ -256,14 +256,27 @@ archistry.ui.editor.AbstractEditor = function()
         // the keybindings without having to re-implement this
         // method!
         var keyCode = kc(event);
-        Console.println("Editor: onKeyDown code: " + keyCode);
+//        Console.println("Editor: onKeyDown code: " + keyCode);
         if(_self.cancelKeyCodes.include(keyCode))
         {
             _self.onEditingCancelled();
         }
         else if(_self.completionKeyCodes && _self.completionKeyCodes.include(keyCode))
         {
-            event.returnValue = false;
+            // This lovely little hack is because of IE's
+            // inability to a) bubble certain events (like the
+            // TAB key) in an editor and b) disable bubbling
+            // at all if the thing's been handled.
+            //
+            // NOTE:  we only do it here, because if we
+            // didn't, the event actually gets processed 3
+            // times on IE. *sigh*
+
+            if(_self.fakeCapture)
+            {
+                if(!_self.fakeCapture(event))
+                    return false;
+            }
             return _self.onEditingCompleted();
         }
         
