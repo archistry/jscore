@@ -235,7 +235,7 @@ archistry.data.Tree = {
         {
             var child = root.child(i);
             if(callback(root, child, i))
-                visitChildren(child, callback)
+                this.visitChildren(child, callback)
         }
     },
 

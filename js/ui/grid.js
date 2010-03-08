@@ -1681,6 +1681,9 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 {
                     H.appendAttr(span, "class", "aui-grid-expander");
                     span.onclick = function(event) {
+                        if(!event)
+                            event = window.event;
+
                         if(treerow.expanded())
                         {
                             collapse(treerow);

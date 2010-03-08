@@ -24,6 +24,11 @@ Internet Explorer
 	have to come up with a special set of hacks to support these
 	versions of IE.
 
+  Version 8.0.6001.18882
+  	All seems to work as expected (will wonders never cease???),
+	but there do seem to be some errors on the page--but it does
+	work!
+
 Firefox
 
   Version 2.0.0.4 and lower
@@ -32,6 +37,12 @@ Firefox
 	with the controls does not currently work.
 
 	There is currently no support planned for this browser.
+
+  Version 2.0.0.20 and newer
+  	All seems to work as expected.
+
+  Version 3.5.8
+  	All seems to work as expected.
 
   Version 3.6.2 daily
   	Introduction of a display glitch in the first row of the tree
