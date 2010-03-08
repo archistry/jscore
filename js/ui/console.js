@@ -101,8 +101,15 @@ archistry.ui.ConsoleImpl = function()
     this.println = function(fmt)
     {
         var args = [];
-        for(var i = 1; i < arguments.length; ++i)
-            args[i-1] = arguments[i];
+        if(arguments.length > 2 || arguments[1].length === undefined)
+        {
+            for(var i = 1; i < arguments.length; ++i)
+                args[i-1] = arguments[i];
+        }
+        else
+        {
+            args = arguments[1];
+        }
 
         this.print((fmt + "\n"), args);
     };
