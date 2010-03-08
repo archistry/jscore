@@ -1866,11 +1866,18 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     function collapse(node)
     {
         Tree.visitChildren(node, function(parent, node, idx) {
-//            Console.println("Collapsing node: {0}.child[{1}]: {2}", [ parent.key, idx, node.key ]);
+//            Console.println("visiting node at path [{0}, {1}]", parent.path(), idx);
             if(node.row())
             {
                 node.visible(false);
-                return true;
+                if(node.expanded())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             return false;
         });
