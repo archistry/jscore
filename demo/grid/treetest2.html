@@ -187,7 +187,7 @@
       }
       
       $("#edit-row").click(function(event) {
-        var selection = grid.selection;
+        var selection = grid.selection();
         if(selection.length === 1)
         {
           grid.editCell(selection[0], 0);
@@ -195,7 +195,7 @@
       });
 
       $("#delete-rows").click(function(event) {
-        grid.selection.reverseEach(function() {
+        grid.selection().reverseEach(function() {
 //        grid.selection.each(function() {
           var path = this;
 //          println("node: {0}; path: {1}", [ this.key, printPath(path) ]);
@@ -204,14 +204,14 @@
       });
 
       $("#insert-row").click(function(event) {
-        if(grid.selection.length !== 1)
+        if(grid.selection().length !== 1)
         {
           alert("Can't insert under more than one parent!");
           return;
         }
 
         var node = null;
-        grid.selection.each(function() { node = this; });
+        grid.selection().each(function() { node = this; });
         var path = node.path();
         var count = Math.floor(Math.random() * 6);
         println("Inserting {0} rows at path: [{1}]", [ count, path.join(", ")] );

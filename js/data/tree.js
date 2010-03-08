@@ -838,624 +838,91 @@ archistry.data.tree.ObjectAdapter = function(obj, getter, setter)
 
 /**
  * @class
+ * 
+ * This class is responsible for managing ObjectAdapter
+ * instances for data nodes for both the ArrayTreeModel and
+ * the ObjectTreeModel implementations.  Since it is a
+ * self-contained class, it can also easily be integrated into
+ * user code.
  *
- * This class provides a linear TreeRowModel implementation based on
- * using an array of JavaScript objects.
- *
- * @param data the array containing the data to display
- * @param options the options to initialize the model
- *      Supported values for the options object include:
- *      <ul>
- *      <li>
- *      keys      - defines an array of keys which are valid
- *                  for the objects in the array
- *      </li>
- *      <li>
- *      editable  - by default, the array is considered
- *                  mutable.  If the array objects are not
- *                  to be changed, you MAY set
- *                  options.editable = false, or simply not
- *                  define editors for the columns.
- *      </li>
- *      <li>
- *      getter    - an optional function that is used to
- *                  get the value of the specified key
- *                  from the object.
- *      </li>
- *      <li>
- *      setter    - an optional function that is used to set
- *                  the value of the specified key for the
- *                  object.
- *      </li>
- *      <li>
- *      useAdapter - indicates the the objects in the model
- *                  already provide <code>#setProperty</code>
- *                  and <code>#getProperty</code> methods.
- *                  By default, the ObjectAdapter class will
- *                  be used to wrap the objects in the model.
- *      </li>
- *      </ul>
- * @see archistry.data.tree.ObjectAdapter
+ * @param enabled true or false depending on whether
+ *      ObjectAdapter instances should be used.
+ * @param getter the getter that is applied to the object to
+ *      retrieve the property value
+ * @param setter the setter that is used to manipulate the
+ *      object properties
  */
 
-archistry.data.tree.ArrayTreeModel = function(data, options)
+archistry.data.tree.ObjectAdapterManager = function(enabled, getter, setter)
 {
-    var Indexer = archistry.data.Indexer;
-    var ObjectAdapter = archistry.data.tree.ObjectAdapter;
-    var TreeChange = archistry.data.tree.TreeChange;
-    var TreeNodeRef = archistry.data.tree.TreeNodeRef;
-    var Util = archistry.core.Util;
-
-    this.mixin(new archistry.data.tree.Notifier(this));
-    this.mixin(options);
-   
-    if(this.editable === undefined)
-        this.editable = true;
+    var _nodes = new archistry.core.Hash();
+    var _getter = null;
+    var _setter = null;
 
     // ensure we have a default accessor to eliminate
-    // redundant checks
-    if(this.getter === undefined)
+    // redundant checks, but we only require the getter.  If
+    // the setter is undefined, we just don't support
+    // modification of the object.
+
+    if(getter === undefined)
     {
-        this.getter = function(item, key) { 
+        _getter = function(item, key) { 
             return item[key];
         };
     }
-
-    // ensure we have a default setter to eliminate redundant
-    // checks
-    if(this.setter === undefined && this.editable)
+    else
     {
-        this.setter = function(item, key, value) {
-            item[key] = value; 
-            return value;
-        };
+        _getter = getter;
     }
-
-    if(this.useAdapter === undefined)
-    {
-        this.useAdapter = true;
-    }
-
-    var _self = this;
-    var _nodes = new archistry.core.Hash();
 
     /**
-     * @private
+     * This method is used to wrap the given node in an
+     * ObjectAdapter based on the initialization settings.
      *
-     * This method creates an adapter for the specified node
-     * (or not, depending on the configuration settings)
-     *
-     * @param node the node to wrap
-     * @return the wrapped node or the node if it supports the
-     *      accessors API.
+     * @param node the node to be wrapped
+     * @return the wrapped node
      */
 
-    function __adapter(node)
+    this.adapterForNode = function(node)
     {
-        if(_self.useAdapter)
-            return new ObjectAdapter(node, _self.getter, _self.setter);
+        if(enabled)
+            return new archistry.data.tree.ObjectAdapter(node, _getter, setter);
 
         return node;
-    }
+    };
 
     /**
-     * @private
+     * This method is used to add the "raw" node to the map.
+     * It MUST only be used on nodes which have not already
+     * been wrapped.
      *
-     * This method adds a new node entry into the mapping
-     *
-     * @param idx the index of the node
+     * @param key the mapping key for the node
      * @param node the raw data node
-     * @return the new node entry
+     * @return the wrapped node
      */
 
-    function __addNode(idx, node)
+    this.setKey = function(key, node)
     {
-        return _nodes.set(idx, __adapter(node));
-    }
-
-    /**
-     * @private
-     *
-     * This method manages the node mappings in a reasonable
-     * manner so we don't create new nodes for each node
-     * access.
-     *
-     * @param index the node index
-     * @return the node adapter
-     */
-
-    function __node(index)
-    {
-        var idx = Indexer.mapIndex(index, data.length);
-        var node = _nodes.get(idx);
-        if(node === undefined)
-        {
-            node = __addNode(idx, data[idx]);
-        }
-
-        return node;
-    }
-
-    /**
-     * @private
-     *
-     * This method manages removal of the specific nodes at
-     * the given idex.
-     *
-     * @param index the node index
-     * @return the node adapter for the node (might be created
-     *      because we always need to have a node reference)
-     */
-
-    function __removeNode(index)
-    {
-        return _nodes.remove(index);
-    }
-
-    // define the column interface since we're going to be the
-    // root of the tree model.
-    this.key = function() { return "label"; };
-
-    // we have a default label that can be changed via the
-    // properties if the root should be shown.  Normally it
-    // isn't, because you wouldn't use this model otherwise!
-    this.label = function() { return "Root"; };
-
-    /**
-     * This method returns the model as the root node of the
-     * tree.
-     */
-
-    this.root = function() { return _self; };
-
-    /**
-     * This method ensures that the contents of the array will
-     * be treated as children of this node.
-     */
-
-    this.isLeaf = function(node) 
-    {
-        if(node === _self)
-            return false;
-
-        return true;
+        return _nodes.set(key, this.adapterForNode(node));
     };
 
     /**
-     * This method returns the count of items in the array as
-     * the child count of the root node.
+     * This method is used to retrieve the node for the
+     * specified key.
+     *
+     * @param key the mapping key for the node
+     * @return the node or null if no value is present
      */
 
-    this.childCount = function(node)
-    {
-        if(node === _self)
-            return data.length;
-
-        return 0;
-    };
+    this.getKey = _nodes.get;
 
     /**
-     * This method is actually used to retrieve the child at
-     * the specified index.  Since we're dealing with a flat
-     * list, the index is mapped directly onto the data array.
+     * This method is used to remove the given key entry from
+     * the map.
      *
-     * @param parent the parent node
-     * @param index the index of the child
-     * @return the object to be displayed
+     * @param key the key to remove
+     * @return the key value (if any) or null if none exists
      */
 
-    this.child = function(parent, index)
-    {
-        if(parent === _self)
-            return __node(index);
-
-        return null;
-    };
-
-    /**
-     * This method is used to find the index of the specified
-     * node in the array.
-     *
-     * @param parent should be us
-     * @param node the node to find
-     * @return the index of the node or -1 if not found
-     */
-
-    this.indexOfChild = function(parent, node)
-    {
-        if(parent !== _self)
-            return -1;
-
-        var rval = data.each(function(i) {
-            if(__node(i).equals(node))
-                return i;
-        });
-        
-        return rval === undefined ? -1 : rval;
-    };
-
-    /**
-     * This method returns the node reference for the
-     * specified path.
-     *
-     * @param path
-     * @return a reference to the node or null if the path
-     *        doesn't exist
-     */
-
-    this.nodeForPath = function(path)
-    {
-        if(path.length > 1)
-            return null;
-        else if(path.length === 0)
-            return this;
-
-        return __node(path[0]);
-    };
-
-    /**
-     * This method indicates whether the node at the specified
-     * path is editable.
-     *
-     * @param path the path to the specific node
-     * @param key (optional) can disable editing of particular
-     *            keys independent of the column editor
-     *            controls.
-     */
-
-    this.canEdit = function(path, key)
-    {
-        if(path.length > 1)
-            return false;
-
-        if(this.editable !== undefined)
-            return this.editable;
-
-        return true;
-    };
-
-    /**
-     * This method is used to ensure the range given has been
-     * loaded and return the number of rows actually available
-     * in that range.
-     *
-     * @param parent the parent node (should be us)
-     * @param startIdx the start index offset
-     * @param count the number of rows requested
-     * @return the number of rows actually available
-     */
-
-    this.ensureRange = function(parent, startIdx, count)
-    {
-        if(parent !== _self)
-            return 0;
-
-        return ( (startIdx + count) < data.length ? count : data.length - startIdx);
-    };
-
-    this.dump = function()
-    {
-        var s = "";
-        data.each(function(i) {
-            s += "data[{0}] = {1}\n".format(i, Util.toHashString(this));
-        });
-        return s;
-    };
-
-    /**
-     * This method is used to add a new row into the model.
-     * It is not part of the standard TreeRowModel interface,
-     * but it ensures that the proper model events are fired
-     * when the row object is inserted.
-     *
-     * @param index the index at which the row should be
-     *      inserted
-     * @param node the object to be inserted in the row
-     */
-
-    this.insertRow = function(index, node)
-    {
-        var idx = Indexer.mapIndex(index, data.length + 1);
-        data.splice(idx, 0, node);
-
-        this.fireNodesInserted([
-            new TreeChange([], _self, [ 
-                    new TreeNodeRef(__addNode(idx, node), idx) ])
-        ]);
-    };
-
-    /**
-     * This method is used to do bulk inserts into the tree
-     * model so that only one tree-nodes-changed event is
-     * created.
-     *
-     * @param index the insertion point index
-     * @param nodes the array of nodes to be inserted at the
-     *      insertion point
-     */
-
-    this.insertRows = function(index, nodes)
-    {
-        var idx = Indexer.mapIndex(index, data.length + 1);
-        var args = [ idx, 0 ].concat(nodes);
-        data.splice.apply(data, args);
-
-        var refs = [];
-        nodes.each(function(i) {
-            // NOTE:  the 'this' reference IS NOT used here on
-            // purpose because it converts primitive values
-            // into objects (boxes them), so it makes simple
-            // checks fail with number vs. object for ===
-            refs.add( new TreeNodeRef(__addNode(idx + i, nodes[i]), idx + i) );
-        });
-
-        this.fireNodesInserted([ new TreeChange([], _self, refs) ]);
-    };
-
-    /**
-     * This method is used to remove a row from the model and
-     * fire the appropriate event.  Note that this is not part
-     * of the core TreeRowModel API.
-     *
-     * @param index the index of the row to be removed
-     * @return the row removed
-     */
-
-    this.removeRow = function(index)
-    {
-        var idx = Indexer.mapIndex(index, data.length);
-        var node = data.removeAtIndex(idx);
-
-        if(node)
-        {
-            var obj = __removeNode(idx);
-            if(!obj)
-            {
-                obj = __adapter(node);
-            }
-            this.fireNodesRemoved([ 
-                new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
-            ]);
-            return node;
-        }
-
-        return null;
-    };
-
-    /**
-     * This method is used to bulk-remove rows from the model
-     * so that only a single tree-nodes-removed event is
-     * fired.
-     *
-     * @param index the index of the start of the rows to be
-     *      removed
-     * @param count the number of rows to be removed
-     * @returns the rows removed from the model
-     */
-
-    this.removeRows = function(index, count)
-    {
-        // special case if the index is -ve, so we need to
-        // actually subtract the count from the index so that
-        // we get the right results!
-
-        var idx = Indexer.mapIndex((index < 0 ? index - count + 1 : index), data.length);
-        var nodes = data.splice(idx, count);
-        if(nodes.length > 0)
-        {
-            var refs = [];
-            nodes.each(function(i) {
-                var obj = __removeNode(idx + i);
-                // NOTE:  the 'this' reference IS NOT used here on
-                // purpose because it converts primitive values
-                // into objects (boxes them), so it makes simple
-                // checks fail with number vs. object for ===
-                if(!obj)
-                {
-                    obj = __adapter(nodes[i]);
-                }
-                refs.add( new TreeNodeRef(obj, idx + i) );
-            });
-
-            this.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
-        }
-
-        return nodes;
-    };
-
-    /**
-     * This method is used to trigger the nodes changed event
-     * based on the index of the specified node.
-     *
-     * @param index the index of the node that was changed
-     */
-
-    this.rowChanged = function(index)
-    {
-        var idx = Indexer.mapIndex(index, data.length);
-        this.fireNodesChanged([ 
-            new TreeChange([], _self, [ new TreeNodeRef(__node(idx), idx) ])
-        ]);
-    };
-};
-
-/**
- * @class
- *
- * This class provides a simple adapter for using static
- * objects as a conformant TreeRowModel.  The child nodes are
- * identitfied by the property name supplied as the
- * contstructor which should return an array of child nodes.
- *
- * @param obj the object representing the tree structure
- * @param childKey the child node accessor
- * @param options the options mixed in to the model
- */
-
-archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
-{
-    var mapIndex = archistry.data.Indexer.mapIndex;
-    this.mixin(new archistry.data.tree.Notifier(this));
-    this.mixin(options);
-
-    if(this.editable === undefined)
-        this.editable = true;
-
-    // support user-defined key definitions
-    if(!this.keys)
-    {
-        var keys = [];
-        for(k in obj)
-        {
-            if(k !== childKey && typeof obj[k] !== 'function')
-            {
-                keys.add(k);
-            }
-        }
-
-        this.keys = function() { return keys; };
-    }
-
-    /**
-     * The root of the tree will be taken as the object and
-     * cannot be modified.
-     *
-     * @return the initialized object
-     */
-
-    this.root = function() { return obj; };
-
-    /**
-     * This method determines if the indicated node is a leaf
-     * or not by the length of the childKey property.
-     *
-     * @param node the model node
-     * @return true if node[childKey].length > 0
-     */
-
-    this.isLeaf = function(node)
-    {
-        return node[childKey].length === 0;
-    };
-
-    /**
-     * This method returns the child count of the node.
-     *
-     * @param node the node
-     * @return the length of the childKey array
-     */
-
-    this.childCount = function(node) 
-    {
-        return node[childKey].length;
-    };
-
-    /**
-     * This method is used to retrieve the i-th child of the
-     * specified node.
-     *
-     * @param node the node
-     * @return the child node at the specified index or null
-     *        if no child exists
-     */
-
-    this.child = function(node, idx)
-    {
-        if(this.isLeaf(node))
-            return null;
-
-        var i = mapIndex(idx, node[childKey].length);
-        return node[childKey][i];
-    };
-
-    /**
-     * This method does a linear search of the child nodes to
-     * determine the result.
-     *
-     * @param parent the parent node
-     * @param child the child node
-     * @return the index or -1 if the node is not a child of
-     *        the specified parent
-     */
-
-    this.indexOfChild = function(parent, child)
-    {
-        var idx = parent[childKey].each(function(i) {
-            if(this.equals(child))
-                return i;
-        });
-
-        if(idx === undefined)
-            return -1;
-
-        return idx;
-    };
-
-    /**
-     * This method will return the node for the specified path
-     * or NULL if it doesn't exist.
-     *
-     * @param path the path to check
-     */
-
-    this.nodeForPath = function(path)
-    {
-        // FIXME:  there's just no good way to do this using
-        // the generic functionality....  This is cut & paste
-        // reuse which sucks!
-        var node = root;
-        var n = null;
-
-        for(var i = 0; i < path.length; ++i)
-        {
-            var pi = mapIndex(path[i], node[childKey].length);
-            if((n = node[childKey][pi]))
-            {
-                if(callback)
-                    callback(path.slice(0, i + 1), n);
-                node = n;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        return node;
-    };
-
-    /**
-     * This method will indicate that all the objects are
-     * editable unless the value is the childKey
-     *
-     * @param path the path to check
-     * @param key (optional) the key to check
-     */
-
-    this.canEdit = function(path, key)
-    {
-        if(key === childKey || !this.editable)
-            return false;
-
-        var node = this.nodeForPath(path);
-        if(!node)
-            return false;
-
-        return true;
-    };
-
-    /**
-     * this method will simply report the number of children
-     * available for the specified node
-     *
-     * @param parent the parent node
-     * @param start the start index
-     * @param count the number of nodes
-     * @return the actual number of nodes available
-     */
-
-    this.ensureRange = function(parent, start, count)
-    {
-        return this.childCount(parent);
-    };
+    this.removeKey = _nodes.remove;
 };

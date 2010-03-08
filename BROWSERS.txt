@@ -1,0 +1,53 @@
+Status of Various Browsers as of 2010-03-08T18:55:07+0000
+
+Internet Explorer
+
+  Version 5.5 and lower
+  	These versions of IE just don't support the kinds of things
+	that we require for the application, so they will not be
+	supported.
+
+  Version 6.0.2900.2180 SP2
+  	The grid and unit tests fully pass, but the tree has issues
+	due to the lack of proper CSS support.  Also, the grid has
+	some display issues, but it is functional.  Hopefully, we
+	won't have to actually support this version of the browser for
+	the heavy-duty, interactive controls.
+
+  Version 7.0.5730.11 SP2
+	All unit tests pass in this browser, but the display issues
+	are similar, yet different, to the ones in IE6.  Editing
+	doesn't automatically expand the cell width, and the CSS
+	styles for the grid control are not rendered.
+
+	The tree has the same problems as IE6, so hopefully, we won't
+	have to come up with a special set of hacks to support these
+	versions of IE.
+
+Firefox
+
+  Version 2.0.0.4 and lower
+  	This version of firefox has issues running the unit tests, but
+	it does display the browser correctly.  However, interaction
+	with the controls does not currently work.
+
+	There is currently no support planned for this browser.
+
+  Version 3.6.2 daily
+  	Introduction of a display glitch in the first row of the tree
+	data last week, but otherwise seems to be fine.
+
+Opera
+
+  Version 10.10 on Linux
+  	All seems to work as expected.
+
+Safari
+
+  Version 3.2.2 (525.28.1) on Windows
+  	All works as expected.
+
+Chrome
+
+  Version 4.0.249.89 (38071) on Windows
+  	All works as expected.

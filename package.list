@@ -21,6 +21,8 @@
 - js/core/xhr.js
 - js/data/changeset.js
 - js/data/tree.js
+- js/data/array_tree_model.js
+- js/data/object_tree_model.js
 - js/ui/selection.js
 - js/ui/renderer.js
 - js/ui/editable.js

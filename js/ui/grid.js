@@ -1812,7 +1812,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         var i = 0;
         Console.println("node.expanded? {0}; node.loaded? {1}", node.expanded(), node.loaded());
-//        Console.println("node.children.length? {0}", node.__atg_children.length);
+        
         if(!node.expanded() && node.loaded())
         {
             node.expanded(true);
