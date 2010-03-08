@@ -29,6 +29,7 @@
 - js/ui/grid.js
 - js/ui/property_editors.js
 - js/ui/console.js
+- js/ui/tree_selection.js
 - js/jquery/controller.js
 - js/jquery/menu.js
 :version_major: 0

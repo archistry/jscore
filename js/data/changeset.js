@@ -131,7 +131,7 @@ archistry.data.ObjectChangeSignalSource = function()
 	this.fireObjectInserted = function(idx, object)
 	{
 		this.signalEmit("object-inserted", idx, object);
-	}
+	};
 
 	/**
 	 * This is a helper method to trigger the object deleted
@@ -144,7 +144,7 @@ archistry.data.ObjectChangeSignalSource = function()
 	this.fireObjectDeleted = function(idx, object)
 	{
 		this.signalEmit("object-deleted", idx, object);
-	}
+	};
 
 	/**
 	 * This is a helper method to trigger the object changed
@@ -157,7 +157,7 @@ archistry.data.ObjectChangeSignalSource = function()
 	this.fireObjectChanged = function(idx, object)
 	{
 		this.signalEmit("object-changed", idx, object);
-	}
+	};
 };
 
 /**
@@ -225,7 +225,7 @@ archistry.data.ChangeSet = function(options)
 	};
 
 	/** returns the number of items in the changeset */
-	this.__defineGetter__("length", function() { return _changes.length; });
+    this.length = function() { return _changes.length; };
 };
 
 /**
@@ -292,7 +292,7 @@ archistry.data.CompactChangeSet = function(options)
 			this.fireObjectChanged(getIdx(key), memento);
 		}
 		return old;
-	}
+	};
 
 	/**
 	 * This method will remove any memento currently stored
@@ -312,7 +312,7 @@ archistry.data.CompactChangeSet = function(options)
 			this.fireObjectDeleted(keys.length, obj);
 		}
 		return obj;
-	}
+	};
 
 	/**
 	 * This method will retrieve the specific memento by the
@@ -328,11 +328,11 @@ archistry.data.CompactChangeSet = function(options)
 			return _changes[_keys[idx]];
 
 		return _changes[idx];
-	}
+	};
 
 	/**
 	 * This method will retrieve the length of the changeset
 	 */
 	
-	this.__defineGetter__("length", function() { return _keys.length; });
+    this.length = function() { return _keys.length; };
 };

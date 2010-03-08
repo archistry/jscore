@@ -146,12 +146,13 @@ archistry.data.Tree = {
 
     /**
      * This helper is used to visit the path and apply the
-     * given callback to the node at each path element.
+     * given callback to the node at each path element.  Tree
+     * implementations that wish to use this mixin MUST
+     * conform to the TreeNode interface defined by the {@link
+     * archistry.data.tree.TreeNode} class.
      *
      * @param root the start node
      * @param path the path to visit
-     * @param childKey the key returning the array of child
-     *        nodes
      * @param callback the function to execute for each node.
      *        It MUST have the following signature:
      *          
@@ -159,15 +160,15 @@ archistry.data.Tree = {
      * @return the last path component node
      */
 
-    visitPath: function(root, path, childKey, callback)
+    visitPath: function(root, path, callback)
     {
         var node = root;
         var n = null;
 
         for(var i = 0; i < path.length; ++i)
         {
-            var pi = mapIndex(path[i], node[childKey].length);
-            if((n = node[childKey][pi]))
+            var pi = mapIndex(path[i], node.childCount());
+            if((n = node.child(pi)))
             {
                 if(callback)
                     callback(path.slice(0, i + 1), n);
@@ -187,7 +188,6 @@ archistry.data.Tree = {
      * the callback function to each parent of the start node.
      *
      * @param start the start node
-     * @param getParent the name of the node function to get the parent node
      * @param callback the function to execute for each node.
      *        It MUST have the following signature:
      *          
@@ -195,13 +195,13 @@ archistry.data.Tree = {
      * @return the depth of the node
      */
 
-    visitParents: function(start, getParent, callback)
+    visitParents: function(start, callback)
     {
         var node = start;
         var parent = null;
         var depth = 0;
         
-        while(node && (parent = node[getParent]()))
+        while(node && (parent = node.parent()))
         {
             depth++;
             if(callback)
@@ -217,8 +217,6 @@ archistry.data.Tree = {
      * This helper is used to visit the children of the node.
      *
      * @param root the start node
-     * @param childKey the key returning the array of child
-     *        nodes
      * @param callback the function to execute for each node.
      *        It MUST have the following signature:
      *          
@@ -228,69 +226,17 @@ archistry.data.Tree = {
      *        be aborted for the specified node.
      */
 
-    visitChildren: function(root, childKey, callback)
+    visitChildren: function(root, callback)
     {
         if(!callback)
             return;
         
-        var kidz = root[childKey];
-        for(var i = 0; i < kidz.length; ++i)
+        for(var i = 0; i < root.childCount(); ++i)
         {
-            if(callback(root, kidz[i], i))
-                visitChildren(kidz[i], childKey, callback)
+            var child = root.child(i);
+            if(callback(root, child, i))
+                visitChildren(child, callback)
         }
-    },
-
-    /**
-     * This method determines if the indicated node is a leaf
-     * or not by the length of the childKey property.
-     *
-     * @param node the model node
-     * @param childKey the child nodes accessor
-     * @return true if node[childKey].length > 0
-     */
-
-    isLeaf: function(node, childKey)
-    {
-        if(!node[childKey])
-            return true;
-
-        return node[childKey].length == 0;
-    },
-
-    /**
-     * This method returns the child count of the node.
-     *
-     * @param node the node
-     * @param childKey the child nodes accessor
-     * @return the length of the childKey array
-     */
-
-    childCount: function(node, childKey)
-    {
-        if(!node[childKey])
-            return 0;
-
-        return node[childKey].length;
-    },
-
-    /**
-     * This method is used to retrieve the i-th child of the
-     * specified node.
-     *
-     * @param node the node
-     * @param childKey the child nodes accessor
-     * @param idx the index
-     * @return the child node at the specified index or null
-     *        if no child exists
-     */
-
-    child: function(node, childKey, idx)
-    {
-        if(node[childKey].length === 0)
-            return null;
-
-        return node[childKey][mapIndex(idx, node[childKey].length)];
     },
 
     /**
@@ -298,20 +244,20 @@ archistry.data.Tree = {
      * determine the result.
      *
      * @param parent the parent node
-     * @param childKey the child nodes accessor
      * @param child the child node
      * @return the index or -1 if the node is not a child of
      *        the specified parent
      */
 
-    indexOfChild: function(parent, childKey, child)
+    indexOfChild: function(parent, child)
     {
-        if(parent[childKey].length === 0)
+        if(parent.isLeaf() || !child)
             return -1;
 
-        for(var i = 0; i < parent[childKey].length; ++i)
+        var length = parent.childCount();
+        for(var i = 0; i < length; ++i)
         {
-            if(child === parent[childKey][i])
+            if(child.equals(parent.child(i)))
                 return i;
         }
 
@@ -364,9 +310,8 @@ namespace("archistry.data.tree");
 
 archistry.data.tree.TreeCellPath = function(path, key)
 {
-    this.__defineGetter__("path", function() { return path; });
-    this.__defineGetter__("key", function() { return key; });
-
+    this.path = function() { return path; };
+    this.key = function() { return key; };
     this.toString = function()
     {
         return "[TreeCellPath {0}".format(archistry.core.Util.toHashString(this));
@@ -387,8 +332,8 @@ archistry.data.tree.TreeCellPath = function(path, key)
 
 archistry.data.tree.TreeNodeRef = function(node, index)
 {
-    this.__defineGetter__("node", function() { return node; });
-    this.__defineGetter__("index", function() { return index; });
+    this.node = function() { return node; };
+    this.index = function() { return index; };
 };
 
 /**
@@ -433,15 +378,15 @@ archistry.data.tree.TreeNodeRef = function(node, index)
 
 archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 {
-    this.__defineGetter__("path", function() { return path; });
-    this.__defineGetter__("parent", function() { return parent; });
-    this.__defineGetter__("refs", function() { return refs; });
-    this.__defineGetter__("isContiguous", function() {
+    this.path = function() { return path; };
+    this.parent = function() { return parent; };
+    this.refs = function() { return refs; };
+    this.isContiguous = function() {
         if(isContiguous === undefined)
             return true;
 
         return isContiguous;
-    });
+    };
 };
 
 /**
@@ -594,10 +539,9 @@ archistry.data.tree.Notifier = function(sender)
 
 archistry.data.tree.TreeNode = function()
 {
-    mixin(archistry.data.Tree);
+    var Tree = archistry.data.Tree;
     var _parent = null;
     var _children = [];
-    var _childKey = "children";
 
     /**
      * This method is used to retrieve the actual child
@@ -606,10 +550,23 @@ archistry.data.tree.TreeNode = function()
 
     function childIndex(idx, isNew)
     {
-        return mapIndex(idx, (isNew ? _children.length + 1 : _children.length));
+        return Tree.mapIndex(idx, 
+                (isNew ? _children.length + 1 : _children.length));
     }
 
-    this.__defineGetter__("children", function() { return _children; });
+    /**
+     * This method is used to retrieve the i-th child of the
+     * node with support for negative child node indices.
+     *
+     * @param index the child index
+     * @returns the child node or null if no child exists at
+     *      the specified index
+     */
+
+    this.child = function(index)
+    {
+        return _children[Tree.mapIndex(index, _children.length)];
+    };
 
     /**
      * This method returns true if the node has no
@@ -669,7 +626,7 @@ archistry.data.tree.TreeNode = function()
 
     this.indexOfChild = function(node)
     {
-        return indexOfChild(this, _childKey, node);
+        return Tree.indexOfChild(this, node);
     };
 
     /**
@@ -680,7 +637,7 @@ archistry.data.tree.TreeNode = function()
     this.path = function()
     {
         var pc = [];
-        visitParents(this, "parent", function(parent, node, depth) {
+        Tree.visitParents(this, function(parent, node, depth) {
             if(parent)
             {
                 pc.add(parent.indexOfChild(node));
@@ -691,21 +648,11 @@ archistry.data.tree.TreeNode = function()
     };
 
     /**
-     * This method will return the i-th child of the node
-     * or null if it doesn't exist.
-     */
-
-    this.child = function(index)
-    {
-        return _children[childIndex(index)];
-    };
-
-    /**
      * This method will reset the child references for the
      * node.
      */
 
-    this.clearChildren = function() { _children = []; };
+    this.clearChildren = function() { _children.clear(); };
 
     /**
      * This method is used to set/retrieve the parent of the
@@ -726,7 +673,7 @@ archistry.data.tree.TreeNode = function()
 
     this.depth = function()
     {
-        return visitParents(this, "parent");
+        return Tree.visitParents(this);
     };
 
     /**
@@ -815,52 +762,251 @@ archistry.data.tree.TreeNode = function()
 /**
  * @class
  *
+ * This class provides an adapter to allow a consistent
+ * interface for consumers of model data that is independent
+ * of straight property accessors since these are not
+ * consistently supported across all browser/runtime
+ * environments.
+ * <p>
+ * This class can also be used to provide a read-only view of
+ * a particular by initializing the instance without a setter
+ * function.
+ * </p>
+ *
+ * @param obj the object to be adapted
+ * @param getter a function used to get the value from the
+ *      object for the specified key.  It MUST have the form:
+ * <pre>
+ *   function get(item, key) {
+ *      // return the value for the key or null if not present
+ *   }
+ * </pre>
+ * @param setter a function used to set the value for the
+ *      specified key.  It MUST have the form:
+ * <pre>
+ *   function set(item, key, value) {
+ *      // set the value of the item
+ *      return value;
+ *   }
+ * </pre>
+ */
+
+archistry.data.tree.ObjectAdapter = function(obj, getter, setter)
+{
+    /**
+     * This method is used to get the specified property from
+     * the object.
+     *
+     * @param key the property key
+     * @return the property value of undefined if it is not
+     *      set for the object.
+     */
+
+    this.getProperty = function(key)
+    {
+        return getter(obj, key);
+    };
+
+    /**
+     * This method is used to set the specified property in
+     * the target object.
+     *
+     * @param key the property key
+     * @param val the new property value
+     */
+
+    this.setProperty = function(key, value)
+    {
+        if(setter)
+            setter(obj, key, value);
+    };
+
+    /**
+     * This method is used to return a reference to the
+     * original object for the purposes of comparison.
+     *
+     * @return the original object
+     */
+
+    this.valueOf = function() { return obj; };
+
+    this.toString = function()
+    {
+        return "[ObjectAdapter obj: {0} ]", obj.toString();
+    };
+};
+
+/**
+ * @class
+ *
  * This class provides a linear TreeRowModel implementation based on
  * using an array of JavaScript objects.
  *
  * @param data the array containing the data to display
  * @param options the options to initialize the model
- *        Supported values for the options object include:
- *
- *          keys        - defines an array of keys which are valid
- *                      for the objects in the array
- *          editable    - by default, the array is considered
- *                      mutable.  If the array objects are not
- *                      to be changed, you MAY set
- *                      options.editable = false, or simply not
- *                      define editors for the columns.
+ *      Supported values for the options object include:
+ *      <ul>
+ *      <li>
+ *      keys      - defines an array of keys which are valid
+ *                  for the objects in the array
+ *      </li>
+ *      <li>
+ *      editable  - by default, the array is considered
+ *                  mutable.  If the array objects are not
+ *                  to be changed, you MAY set
+ *                  options.editable = false, or simply not
+ *                  define editors for the columns.
+ *      </li>
+ *      <li>
+ *      getter    - an optional function that is used to
+ *                  get the value of the specified key
+ *                  from the object.
+ *      </li>
+ *      <li>
+ *      setter    - an optional function that is used to set
+ *                  the value of the specified key for the
+ *                  object.
+ *      </li>
+ *      <li>
+ *      useAdapter - indicates the the objects in the model
+ *                  already provide <code>#setProperty</code>
+ *                  and <code>#getProperty</code> methods.
+ *                  By default, the ObjectAdapter class will
+ *                  be used to wrap the objects in the model.
+ *      </li>
+ *      </ul>
+ * @see archistry.data.tree.ObjectAdapter
  */
 
-archistry.data.tree.ArrayRowModel = function(data, options)
+archistry.data.tree.ArrayTreeModel = function(data, options)
 {
+    var Indexer = archistry.data.Indexer;
+    var ObjectAdapter = archistry.data.tree.ObjectAdapter;
     var TreeChange = archistry.data.tree.TreeChange;
     var TreeNodeRef = archistry.data.tree.TreeNodeRef;
+    var Util = archistry.core.Util;
 
-    mixin(archistry.core.Util);
-    mixin(archistry.data.Indexer);
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
    
     if(this.editable === undefined)
         this.editable = true;
 
+    // ensure we have a default accessor to eliminate
+    // redundant checks
+    if(this.getter === undefined)
+    {
+        this.getter = function(item, key) { 
+            return item[key];
+        };
+    }
+
+    // ensure we have a default setter to eliminate redundant
+    // checks
+    if(this.setter === undefined && this.editable)
+    {
+        this.setter = function(item, key, value) {
+            item[key] = value; 
+            return value;
+        };
+    }
+
+    if(this.useAdapter === undefined)
+    {
+        this.useAdapter = true;
+    }
+
     var _self = this;
+    var _nodes = new archistry.core.Hash();
+
+    /**
+     * @private
+     *
+     * This method creates an adapter for the specified node
+     * (or not, depending on the configuration settings)
+     *
+     * @param node the node to wrap
+     * @return the wrapped node or the node if it supports the
+     *      accessors API.
+     */
+
+    function __adapter(node)
+    {
+        if(_self.useAdapter)
+            return new ObjectAdapter(node, _self.getter, _self.setter);
+
+        return node;
+    }
+
+    /**
+     * @private
+     *
+     * This method adds a new node entry into the mapping
+     *
+     * @param idx the index of the node
+     * @param node the raw data node
+     * @return the new node entry
+     */
+
+    function __addNode(idx, node)
+    {
+        return _nodes.set(idx, __adapter(node));
+    }
+
+    /**
+     * @private
+     *
+     * This method manages the node mappings in a reasonable
+     * manner so we don't create new nodes for each node
+     * access.
+     *
+     * @param index the node index
+     * @return the node adapter
+     */
+
+    function __node(index)
+    {
+        var idx = Indexer.mapIndex(index, data.length);
+        var node = _nodes.get(idx);
+        if(node === undefined)
+        {
+            node = __addNode(idx, data[idx]);
+        }
+
+        return node;
+    }
+
+    /**
+     * @private
+     *
+     * This method manages removal of the specific nodes at
+     * the given idex.
+     *
+     * @param index the node index
+     * @return the node adapter for the node (might be created
+     *      because we always need to have a node reference)
+     */
+
+    function __removeNode(index)
+    {
+        return _nodes.remove(index);
+    }
 
     // define the column interface since we're going to be the
     // root of the tree model.
-    this.key = "label";
+    this.key = function() { return "label"; };
 
     // we have a default label that can be changed via the
     // properties if the root should be shown.  Normally it
     // isn't, because you wouldn't use this model otherwise!
-    this.label = "Root";
+    this.label = function() { return "Root"; };
 
     /**
      * This method returns the model as the root node of the
      * tree.
      */
 
-    this.__defineGetter__("root", function() { return _self; });
+    this.root = function() { return _self; };
 
     /**
      * This method ensures that the contents of the array will
@@ -901,7 +1047,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     this.child = function(parent, index)
     {
         if(parent === _self)
-            return data[index];
+            return __node(index);
 
         return null;
     };
@@ -920,13 +1066,12 @@ archistry.data.tree.ArrayRowModel = function(data, options)
         if(parent !== _self)
             return -1;
 
-        for(var i = 0; i < data.length; ++i)
-        {
-            if(data[i] === node)
+        var rval = data.each(function(i) {
+            if(__node(i).equals(node))
                 return i;
-        }
-
-        return -1;
+        });
+        
+        return rval === undefined ? -1 : rval;
     };
 
     /**
@@ -942,8 +1087,10 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     {
         if(path.length > 1)
             return null;
+        else if(path.length === 0)
+            return this;
 
-        return data[path[0]];
+        return __node(path[0]);
     };
 
     /**
@@ -965,7 +1112,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
             return this.editable;
 
         return true;
-    }
+    };
 
     /**
      * This method is used to ensure the range given has been
@@ -990,7 +1137,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
     {
         var s = "";
         data.each(function(i) {
-            s += String.format("data[{0}] = {1}\n", [i, this.inspect()]);
+            s += "data[{0}] = {1}\n".format(i, Util.toHashString(this));
         });
         return s;
     };
@@ -1008,11 +1155,12 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
     this.insertRow = function(index, node)
     {
-        var idx = mapIndex(index, data.length + 1);
+        var idx = Indexer.mapIndex(index, data.length + 1);
         data.splice(idx, 0, node);
-        
+
         this.fireNodesInserted([
-            new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
+            new TreeChange([], _self, [ 
+                    new TreeNodeRef(__addNode(idx, node), idx) ])
         ]);
     };
 
@@ -1028,14 +1176,17 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
     this.insertRows = function(index, nodes)
     {
-        var idx = mapIndex(index, data.length + 1);
+        var idx = Indexer.mapIndex(index, data.length + 1);
         var args = [ idx, 0 ].concat(nodes);
         data.splice.apply(data, args);
 
         var refs = [];
         nodes.each(function(i) {
-//            println("idx ({0}) + i ({1}) = {2}", [ idx, i, idx + i ]);
-            refs.add( new TreeNodeRef(this, idx + i) );
+            // NOTE:  the 'this' reference IS NOT used here on
+            // purpose because it converts primitive values
+            // into objects (boxes them), so it makes simple
+            // checks fail with number vs. object for ===
+            refs.add( new TreeNodeRef(__addNode(idx + i, nodes[i]), idx + i) );
         });
 
         this.fireNodesInserted([ new TreeChange([], _self, refs) ]);
@@ -1052,12 +1203,18 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
     this.removeRow = function(index)
     {
-        var idx = mapIndex(index, data.length);
+        var idx = Indexer.mapIndex(index, data.length);
         var node = data.removeAtIndex(idx);
+
         if(node)
         {
+            var obj = __removeNode(idx);
+            if(!obj)
+            {
+                obj = __adapter(node);
+            }
             this.fireNodesRemoved([ 
-                new TreeChange([], _self, [ new TreeNodeRef(node, idx) ])
+                new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
             ]);
             return node;
         }
@@ -1082,13 +1239,22 @@ archistry.data.tree.ArrayRowModel = function(data, options)
         // actually subtract the count from the index so that
         // we get the right results!
 
-        var idx = mapIndex((index < 0 ? index - count + 1 : index), data.length);
+        var idx = Indexer.mapIndex((index < 0 ? index - count + 1 : index), data.length);
         var nodes = data.splice(idx, count);
         if(nodes.length > 0)
         {
             var refs = [];
             nodes.each(function(i) {
-                refs.add( new TreeNodeRef(this, idx + i) );
+                var obj = __removeNode(idx + i);
+                // NOTE:  the 'this' reference IS NOT used here on
+                // purpose because it converts primitive values
+                // into objects (boxes them), so it makes simple
+                // checks fail with number vs. object for ===
+                if(!obj)
+                {
+                    obj = __adapter(nodes[i]);
+                }
+                refs.add( new TreeNodeRef(obj, idx + i) );
             });
 
             this.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
@@ -1106,9 +1272,9 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
     this.rowChanged = function(index)
     {
-        var idx = mapIndex(index, data.length);
+        var idx = Indexer.mapIndex(index, data.length);
         this.fireNodesChanged([ 
-            new TreeChange([], _self, [ new TreeNodeRef(data[idx], idx) ])
+            new TreeChange([], _self, [ new TreeNodeRef(__node(idx), idx) ])
         ]);
     };
 };
@@ -1128,8 +1294,7 @@ archistry.data.tree.ArrayRowModel = function(data, options)
 
 archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 {
-    mixin(archistry.core.Util);
-    mixin(archistry.data.Tree);
+    var mapIndex = archistry.data.Indexer.mapIndex;
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
 
@@ -1148,7 +1313,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
             }
         }
 
-        this.__defineGetter__("keys", function() { return keys; });
+        this.keys = function() { return keys; };
     }
 
     /**
@@ -1158,7 +1323,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
      * @return the initialized object
      */
 
-    this.__defineGetter__("root", function() { return obj; });
+    this.root = function() { return obj; };
 
     /**
      * This method determines if the indicated node is a leaf
@@ -1168,7 +1333,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
      * @return true if node[childKey].length > 0
      */
 
-    this.isLeaf = function(node) { return isLeaf(node, childKey); };
+    this.isLeaf = function(node)
+    {
+        return node[childKey].length === 0;
+    };
 
     /**
      * This method returns the child count of the node.
@@ -1177,7 +1345,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
      * @return the length of the childKey array
      */
 
-    this.childCount = function(node) { return childCount(node, childKey); };
+    this.childCount = function(node) 
+    {
+        return node[childKey].length;
+    };
 
     /**
      * This method is used to retrieve the i-th child of the
@@ -1188,7 +1359,14 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
      *        if no child exists
      */
 
-    this.child = function(node, idx) { return child(node, childKey, idx); };
+    this.child = function(node, idx)
+    {
+        if(this.isLeaf(node))
+            return null;
+
+        var i = mapIndex(idx, node[childKey].length);
+        return node[childKey][i];
+    };
 
     /**
      * This method does a linear search of the child nodes to
@@ -1202,7 +1380,15 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.indexOfChild = function(parent, child)
     {
-        return indexOfChild(parent, childKey, child);
+        var idx = parent[childKey].each(function(i) {
+            if(this.equals(child))
+                return i;
+        });
+
+        if(idx === undefined)
+            return -1;
+
+        return idx;
     };
 
     /**
@@ -1214,7 +1400,28 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.nodeForPath = function(path)
     {
-        return visitPath(obj, path, childKey);
+        // FIXME:  there's just no good way to do this using
+        // the generic functionality....  This is cut & paste
+        // reuse which sucks!
+        var node = root;
+        var n = null;
+
+        for(var i = 0; i < path.length; ++i)
+        {
+            var pi = mapIndex(path[i], node[childKey].length);
+            if((n = node[childKey][pi]))
+            {
+                if(callback)
+                    callback(path.slice(0, i + 1), n);
+                node = n;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        return node;
     };
 
     /**
@@ -1227,7 +1434,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.canEdit = function(path, key)
     {
-        if(key === childKey)
+        if(key === childKey || !this.editable)
             return false;
 
         var node = this.nodeForPath(path);
@@ -1252,4 +1459,3 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         return this.childCount(parent);
     };
 };
-

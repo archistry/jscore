@@ -13,7 +13,7 @@
       padding: 5px;
       clear: both;
     }
-    
+
     .aui-grid td
     {
       vertical-align: top;
@@ -140,7 +140,7 @@
       {
         darray.add({ key: "Key " + i, value: "Value " + i });
       }
-      var model = new archistry.data.tree.ArrayRowModel(darray);
+      var model = new archistry.data.tree.ArrayTreeModel(darray);
 
       archistry.ui.Console.attach("console");
       var console = archistry.ui.Console;
@@ -156,7 +156,7 @@
       });
 
       $("#edit-row").click(function(event) {
-        var selection = grid.selection;
+        var selection = grid.selection();
         if(selection.length === 1)
         {
           grid.editCell(selection[0], 0);
@@ -167,20 +167,20 @@
         // this is trickier because it depends on the new
         // range-related functionality.  We can only delete in valid
         // range blocks!
-        var selection = grid.selection;
-        println("deleting {0} rows\n\n", selection.length);
+        var selection = grid.selection();
+        Console.println("deleting {0} rows\n\n", selection.length);
         selection.reverseEach(function() {
-          println("Attempting to delete rows at path: " + this.join(","));
+          Console.println("Attempting to delete rows at path: " + this.join(","));
           model.removeRow(this[0]);
         });
       });
 
       var index = 0;
       $("#insert-row").click(function(event) {
-        var selection = grid.selection;
+        var selection = grid.selection();
         if(selection.length > 1)
         {
-          alert("Can't insert under more than one parent! Length: " + grid.selection.length);
+          alert("Can't insert under more than one parent! Length: " + selection.length);
           return;
         }
 
@@ -193,7 +193,7 @@
         }
 
         var count = Math.floor(Math.random() * 6);
-        println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
+        Console.println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
         var rows = [];
         for(var j = 0; j < count; ++j)
         {
@@ -208,7 +208,7 @@
         {
           this.fn = function()
           {
-            println("\nreceived signal '{0}' with args: ({1})", name, [].join.call(arguments, ", "));
+            Console.println("\nreceived signal '{0}' with args: ({1})", name, [].join.call(arguments, ", "));
             return true;
           };
         }

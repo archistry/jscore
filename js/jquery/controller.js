@@ -53,7 +53,6 @@ archistry.ui.Action = function(callback, options)
 {
 	var _self = this;
 
-	mixin(archistry.ui.Helpers);
 	this.mixin(options);
 
 	/**
@@ -75,84 +74,118 @@ archistry.ui.Action = function(callback, options)
 	 */
 
 	this.bindings = [];
-	
-	this.__defineGetter__("active", function() { return _active; });
-	this.__defineGetter__("sensitive", function() { return _sensitive; });
-	this.__defineGetter__("visible", function() { return _visible; });
-	
-	this.__defineSetter__("active", function(val) {
-		for(var i = 0; i < _self.bindings.length; ++i)
-		{
-			var node = _self.bindings[i];
-			if(val)
-			{
-				$(node).removeClass(archistry.ui.Styles.State.DEFAULT);
-				$(node).addClass(archistry.ui.Styles.State.ACTIVE);
-			}
-			else
-			{
-				$(node).removeClass(archistry.ui.Styles.State.ACTIVE);
-				$(node).addClass(archistry.ui.Styles.State.DEFAULT);
-			}
-		}
-		_active = val;
-	});
-	
-	this.__defineSetter__("sensitive", function(val) {
-		for(var i = 0; i < _self.bindings.length; ++i)
-		{
-			var node = _self.bindings[i];
-			if(val)
-			{
-				$(node).removeClass(archistry.ui.Styles.State.DISABLED);
-				$(node).addClass(archistry.ui.Styles.State.DEFAULT);
-			}
-			else
-			{
-				$(node).removeClass(archistry.ui.Styles.State.DEFAULT);
-				$(node).addClass(archistry.ui.Styles.State.DISABLED);
-			}
-		}
-		_sensitive = val;
-	});
-	
-	this.__defineSetter__("visible", function(val) {
-		for(var i = 0; i < _self.bindings.length; ++i)
-		{
-			var node = _self.bindings[i];
-			if(val)
-			{
-				$(node).removeClass(archistry.ui.Styles.Layout.HIDDEN);
-			}
-			else
-			{
-				$(node).addClass(archistry.ui.Styles.State.HIDDEN);
-			}
-		}
-		_visible = val;
-	});
 
+    /**
+     * This method gets/sets the active state of the action,
+     * ensuring that all bindings are updated accordingly
+     *
+     * @param val (optional) the desired active state
+     * @return null if val is supplied or retrieves current
+     *      state
+     */
+    
+    this.active = function(val)
+    {
+        if(arguments.length === 0)
+            return _active;
+
+		_self.bindings.each(function(i) {
+			if(val)
+			{
+				$(this).removeClass(archistry.ui.Styles.State.DEFAULT);
+				$(this).addClass(archistry.ui.Styles.State.ACTIVE);
+			}
+			else
+			{
+				$(this).removeClass(archistry.ui.Styles.State.ACTIVE);
+				$(this).addClass(archistry.ui.Styles.State.DEFAULT);
+			}
+		});
+
+		_active = val;
+    };
+
+    /**
+     * This method gets/sets the sensitive state of the action
+     * and all the bound controls.
+     *
+     * @param val (optional) the desired sensitive state
+     * @return null if val is supplied or retrieves the
+     *      current state
+     */
+
+    this.sensitive = function(val)
+    {
+        if(arguments.length === 0)
+            return _sensitive;
+		
+        _self.bindings.each(function(i) {
+			if(val)
+			{
+				$(this).removeClass(archistry.ui.Styles.State.DISABLED);
+				$(this).addClass(archistry.ui.Styles.State.DEFAULT);
+			}
+			else
+			{
+				$(this).removeClass(archistry.ui.Styles.State.DEFAULT);
+				$(this).addClass(archistry.ui.Styles.State.DISABLED);
+			}
+		});
+
+		_sensitive = val;
+    };
+    
+    /**
+     * This method gets/sets the visible state of the action
+     * and all the bound controls.
+     *
+     * @param val (optional) the desired visible state
+     * @return null if val is supplied or retrieves the
+     *      current state
+     */
+
+    this.visible = function(val)
+    {
+        if(arguments.length === 0)
+            return _visible;
+		
+        _self.bindings.each(function(i) {
+			if(val)
+			{
+				$(this).removeClass(archistry.ui.Styles.Layout.HIDDEN);
+			}
+			else
+			{
+				$(this).addClass(archistry.ui.Styles.State.HIDDEN);
+			}
+		});
+
+		_visible = val;
+	};
+
+    ////// INITIALIZATION //////
+    
 	// make sure that we're initialized properly
-	var _sensitive = this.sensitive;
+	var _sensitive = this.sensitive();
 	if(_sensitive === undefined)
 	{
 		_sensitive = true;
 	}
-	self.sensitive = _sensitive;
+	self.sensitive(_sensitive);
 
-	var _active = this.active;
+	var _active = this.active();
 	if(_active === undefined)
 	{
 		_active = false;
 	}
-	self.active = _active;
+	self.active(_active);
 
-	var _visible = this.visible;
+	var _visible = this.visible();
 	if(_visible === undefined)
 	{
 		_visible = true;
 	}
-	self.visible = _visible;
+	self.visible(_visible);
 };
 
 /**
@@ -182,13 +215,13 @@ archistry.ui.Action = function(callback, options)
 
 archistry.ui.Controller = function()
 {
-	const ACTION_REGEX	= /^(?:ajc:@([^\s#]+))?#(.*)$/;
+	var ACTION_REGEX	= /^(?:ajc:@([^\s#]+))?#(.*)$/;
 	var _self = this;
 
 	this.actions = {
 
 		/** the default action group */
-		default: {},
+		all: {},
 
 		/**
 		 * This method is used to register an action with the
@@ -212,7 +245,7 @@ archistry.ui.Controller = function()
 
 		register: function(group, actionId, callback, options)
 		{
-			var target = _self.actions.default;
+			var target = _self.actions.all;
 			if(group)
 			{
 				target = _self.actions[group];

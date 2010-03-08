@@ -40,7 +40,7 @@
 
 var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
-TestTreeNode = function(path)
+T = function(path)
 {
     this.path = function() { return path; };
     // NOTE: this is necessary because sometimes it might be a
@@ -53,10 +53,10 @@ Jester.testing("TreeSelectionRange functionality", {
 	tests: [
 		{
 			what: "Insert single node at end of empty list",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                range.insert(0, new TestTreeNode(0));
+                range.insert(0, new T(0));
 
                 result.check("node inserted at front of the list", {
                     actual: range.start(),
@@ -76,13 +76,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Insert single node at end of non-empty list",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                range.insert(-1, new TestTreeNode(4));
+                range.insert(-1, new T(4));
 
                 result.check("start path is correct", {
                     actual: range.start(),
@@ -102,13 +102,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Insert single node at beginning of non-empty list",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                range.insert(0, new TestTreeNode(4));
+                range.insert(0, new T(4));
 
                 result.check("start path is correct", {
                     actual: range.start(),
@@ -128,13 +128,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Insert single node in the middle of non-empty list",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                range.insert(2, new TestTreeNode(4));
+                range.insert(2, new T(4));
 
                 result.check("start path is correct", {
                     actual: range.start(),
@@ -154,10 +154,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Split for bogus node",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                var r2 = range.split(new TestTreeNode(4));
+                var r2 = range.split(new T(4));
 
                 result.check("start path is correct", {
                     actual: range.start(),
@@ -177,13 +177,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Split for first node",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                var r2 = range.split(new TestTreeNode(0));
+                var r2 = range.split(new T(0));
 
                 result.check("start path is correct", {
                     actual: range.start(),
@@ -203,13 +203,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Split for last node",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                var r2 = range.split(new TestTreeNode(3));
+                var r2 = range.split(new T(3));
 
                 result.check("end path is correct", {
                     actual: range.end(),
@@ -229,13 +229,13 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Split for middle node",
-			how: function(context, result)
+			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
                 [ 0, 1, 2, 3 ].each(function(i) {
-                    range.insert(i, new TestTreeNode(this));
+                    range.insert(i, new T(this));
                 });
-                var r2 = range.split(new TestTreeNode(1));
+                var r2 = range.split(new T(1));
                 println(range.toString());
                 println(r2.toString());
 

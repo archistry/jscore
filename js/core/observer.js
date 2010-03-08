@@ -190,7 +190,7 @@ archistry.core.SignalSource = function(sender)
 	this.signalDisconnect = function(signal, fn)
 	{
 		return sigarray(signal).remove(fn);
-	}
+	};
 
 	/**
 	 * This method is used to fire the notification for the
@@ -290,12 +290,12 @@ archistry.core.SignalSource = function(sender)
 	 * notifier.
 	 */
 
-	this.__defineGetter__("signals", function() {
+	this.signals = function() {
 		var rval = [];
 		for(k in sender.__signals)
 		{
 			rval.add(k);
 		}
 		return rval;
-	});
+	};
 };

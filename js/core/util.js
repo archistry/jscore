@@ -96,14 +96,32 @@ archistry.core.Util = {
 
     toHashString: function(obj)
     {
+        if(obj === undefined)
+            return "undefined";
+
+        // BS stuff for IE
+        if(!obj.keys)
+            obj.keys = Object.prototype.keys;
+
         var s = "{ ";
         var keys = obj.keys().sort();
         keys.each(function(i) {
             var key = (typeof this === 'string') ? '"{0}"'.format(this) : this;
             var val = obj[this];
             val = (typeof val === 'string') ? '"{0}"'.format(val) : val;
-            if(val instanceof Array)
-                val = "[{0}]".format(val.join(','));
+            try
+            {
+                // FIXME:  IE bitches that an object was
+                // expected here, but I don't know how to
+                // adequately test whether it's an object or
+                // not.  typeof tells me it's an object, so
+                // WTF????
+                if(val instanceof Array)
+                    val = "[{0}]".format(val.join(','));
+            }
+            catch(e)
+            {
+            }
 
             s += "{0} => {1}".format(key, val);
             if(i < keys.length - 1)

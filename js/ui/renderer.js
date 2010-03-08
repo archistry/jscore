@@ -60,8 +60,8 @@ archistry.ui.Renderer = function()
 
 	this.render = function(node, val, options)
 	{
-		node.innerHTML = val;
-	}
+		node.innerHTML = (val === undefined || val === null ? "" : val);
+	};
 };
 
 /**
@@ -88,7 +88,7 @@ archistry.ui.CheckboxRenderer = function()
 		{
 			node.innerHTML = '<input type="checkbox"/>';
 		}
-	}
+	};
 };
 
 /**
@@ -119,8 +119,8 @@ archistry.ui.PropertyRenderer = function(renderer, options)
 
 	this.render = function(obj, key, node)
 	{
-		renderer.render(node, obj[key], options);
-	}
+		renderer.render(node, obj.getProperty(key), options);
+	};
 };
 
 /**
@@ -160,10 +160,10 @@ archistry.ui.CellRenderer = function(renderer, options)
 		}
 		else
 		{
-			val = node[column.key];
+			val = node.getProperty(column.key);
 		}
 
 		renderer.render(cell, val, options);
-	}
+	};
 };
 

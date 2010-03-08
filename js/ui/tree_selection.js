@@ -34,7 +34,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Name:        tree_selection.js
-// Created:        Sun Feb 28 10:58:03 GMT 2010
+// Created:     Sun Feb 28 10:58:03 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -71,14 +71,14 @@ namespace("archistry.ui.selection");
 
 archistry.ui.selection.TreeSelectionRange = function(owner)
 {
-    mixin(archistry.data.Indexer);
+    var Indexer = archistry.data.Indexer;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
     var _nodes = [];
 
     function index(val, forInsert)
     {
-        return mapIndex(val, (forInsert ? _nodes.length + 1 : _nodes.length));
+        return Indexer.mapIndex(val, (forInsert ? _nodes.length + 1 : _nodes.length));
     }
 
     /**

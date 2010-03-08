@@ -17,6 +17,9 @@ end
 # should really only minify for non-developer "builds" of the
 # package.
 minify = false;
+if(ENV['JSPKG_MINIFY'] == "1")
+  minify = true
+end
 
 @pkg = YAML.load(File.open(packagelist))
 

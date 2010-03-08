@@ -155,20 +155,15 @@ archistry.ui.selection.Mode = {
 
 archistry.ui.selection.SelectionRange = function(owner, start, end)
 {
-    this.__defineGetter__("owner", function() { return owner; });
-    this.__defineGetter__("start", function() { return start; });
-    this.__defineGetter__("end", function() { return end; });
+    this.owner = function() { return owner; };
+    this.start = function() { return start; };
+    this.end = function() { return end; };
 };
 
 /**
  * @class
  *
  * This class implements a simple, single selection model.
- * @property mode This property is part of the SelectionModel
- *      API and is used to indicate the selection mode
- *      supported by the instance.
- * @property length This method is part of the SelectionModel
- *      API and is used to retrieve the length of the selection.
  *
  * @param owner the signal sender
  * @param selectfn the callback to be invoked when the item is
@@ -189,14 +184,27 @@ archistry.ui.selection.SingleSelectionModel = function(owner, selectfn)
         throw createError("ArgumentError: No unselect callback specified");
 
 	var _selection = null;
-    
-    this.__defineGetter__("mode", function() {
+   
+    /** 
+     * This method is part of the SelectionModel API and is
+     * used to indicate the selection mode supported by the
+     * instance.
+     */
+
+    this.mode = function()
+    {
         return archistry.ui.selection.Mode.SINGLE_SELECTION;
-    });
-	
-    this.__defineGetter__("length", function() {
+    };
+
+    /**
+     * This method is part of the SelectionModel API and is
+     * used to retrieve the length of the selection.
+     */
+    
+    this.length = function()
+    {
 		return (_selection ? 1 : 0);
-	});
+	};
 
 	/**
 	 * This method is part of the SelectionModel API and is
@@ -359,9 +367,10 @@ archistry.ui.selection.MultiSelectionModel = function(options)
 	 * used to retrieve the length of the selection.
 	 */
 
-	this.__defineGetter__("length", function() {
+    this.length = function()
+    {
 		return _selection.length;
-	});
+	};
 
 	/**
 	 * This method is part of the core SelectionModel API and

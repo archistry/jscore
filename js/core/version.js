@@ -49,22 +49,16 @@ namespace("archistry.core");
 
 archistry.core.Version = function(name, major, minor, release, build, date)
 {
-	var _name = name;
-	var _major = major;
-	var _minor = minor;
-	var _rel = release;
-	var _build = build;
-	var _date = date;
+	var _version = "{0} {1}.{2}.{3}".format(name, major, minor, release);
+	var _fullVersion = "{0} (Build {1}; {2})".format(_version, build, date);
 
-	const _version = _name + " " + _major + "." + _minor + "." + _rel;
-	const _fullVersion = _version + " (Build " + _build + "; " + _date + ")";
-
-	this.__defineGetter__("name", function() { return _name; });
-	this.__defineGetter__("major", function() { return _major; });
-	this.__defineGetter__("minor", function() { return _minor; });
-	this.__defineGetter__("release", function() { return _release; });
-	this.__defineGetter__("build", function() { return _build; });
-	this.__defineGetter__("fullVersion", function() { return _fullVersion; });
+    this.name = function() { return name; };
+    this.major = function() { return major; };
+    this.minor = function() { return minor; };
+    this.release = function() { return release; };
+    this.build = function() { return build; };
+    this.fullVersion = function() { return build; };
+    this.toString = function() { return _version; };
 };
 
 archistry.core.version = new archistry.core.Version("@package_name@", @version_major@, @version_minor@, "@version_release@", "@version_date@");

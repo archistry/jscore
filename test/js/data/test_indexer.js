@@ -44,9 +44,9 @@ Jester.testing("Indexer core functionality", {
 	tests: [
 		{
 			what: "mapIndex method functionality",
-			how: function(context, result)
+			how: function(result)
 			{
-                mixin(Indexer);
+                var mapIndex = archistry.data.Indexer.mapIndex;
                 var data = [ 1, 2, 3, 4 ];
 
                 result.check("start index not changed", {

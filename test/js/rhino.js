@@ -38,8 +38,6 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-load('/opt/devel/env-js/src/env.rhino.js');
-load('../jester.js');
 
 function println(fmt)
 {
@@ -52,12 +50,19 @@ function println(fmt)
 }
 
 // load the core library
-load('../../rhino-core-min.js');
+load('../rhino-core-min.js');
 
 // load the tests
-load('test_tree_selection_range.js');
-load('test_tree_selection.js');
+load('core/test_util.js');
+load('core/test_string_format.js');
+load('core/test_observer.js');
+load('core/test_path.js');
+load('data/test_indexer.js');
+load('data/test_array_tree_model.js');
+load('ui/test_tree_selection_range.js');
+load('ui/test_tree_selection.js');
 
 // print the results
 print(Jester.reporter.toString());
+println("Tests run: {0} ({1})", Jester.reporter.testCount(), Jester.reporter.checkCount());
 java.lang.System.exit(Jester.reporter.failures());

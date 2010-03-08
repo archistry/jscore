@@ -42,7 +42,7 @@ Jester.testing("String#format functionality", {
 	tests: [
 		{
 			what: "String#format basic functionality",
-			how: function(context, result)
+			how: function(result)
 			{
                 result.check("simple string with no format specifier", {
                     actual: String.format("Hello world!"),
@@ -77,7 +77,7 @@ Jester.testing("String#format functionality", {
 		},
 		{
 			what: "String#format with custom #toString implementations",
-			how: function(context, result)
+			how: function(result)
 			{
                 var A = function(arg)
                 {
@@ -134,7 +134,7 @@ Jester.testing("String#format functionality", {
 		},
 		{
 			what: "String#format with custom #formatString implementations",
-			how: function(context, result)
+			how: function(result)
 			{
                 var A = function(arg)
                 {
@@ -191,7 +191,7 @@ Jester.testing("String#format functionality", {
 		},
 		{
 			what: "String#format parameter width functionality",
-			how: function(context, result)
+			how: function(result)
 			{
                 result.check("left justification of value", {
                     actual: String.format("'{0,-7}'", "arf"),
@@ -216,7 +216,7 @@ Jester.testing("String#format functionality", {
 		},
 		{
 			what: "String#format parameter format functionality",
-			how: function(context, result)
+			how: function(result)
 			{
                 result.check("Base conversion for numbers using format", {
                     actual: String.format("'{0:16}'", 255),
@@ -251,7 +251,7 @@ Jester.testing("String#format functionality", {
 		},
 		{
 			what: "String instance#format basic functionality",
-			how: function(context, result)
+			how: function(result)
 			{
                 result.check("simple string with no format specifier", {
                     actual: "Hello world!".format(),

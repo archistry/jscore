@@ -263,10 +263,13 @@ archistry.ui.Helpers = {
 
 	appendAttr: function(elt, attr, val)
 	{
-		if(typeof elt.getAttribute !== 'function')
+//		if(typeof elt.getAttribute !== 'function')
+
+		if(elt.getAttribute === undefined)
 		{
-			println("appendAttr error:  element not element! {0}\n{1}",
-					elt.inspect(), printStackTrace());
+			Console.println("appendAttr error:  element not element! {0} ({1})\n{2}",
+					elt, archistry.core.Util.toHashString(elt), 
+                    printStackTrace());
 		}
 		var regex = new RegExp(val.trim());
 		var s = elt.getAttribute(attr);
@@ -330,15 +333,6 @@ archistry.ui.Helpers = {
 	},
 
 	/**
-	 * This is a short version of the println call
-	 */
-
-	println: function(fmt)
-	{
-        archistry.ui.Console.println(fmt.format([].slice.call(arguments, 1)));
-	},
-
-	/**
 	 * This method will return the width of the
 	 * element--including inline elements
 	 *
@@ -349,8 +343,8 @@ archistry.ui.Helpers = {
 
 	ewidth: function(elt, raw)
 	{
-		var width = getStyle(elt, "width");
-		if(getStyle(elt, "display") == "inline")
+		var width = this.getStyle(elt, "width");
+		if("auto" === width || this.getStyle(elt, "display") == "inline")
 		{
 			if(elt.clip)
 			{
@@ -366,5 +360,124 @@ archistry.ui.Helpers = {
 			return width;
 
 		return parseInt(width.replace(/px$/, ""));
-	}
+	},
+
+	/**
+	 * This method will return the height of the
+	 * element--including inline elements
+	 *
+	 * @param elt the element
+	 * @param raw true to return without the px suffix
+	 * @return the width in pixels
+	 */
+
+	eheight: function(elt, raw)
+	{
+		var height = this.getStyle(elt, "height");
+		if("auto" === height || this.getStyle(elt, "display") == "inline")
+		{
+			if(elt.clip)
+			{
+				height = elt.clip.height;
+			}
+			else
+			{
+				height = elt.offsetHeight;
+			}
+			return height + (raw ? 0 : "px");
+		}
+		if(!raw)
+			return height;
+
+		return parseInt(height.replace(/px$/, ""));
+	},
+
+    /**
+     * This method is used to get the size (in pixels) of the
+     * element in terms of width & height.
+     *
+     * @param element the element
+     * @param raw (optional) used to indicate that the numeric
+     *      values are preferred to the string CSS values
+     * @return a size object
+     */
+
+    esize: function(elt, raw)
+    {
+        return {
+            width: ewidth(elt, raw),
+            height: ewidth(elt, raw)
+        };
+    },
+
+    /**
+     * This method is used to retrieve "box" styles for
+     * particular elements.
+     *
+     * @param style name
+     */
+
+    styleBox: function(elt, style, raw)
+    {
+        var edges = [ "top", "right", "bottom", "left" ];
+        var box = {};
+        var me = this;
+        edges.each(function(i) {
+            var val = me.getStyle(elt, "{0}-{1}".format(style, this));
+            if(raw) val = parseInt(val.replace(/px$/,""));
+            box[this] = val;
+//            Console.println("found value for style '{0}-{1}': {2}".format(style, this, val));
+        });
+
+//        Console.println("box: " + archistry.core.Util.toHashString(box));
+        return box;
+    },
+
+    /**
+     * Get the offset of a particular element.
+     * Lifted from <a
+     * href="http://stackoverflow.com/questions/160144/find-x-y-of-an-html-element-with-javascript">stackoverflow.com</a>
+     * and based on <a
+     * href="http://www.quirksmode.org/js/findpos.html">a
+     * solution from quirksmode.org</a>.
+     */
+
+    offset: function(elt, raw)
+    {
+        var top = 0, left = 0;
+        if(elt && elt.offsetParent)
+        {
+            do
+            {
+                left += elt.offsetLeft;
+                top += elt.offsetTop;
+            }
+            while(elt = elt.offsetParent);
+        }
+        return { 
+            top: top + ( raw ? 0 : "px"), 
+            left: left + ( raw ? 0 : "px")
+        };
+    },
+
+    /**
+     * This handling was borrowed from:
+     * http://www.howtocreate.co.uk/tutorials/javascript/eventinfo
+     * to ensure we have the correct keycode that we can use.
+     *
+     * @param event the event
+     * @return the numeric keycode
+     */
+
+    keyCode: function(event)
+    {
+        if(typeof event.keyCode === 'number')
+            return event.keyCode;
+        else if(typeof event.which === 'number')
+            return event.which;
+        else if(typeof event.charCode === 'number')
+            return event.charCode;
+
+        return null;
+    }
 };

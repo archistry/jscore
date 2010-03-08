@@ -42,7 +42,7 @@ Jester.testing("Core library functionality", {
 	tests: [
 		{
 			what: "Object#equals works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
                 var A = function(val)
                 {
@@ -65,11 +65,11 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "Object#keys works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
                 var obj = {};
                 obj["key1"] = true;
-                obj[context] = "context";
+                obj[this] = "context";
                 obj.method1 = function() {};
 
                 var functionlist = [];
@@ -110,54 +110,51 @@ Jester.testing("Core library functionality", {
 			}
 		},
 		{
-			what: "Object#clear works correctly",
-			how: function(context, result)
+			what: "Hash#clear works correctly",
+			how: function(result)
 			{
                 var obj = new archistry.core.Hash();
-                obj["key1"] = true;
-                obj[context] = "context";
-                obj["key2"] = "value";
-                obj.method1 = function() {};
+                obj.set("key1", true);
+                obj.set("context", this);
+                obj.set("key2", true);
 
-                var functionlist = [];
                 var proplist = [];
-                for(k in obj)
-                {
-                    if(typeof obj[k] === 'function')
-                        functionlist.add(k);
-                    else
-                        proplist.add(k);
-                }
-                functionlist.sort();
+                obj.each(function(key, val) {
+                    proplist.add(key);
+                });
                 proplist.sort();
-                var allprops = functionlist.concat(proplist).sort();
 
-                var keys = obj.keys(true).sort();
+                var keys = obj.keys().sort();
 				result.check("initial object key count", {
 					actual: keys.length,
-					expect: allprops.length
+					expect: proplist.length
 				});
+
+                result.check("size matches key count", {
+                    actual: obj.size(),
+                    expect: 3
+                });
 
                 result.check("pre-clear object key values are correct", {
                     actual: keys,
-                    expect: allprops
+                    expect: [ "key1", "key2" ]
                 });
 
-                keys = obj.clear().keys(true).sort();
+                keys = obj.clear().keys();
 				result.check("object key count", {
 					actual: keys.length,
-					expect: functionlist.length
+					expect: 0,
 				});
 
                 result.check("post-clear object key values are correct", {
                     actual: keys,
-                    expect: functionlist
+                    expect: []
                 });
 			}
 		},
 		{
 			what: "Object.mixin works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var proto = { 
 					foo: "foo",
@@ -289,7 +286,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure include of static object within intializer works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var foo = {
 					prop1: "hello",
@@ -325,7 +322,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure include of fn type 1 object within intializer works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var foo = function()
 				{
@@ -362,7 +359,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure include of fn type 2 object within intializer works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var foo = function() {};
 				foo.prototype = {
@@ -399,7 +396,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure multi-level mixin works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var foo = { p1: "one", p2: "two" };
 				function Mixer(x)
@@ -417,7 +414,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure Array.indexOf works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var arr = [ "one", 1, 3, 4 ];
 				result.check("array indexOf works for string types", {
@@ -469,7 +466,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure Array.include works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var arr = [ "one", 1, 3, 4 ];
 				result.check("array include works for string types", {
@@ -511,7 +508,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure Array.remove works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var arr0 = [ "one", 1, 2, 3 ];
 				var arr1 = [ "one", 1, 2, 3 ];
@@ -540,7 +537,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure Array.add works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var arr0 = [];
 				arr0.add("one");
@@ -557,7 +554,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure Array.clear works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var arr0 = [];
 				arr0.add("one");
@@ -573,7 +570,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "ensure String trim methods work correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				var leading = " \n \t foo";
 				var trailing = "foo   \n \t";
@@ -627,7 +624,7 @@ Jester.testing("Core library functionality", {
 		},
 		{
 			what: "namespace definition works correctly",
-			how: function(context, result)
+			how: function(result)
 			{
 				namespace("example.app.foo");
 				result.check("root of namespace is defined", {

@@ -968,7 +968,14 @@ String.format = function(source, params) {
             }
             else
             {
-                rval = obj.toString();
+                if(obj.toString)
+                {
+                    rval = obj.toString();
+                }
+                else
+                {
+                    rval = "" + obj;
+                }
             }
         }
         

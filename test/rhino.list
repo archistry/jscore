@@ -6,6 +6,7 @@
 :package: rhino-core-min.js
 :version_date: "2010-02-13T19:13:27Z"
 :files: 
+- lib/env.rhino.js
 - ../js/ext/Math.uuid.js
 - ../js/ext/md5.js
 - ../js/ext/stacktrace.js
@@ -28,4 +29,6 @@
 - ../js/ui/grid.js
 - ../js/ui/property_editors.js
 - ../js/ui/console.js
+- ../jester-min.js
+- lib/tree.js
 :version_major: 0

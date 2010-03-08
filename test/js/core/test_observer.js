@@ -42,7 +42,7 @@ Jester.testing("Observer functionality", {
 	tests: [
 		{
 			what: "Simple signal handling works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var Actor = function(name)
 				{
@@ -89,7 +89,7 @@ Jester.testing("Observer functionality", {
 		},
 		{
 			what: "Valid signal checking  works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var Actor = function(name)
 				{
@@ -134,7 +134,7 @@ Jester.testing("Observer functionality", {
 		},
 		{
 			what: "Unregistration of signals works as expected",
-			how: function(context, result)
+			how: function(result)
 			{
 				var Actor = function(name)
 				{
@@ -171,7 +171,7 @@ Jester.testing("Observer functionality", {
                         return actor.signalDisconnect("signal1", handler);
                     };
 
-                    this.__defineGetter__("handler", function() { return handler; });
+                    this.handler = function() { return handler; };
 				};
 
 				var actor = new Actor("sam");
@@ -186,14 +186,14 @@ Jester.testing("Observer functionality", {
                 });
 
                 result.check("handler was returned to caller", {
-                    actual: handler === obs.handler,
+                    actual: handler === obs.handler(),
                     expect: true
                 });
 			}
 		},
 		{
 			what: "Using immediate signal emmitting returns value",
-			how: function(context, result)
+			how: function(result)
 			{
 				var Actor = function(name)
 				{

@@ -38,68 +38,17 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-var Tree = archistry.data.Tree;
-var TreeNode = archistry.data.tree.TreeNode;
-var TreeSelection = archistry.ui.selection.TreeSelection;
-
-TestTreeNode = function(data)
-{
-    this.mixin(TreeNode);
-    var _selected = false;
-    this.data = function() { return data; };
-    this.selected = function(val)
-    {
-        if(val === undefined)
-            return _selected;
-
-        _selected = val;
-    };
-
-    this.toString = function()
-    {
-        var parent = this.parent();
-        return String.format("[TestTreeNode parent: {0}, path: [{1}], data: {2} ]", [ (parent ? parent.path() : "(null)"), this.path().join(", "), data ]);
-    };
-};
-
 Jester.testing("TreeSelectionRange functionality", {
-    setup: function(context) {
-            // build our tree
-            var root = new TestTreeNode("root");
-            [ 0, 1, 2, 3, 4 ].each(function(i) {
-                root.insertChild(i, new TestTreeNode("Child" + this));
-            });
-            var child = root.firstChild();
-            [ 0, 1, 2 ].each(function(i) {
-                child.insertChild(i, new TestTreeNode("L1 Child" + this));
-            });
-            child = child.nextSibling();
-            [ 0, 1, 2 ].each(function(i) {
-                child.insertChild(i, new TestTreeNode("L1 Child" + this));
-            });
-
-//            println("---- Dumping tree ----");
-//            println(root.toString());
-//            Tree.visitChildren(root, "children", function(p, node, i) {
-//                var depth = node.depth();
-//                var s = "";
-//                for(var i = 0; i < depth; ++i)
-//                {
-//                    s += "  ";
-//                }
-//                println(s + node);
-//                return true;
-//            });
-//            println("---- Dumping tree complete ----");
-            context.tree = root;
+    setup: function() {
+        this.tree = buildTestTree(false);
     },
 	tests: [
 		{
 			what: "Select a single node in the tree",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 node.selected(true);
                 selection.add(node);
                 var range = [];
@@ -130,10 +79,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Select a node range",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 for(var i = 0; i < node.childCount(); ++i)
                 {
                     var child = node.child(i);
@@ -170,10 +119,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Extend parent selection with child",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 node.selected(true);
                 selection.add(node);
                 var child = node.firstChild();
@@ -208,10 +157,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Extend last child selection to next parent",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 var child = node.lastChild();
                 child.selected(true);
                 selection.add(child);
@@ -247,10 +196,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Extend parent selection to prev sibling's last child",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 var sib = node.nextSibling();
                 sib.selected(true);
                 selection.add(sib);
@@ -286,10 +235,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Join child node selection with parent",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 node.selected(true);
                 selection.add(node);
 
@@ -341,10 +290,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Join child node selection with parent next sibling",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 var child = node.lastChild();
                 child.selected(true);
                 selection.add(child);
@@ -395,10 +344,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Join child node selection with parent prev sibling last child",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 var sibling = node.nextSibling();
                 var child = sibling.firstChild();
                 child.selected(true);
@@ -449,10 +398,10 @@ Jester.testing("TreeSelectionRange functionality", {
 		},
 		{
 			what: "Select and then unselect removes selection range",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 node.selected(true);
                 selection.add(node);
                 
@@ -481,10 +430,10 @@ Jester.testing("TreeSelectionRange functionality", {
         },
 		{
 			what: "Select disconnected ranges in inverse order has ordered ranges",
-			how: function(context, result)
+			how: function(result)
 			{
                 var selection = new TreeSelection(this);
-                var node = context.tree.firstChild();
+                var node = this.tree.firstChild();
                 node.lastChild().selected(true);
                 selection.add(node.lastChild());
                 node.firstChild().selected(true);

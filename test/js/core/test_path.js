@@ -44,7 +44,7 @@ Jester.testing("Path function functionality", {
 	tests: [
 		{
 			what: "test path basename",
-			how: function(context, result)
+			how: function(result)
 			{
 				result.check("path with no suffix and default delimiter", {
 					actual: Path.basename("/some/path/file.txt"),
@@ -79,7 +79,7 @@ Jester.testing("Path function functionality", {
 		},
 		{
 			what: "test path pathname",
-			how: function(context, result)
+			how: function(result)
 			{
 				result.check("path with default delimiter", {
 					actual: Path.pathname("/some/path/file.txt"),
@@ -99,7 +99,7 @@ Jester.testing("Path function functionality", {
 		},
 		{
 			what: "test path stripExtension",
-			how: function(context, result)
+			how: function(result)
 			{
 				result.check("path with basic file extension", {
 					actual: Path.stripExtension("/some/path/file.txt"),
@@ -119,7 +119,7 @@ Jester.testing("Path function functionality", {
 		},
 		{
 			what: "test path getExtension",
-			how: function(context, result)
+			how: function(result)
 			{
 				result.check("path with basic file extension", {
 					actual: Path.getExtension("/some/path/file.txt"),
@@ -149,7 +149,7 @@ Jester.testing("Path function functionality", {
 		},
 		{
 			what: "test path join",
-			how: function(context, result)
+			how: function(result)
 			{
 				result.check("basic path join", {
 					actual: Path.join("/some/path", "file.txt"),

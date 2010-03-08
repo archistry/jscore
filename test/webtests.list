@@ -1,0 +1,21 @@
+--- 
+:version_minor: 1
+:version_release: 0-dev
+:package_name: Archistry Core JavaScript Library Unit Tests
+:version_count: 0
+:package: webtests.js
+:version_date: "2010-02-13T19:13:27Z"
+:version_major: 0
+:files: 
+- ../jester-min.js
+- ../js/jester/web_reporter.js
+- lib/util.js
+- lib/tree.js
+- js/core/test_util.js
+- js/core/test_observer.js
+- js/core/test_path.js
+- js/core/test_string_format.js
+- js/data/test_array_tree_model.js
+- js/data/test_indexer.js
+- js/ui/test_tree_selection.js
+- js/ui/test_tree_selection_range.js

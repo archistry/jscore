@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>ArchistryJS Unit Tests</title>
+  <script type="text/javascript" src="../archistry-core-min.js"></script>
+  <script type="text/javascript" src="webtests.js"></script>
+</head>
+ 
+<body>
+  <h1>Unit Tests</h1>
+  <p>Jump to: <a href="#results">test results</a> or <a href="#console">console output</a></p>
+
+  <h3><a name="results">Results</a></h3>
+  <div id="output"></div>
+  
+  <h3><a name="console">Console Output</a></h3>
+  <div id="console"></div>
+
+  <script type="text/javascript">
+    $(function()
+    {
+      $("#console").html(__jester_console);
+      new jester.reporter.WebReporter("output");
+    });
+  </script>
+</body>
+</html>

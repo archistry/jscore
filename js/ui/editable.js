@@ -52,8 +52,6 @@ namespace("archistry.ui");
 
 archistry.ui.Editable = function(arg, options)
 {
-	mixin(archistry.ui.Helpers);
-	
 	var _oldval = null;
 	var _node = null;
 	var _self = this;
@@ -79,8 +77,7 @@ archistry.ui.Editable = function(arg, options)
 
 	if(!_node)
 	{
-		throw new ReferenceError(
-				String.format("unable to find node for '{0}'", [ arg ]));
+		throw new ReferenceError("unable to find node for '{0}'".format([ arg ]));
 	}
 
 	/** @private */
@@ -89,7 +86,7 @@ archistry.ui.Editable = function(arg, options)
 		var _val = _node.getAttribute(attr);
 		if(!_val || _val === "")
 		{
-			throw new ReferenceError(String.format("Node {0} does not include the '{1}' attribute", [ _node, attr ] ));
+			throw new ReferenceError(format("Node {0} does not include the '{1}' attribute".format( _node, attr)));
 		}
 
 		return _val;
@@ -162,7 +159,7 @@ archistry.ui.Editable = function(arg, options)
 	this.editingCancelled = function(context)
 	{
 		render();
-	}
+	};
 
 	/**
 	 * This is part of the EditingObserver interface that will
@@ -187,7 +184,7 @@ archistry.ui.Editable = function(arg, options)
 			}
 		}
 		render();
-	}
+	};
 
 	init();
 };
