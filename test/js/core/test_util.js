@@ -61,6 +61,16 @@ Jester.testing("Core library functionality", {
                     actual: a.equals(1),
                     expect: true
                 });
+
+                result.check("boolean equals works for primitives", {
+                    actual: (new Boolean(true)).equals(true),
+                    expect: true
+                });
+
+                result.check("boolean equals fails when not equal boolean", {
+                    actual: !(new Boolean(true)).equals(false),
+                    expect: true
+                });
 			}
 		},
 		{
@@ -137,7 +147,7 @@ Jester.testing("Core library functionality", {
 
                 result.check("pre-clear object key values are correct", {
                     actual: keys,
-                    expect: [ "key1", "key2" ]
+                    expect: [ "context", "key1", "key2" ]
                 });
 
                 keys = obj.clear().keys();
@@ -531,7 +541,7 @@ Jester.testing("Core library functionality", {
 
 				result.check("array not modified if not found", {
 					actual: arr0,
-					expect: [ 1, 2, 3, ]
+					expect: [ 1, 2, 3 ]
 				});
 			}
 		},

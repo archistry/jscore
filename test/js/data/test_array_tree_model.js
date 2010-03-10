@@ -296,7 +296,7 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 });
 
                 result.check("model using default getters", {
-                    actual: model.getter !== undefined,
+                    actual: model.getter === undefined,
                     expect: true
                 });
 
@@ -334,6 +334,31 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 result.check("model wrapped nodes.compare(data) nodes", {
                     actual: model.child(model, 0).compare(data[0]),
                     expect: 0
+                });
+                
+                result.check("node for path returns root", {
+                    actual: model.nodeForPath([]),
+                    expect: model
+                });
+
+                result.check("root node from model is ObjectAdapter", {
+                    actual: model.nodeForPath([]) instanceof archistry.data.tree.ObjectAdapter,
+                    expect: true 
+                });
+
+                result.check("node for path returns leaf", {
+                    actual: model.nodeForPath([3]),
+                    expect: data[3]
+                });
+
+                result.check("child node from model is ObjectAdapter", {
+                    actual: model.nodeForPath([3]) instanceof archistry.data.tree.ObjectAdapter,
+                    expect: true 
+                });
+
+                result.check("node wrapped with native toHashString", {
+                    actual: model.root().toHashString !== undefined,
+                    expect: true
                 });
 			}
 		},

@@ -283,10 +283,7 @@ jester.reporter.YAMLReporter = function()
                 {
                     msg += " (" + e.fileName + "#" + e.lineNumber + ")"
                 }
-                else
-                {
-                    msg += "\n" + e.stacktrace();
-                }
+                msg += "\n" + result.stacktrace();
                 write(indent + 2, "exception", msg);
                 failures += 1;
             }

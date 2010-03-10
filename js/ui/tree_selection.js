@@ -237,7 +237,6 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
 archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
 {
-    this.mixin(archistry.core.Util);
     this.mixin(new archistry.ui.selection.Notifier(this));
     this.mixin(options);
    
@@ -246,6 +245,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
         selectfn = function(node, val) { node.selected(val); };
     }
 
+    var Util = archistry.core.Util;
     var Hash = archistry.core.Hash;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
     var visitChildren = archistry.data.Tree.visitChildren;
@@ -414,7 +414,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
             range = _nodeIndex.get(tmp);
             if(!range)
             {
-                throw createError("StateError:  neighbor of node [{0}] is marked selected, but is not part of a selection range!", [node.path()]);
+                throw Util.createError("StateError:  neighbor of node [{0}] is marked selected, but is not part of a selection range!", [node.path()]);
             }
             return range;
         }
@@ -548,7 +548,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
         if(!range)
         {
 //            println("Node index: " + archistry.core.Util.toHashString(_nodeIndex));
-            throw createError("StateError:  node {0} is not in any range!", node);
+            throw Util.createError("StateError:  node {0} is not in any range!", node);
         }
 
         var r2 = range.split(node);

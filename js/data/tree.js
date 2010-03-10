@@ -167,7 +167,7 @@ archistry.data.Tree = {
 
         for(var i = 0; i < path.length; ++i)
         {
-            var pi = mapIndex(path[i], node.childCount());
+            var pi = this.mapIndex(path[i], node.childCount());
             if((n = node.child(pi)))
             {
                 if(callback)
@@ -231,6 +231,7 @@ archistry.data.Tree = {
         if(!callback)
             return;
         
+//        Console.println("child count for [{0}] is {1}", root.path(), root.childCount());
         for(var i = 0; i < root.childCount(); ++i)
         {
             var child = root.child(i);
@@ -834,6 +835,11 @@ archistry.data.tree.ObjectAdapter = function(obj, getter, setter)
     {
         return "[ObjectAdapter obj: {0} ]", obj.toString();
     };
+
+    this.toHashString = function()
+    {
+        return archistry.core.Util.toHashString(obj);
+    };
 };
 
 /**
@@ -885,6 +891,9 @@ archistry.data.tree.ObjectAdapterManager = function(enabled, getter, setter)
 
     this.adapterForNode = function(node)
     {
+        if(!node)
+            return null;
+
         if(enabled)
             return new archistry.data.tree.ObjectAdapter(node, _getter, setter);
 

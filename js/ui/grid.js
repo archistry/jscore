@@ -847,6 +847,28 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     /**
      * @private
      *
+     * This method is used to retrieve the meta span from the
+     * specified TreeRow instance
+     *
+     * @param row the TreeRow
+     * @return the span element used for row meta information
+     */
+
+    function metaSpan(row)
+    {
+        var cell = row.cell(0);
+        if(_self.showSelectorColumn)
+        {
+            cell = row.cell(1);
+        }
+        
+        // FIXME:  need a better way to do this!
+        return cell.firstChild;
+    }
+    
+    /**
+     * @private
+     *
      * This method is used to force rendering of the given
      * TreeRow reference.
      *
@@ -870,14 +892,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         // FIXME: should this stuff be done in the row
         // implementation too???
 
-        var cell = row.cell(0);
-        if(_self.showSelectorColumn)
-        {
-            cell = row.cell(1);
-        }
-        
         // FIXME:  need a better way to do this!
-        var span = cell.firstChild;
+        var span = metaSpan(row);
+        var cell = span.parentNode;
+
         if(_self.showExpanders)
         {
             H.appendAttr(span, "class", "ui-icon");
@@ -885,6 +903,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         }
         if(!row.isLeaf())
         {
+            H.removeAttr(cell, "class", "aui-grid-child-node");
             H.appendAttr(cell, "class", "aui-grid-parent-node");
             if(_self.showExpanders)
             {
@@ -902,7 +921,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         }
         else
         {
+            H.removeAttr(cell, "class", "aui-grid-parent-node");
             H.appendAttr(cell, "class", "aui-grid-child-node");
+            H.removeAttr(span, "class", "aui-grid-expander-open");
+            H.removeAttr(span, "class", "aui-grid-expander-closed");
             if(_self.showExpanders)
             {
                 H.appendAttr(span, "class", "ui-icon-none");
@@ -962,7 +984,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var _parent = null;
         var _children = [];
         var _deleted = false;
-        var _deletedChildren = [];
         var _dirty = false;
         var _cellState = {};
         var _loaded = false;
@@ -1022,13 +1043,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 // must be root
                 return false;
             }
-            var leaf = _data.isLeaf(modelNode);
-            if(_expanded && _deletedChildren.length 
-                    && _deletedChildren.length === _data.childCount(modelNode))
-            {
-                return true;
-            }
-             
             return _data.isLeaf(modelNode);
         };
 
@@ -1174,7 +1188,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         {
             // we just remove it from our node list
             _children.remove(node);
-            _deletedChildren.add(node);
         };
 
         /**
@@ -1189,11 +1202,11 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             _deleted = val;
             if(_deleted)
             {
-                // notify our parent
-                if(_parent) { _parent.childDeleted(_me); }
-
                 // make sure we're not in the selection!
                 _selection.remove(_me);
+
+                // notify our parent
+                if(_parent) { _parent.childDeleted(_me); }
 
                 // mark all our child nodes deleted too
                 _children.each(function(i) { this.deleted(val); });
@@ -1439,7 +1452,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         this.valueOf = function()
         {
 //            Console.println("valueOf called! \n" + printStackTrace());
-            return this.object_id();
+            return modelNode;
         };
 
         // Bean interface
@@ -1518,6 +1531,9 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         this.render = function(dirty)
         {
+            if(_deleted)
+                return;
+
             _allCols.each(function(i) {
                 _me.renderColumn(this, dirty);
             });
@@ -1660,6 +1676,40 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     /**
      * @private
      *
+     * This method is used to add the event handlers to the
+     * expander span
+     *
+     * @param treerow the TreeRow node
+     */
+
+    function ensureExpanderEvents(treerow)
+    {
+        if(!treerow.isLeaf())
+        {
+            var span = (arguments.length === 2 ? arguments[1] : metaSpan(treerow));
+            H.appendAttr(span, "class", "aui-grid-expander");
+            span.onclick = function(event) {
+                if(!event)
+                    event = window.event;
+
+                if(treerow.expanded())
+                {
+                    collapse(treerow);
+                }
+                else
+                {
+                    expand(treerow);
+                }
+                event.cancelBubble = true;
+                if(event.stopPropagation)
+                    event.stopPropagation();
+            };
+        }
+    }
+
+    /**
+     * @private
+     *
      * This method is used to build a particular tree row
      *
      * @param treerow the object to render
@@ -1675,28 +1725,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             // set up the special span elements in each cell
             var span = H.ne("span");
             span.setAttribute("class", "aui-grid-cell-meta");
-            if(_self.showExpanders && i === (_self.showSelectorColumn ? 1 : 0))
+            if(_self.showExpanders && i === (_self.showSelectorColumn ? 1 : 0) && !treerow.isLeaf())
             {
-                if(!treerow.isLeaf())
-                {
-                    H.appendAttr(span, "class", "aui-grid-expander");
-                    span.onclick = function(event) {
-                        if(!event)
-                            event = window.event;
-
-                        if(treerow.expanded())
-                        {
-                            collapse(treerow);
-                        }
-                        else
-                        {
-                            expand(treerow);
-                        }
-                        event.cancelBubble = true;
-                        if(event.stopPropagation)
-                            event.stopPropagation();
-                    };
-                }
+                H.appendAttr(span, "class", "aui-grid-expander");
+                ensureExpanderEvents(treerow, span);
             }
             this.appendChild(span);
             span = H.ne("span");
@@ -1977,6 +2009,51 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         return ri;
     }
+    
+    /**
+     * @private
+     *
+     * This method is used to programmatically delete the row
+     * with the given path.
+     *
+     * @param path the path to the row to be deleted
+     */
+
+    function deleteRow(node)
+    {
+        var rc = node.rowCount();
+        var ri = node.rowIndex();
+//        Console.println("rowcount for node {0} at path [ {1} ]: {2}", [
+//            node.key, path.join(", "), rc ]);
+
+        if(ri === -1 && node.deleted())
+        {
+//            Console.println("row at path [ {1} ] already deleted from the layout", [ path.join(", ") ]);
+            return;
+        }
+        else if(ri === -1 && !node.deleted())
+        {
+//            Console.println("path: " + path.inspect());
+            throw createError("No layout row found for node at path [ {0} ]!", [ path.join(", ") ]);
+        }
+
+        _self.layout.deleteRows(ri, rc);
+        var parent = node.parent();
+        node.deleted(true);
+        if(parent && parent.rowIndex() !== -1)
+        {
+            renderRow(parent);
+        }
+
+//        Console.println("selection length: " + _selection.length);
+        if(_selection.length === 0 && _selectAll)
+        {
+            clearSelection();
+        }
+    
+        // FIXME: fire event!
+    };
+
 
     ////// SIGNAL HANDLING CALLBACKS //////
 
@@ -2021,45 +2098,67 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function modelNodesInserted(eventlist)
     {
-        processEventList(this, eventlist, function(node) {
+        processEventList(this, eventlist, function(parent) {
             if(this.refs().length === 0)
             {
                 // nothing to do
                 return;
             }
 
-//            Console.println("processing insertion for parent: {0} at path [{1}]", [ node.label(), this.path() ] );
-            if(!node.expanded())
+            Console.println("processing insertion for parent: {0} at path [{1}]", [ parent.data().toHashString(), this.path() ] );
+            if(!parent.expanded())
             {
-//                Console.println("Parent not expanded");
-                // re-render the node for the expander state,
+                Console.println("Parent not expanded; isLeaf? " + parent.isLeaf());
+                // re-render the parent for the expander state,
                 // but otherwise we don't care.
-                renderRow(node);
+                renderRow(parent);
+                ensureExpanderEvents(parent);
                 return;
             }
-            var ri = rowIndex(node);
             var lrows = null;
+            var index = null;
+            var ri = null;
 
             if(this.isContiguous())
             {
                 var event = this;
-                lrows = _self.layout.insertRows(ri + event.refs()[0].index(), 
+                index = event.refs()[0].index();
+                var child = parent.child(index - 1);
+                if(child)
+                {
+                    ri = rowIndex(child) + child.rowCount();
+                }
+                else
+                {
+                    ri = rowIndex(parent) + 1;
+                }
+                Console.println("ri: {0}, ref[0].index: {1}", ri, index);
+                lrows = _self.layout.insertRows(ri, 
                                 _allCols.length, event.refs().length);
                 lrows.each(function(i) {
-                    buildRow(node.insertChild(event.refs()[i].index(),
+                    buildRow(parent.insertChild(event.refs()[i].index(),
                                 new TreeRow(this, event.refs()[i].node())));
                 });
             }
             else
             {
                 this.refs().each(function(i) {
-                    lrows = _self.layout.insertRows(ri + ref.index(),
-                                                _allCols.length, 1);
-                    buildRow(node.insertChild(ref.index(),
-                                new TreeRow(lrows[0], ref.node())));
+                    index = this.index();
+                    var child = parent.child(index - 1);
+                    if(child)
+                    {
+                        ri = rowIndex(child) + child.rowCount();
+                    }
+                    else
+                    {
+                        ri = rowIndex(parent) + 1;
+                    }
+                    lrows = _self.layout.insertRows(ri, _allCols.length, 1);
+                    buildRow(parent.insertChild(index,
+                                new TreeRow(lrows[0], this.node())));
                 });
             }
-            renderRow(node);
+            renderRow(parent);
         });
     }
 
@@ -2076,33 +2175,9 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             if(this.refs().length === 0)
                 return;
 
-            var ri = rowIndex(node) + this.refs()[0].index();
-            if(this.isContiguous())
-            {
-                this.refs().each(function(i) {
-                    var child = node.child(this.index());
-                    if(child)
-                    {
-                        _selection.remove(child);
-                    }
-                    child = node.removeChildAtIndex(this.index());
-//                    Console.println("removed child: " + child);
-                });
-                _self.layout.deleteRows(ri, this.refs().length);
-            }
-            else
-            {
-                this.refs().each(function(i) {
-                    var child = node.child(this.index());
-                    if(child)
-                    {
-                        _selection.remove(child);
-                    }
-                    child = node.removeChildAtIndex(this.index());
-//                    Console.println("removed child: " + child);
-                    _self.layout.deleteRows(ri, 1);
-                });
-            }
+            this.refs().each(function(i) {
+                deleteRow(node.child(this.index()));
+            });
             renderRow(node);
         });
     }
@@ -2198,59 +2273,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     
 // FIXME:  I'm not sure that this one should really be here
 // either since we're going for a model-driven view....
-
-    /**
-     * This method is used to programmatically delete the row
-     * with the given path.
-     *
-     * @param path the path to the row to be deleted
-     */
-
-    this.deleteRow = function(path)
-    {
-        if(!_data.editable)
-        {
-            throw new Error("TreeRowModel is not editable!");
-        }
-        
-        var node = nodeForPath(path);
-        if(!node || node.deleted())
-        {
-            return;
-        }
-     
-        var rc = node.rowCount();
-        var ri = node.rowIndex();
-//        Console.println("rowcount for node {0} at path [ {1} ]: {2}", [
-//            node.key, path.join(", "), rc ]);
-
-        if(ri === -1 && node.deleted())
-        {
-//            Console.println("row at path [ {1} ] already deleted from the layout", [ path.join(", ") ]);
-            return;
-        }
-        else if(ri === -1 && !node.deleted())
-        {
-//            Console.println("path: " + path.inspect());
-            throw createError("No layout row found for node at path [ {0} ]!", [ path.join(", ") ]);
-        }
-
-        _self.layout.deleteRows(ri, rc);
-        var parent = node.parent();
-        node.deleted(true);
-        if(parent && parent.rowIndex() !== -1)
-        {
-            renderRow(parent);
-        }
-
-//        Console.println("selection length: " + _selection.length);
-        if(_selection.length === 0 && _selectAll)
-        {
-            clearSelection();
-        }
-    
-        // FIXME: fire event!
-    };
 
     /**
      * This method is used to trigger cell editing on the

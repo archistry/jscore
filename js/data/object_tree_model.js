@@ -45,7 +45,7 @@ namespace("archistry.data.tree");
  * @class
  *
  * This class provides a simple adapter for using static
- * objects as a conformant TreeRowModel.  The child nodes are
+ * objects as a conformant TreeModel.  The child nodes are
  * identitfied by the property name supplied as the
  * contstructor which should return an array of child nodes.
  *
@@ -57,11 +57,18 @@ namespace("archistry.data.tree");
 
 archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 {
-    var mapIndex = archistry.data.Indexer.mapIndex;
-    
+    var ObjectAdapter   = archistry.data.tree.ObjectAdapter;
+    var TreeChange      = archistry.data.tree.TreeChange;
+    var TreeNodeRef     = archistry.data.tree.TreeNodeRef;
+    var createError     = archistry.core.Util.createError;
+    var mapIndex        = archistry.data.Indexer.mapIndex;
+    var toHashString    = archistry.core.Util.toHashString;
+
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
-    
+   
+    var _self = this;
+
     if(this.editable === undefined)
         this.editable = true;
    
@@ -112,7 +119,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __adapter(node)
     {
-        _nodes.adapterForNode(node);
+        return _nodes.adapterForNode(node);
     }
 
     /**
@@ -126,6 +133,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __addNode(node)
     {
+        if(node instanceof ObjectAdapter)
+        {
+            throw createError("Attempt to double-wrap node!");
+        }
         return _nodes.setKey(node.object_id(), node);
     }
 
@@ -140,6 +151,11 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __node(rnode)
     {
+        if(rnode instanceof ObjectAdapter)
+        {
+            return rnode;
+        }
+
         var node = _nodes.getKey(rnode.object_id());
         if(node === undefined)
         {
@@ -164,6 +180,52 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     }
 
     /**
+     * @private
+     *
+     * This method is used to retrieve the actual child array
+     * for the given parent node by path.
+     *
+     * @param path the path to load
+     * @return an object containing two properties:
+     * <code>parent</code> with a reference to the parent and
+     * <code>children</code> with a reference to the children
+     * array (created if necessary).
+     */
+
+    function childArray(path)
+    {
+        var parent = _self.nodeForPath(path);
+        if(!parent)
+        {
+            throw createError("Unable to find parent node for path: [{0}]", [ path ]);
+        }
+
+        var children = parent.getProperty(childKey);
+        if(!children)
+        {
+            children = [];
+            parent.setProperty(childKey, children);
+        }
+
+        return { parent: parent, children: children };
+    }
+
+    /**
+     * @private 
+     *
+     * This method returns the parent path for the
+     * given path
+     */
+
+    function parentPath(path)
+    {
+        if(path.length > 1)
+            return path.slice(0, -1);
+
+        return [];
+    }
+
+    /**
      * The root of the tree will be taken as the object and
      * cannot be modified.
      *
@@ -185,7 +247,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.isLeaf = function(node)
     {
-        var kidz = node.getProperty(childKey);
+        var kidz = __node(node).getProperty(childKey);
         if(kidz === undefined)
             return true;
 
@@ -201,10 +263,11 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.childCount = function(node) 
     {
-        if(node.getProperty(childKey) === undefined)
+        var obj = __node(node);
+        if(obj.getProperty(childKey) === undefined)
             return 0;
 
-        return node.getProperty(childKey).length;
+        return obj.getProperty(childKey).length;
     };
 
     /**
@@ -218,11 +281,13 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.child = function(node, idx)
     {
-        if(this.isLeaf(node))
+        var obj = __node(node);
+        if(_self.isLeaf(node))
             return null;
 
-        var i = mapIndex(idx, node.getProperty(childKey).length);
-        return __node(node.getProperty(childKey)[i]);
+        var kidz = obj.getProperty(childKey);
+        var i = mapIndex(idx, kidz.length);
+        return __node(kidz[i]);
     };
 
     /**
@@ -237,7 +302,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.indexOfChild = function(parent, child)
     {
-        var idx = parent.getProperty(childKey).each(function(i) {
+        var idx = __node(parent).getProperty(childKey).each(function(i) {
             if(this.equals(child))
                 return i;
         });
@@ -260,23 +325,27 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         // FIXME:  there's just no good way to do this using
         // the generic functionality....  This is cut & paste
         // reuse which sucks!
-        var node = root;
+        var node = _self.root();
         var n = null;
 
         for(var i = 0; i < path.length; ++i)
         {
-            var pi = mapIndex(path[i], node[childKey].length);
-            if((n = node[childKey][pi]))
+            var kidz = node.getProperty(childKey);
+            if(kidz === null)
+                return null;
+
+            var pi = mapIndex(path[i], kidz.length);
+            if((n = kidz[pi]))
             {
-                node = n;
+                node = __node(n);
             }
             else
             {
-                return;
+                return null;
             }
         }
 
-        return __node(node);
+        return node;
     };
 
     /**
@@ -289,10 +358,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.canEdit = function(path, key)
     {
-        if(key === childKey || !this.editable)
+        if(key === childKey || !_self.editable)
             return false;
 
-        var node = this.nodeForPath(path);
+        var node = _self.nodeForPath(path);
         if(!node)
             return false;
 
@@ -300,7 +369,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     };
 
     /**
-     * this method will simply report the number of children
+     * This method will simply report the number of children
      * available for the specified node
      *
      * @param parent the parent node
@@ -311,6 +380,118 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     this.ensureRange = function(parent, start, count)
     {
-        return this.childCount(parent);
+        return _self.childCount(parent);
+    };
+
+    /**
+     * This method is not part of the standard TreeModel
+     * interface, but it allows for easy manipulation of an
+     * ObjectTreeModel instance.
+     *
+     * @param parentPath the path of the parent node where the
+     *      child should be added
+     * @param index the insert index
+     * @param child the child node to be inserted
+     * @returns the added child node
+     */
+
+    this.insertNode = function(parentPath, index, child)
+    {
+        var ref = childArray(parentPath);
+        var idx = mapIndex(index, ref.children.length + 1);
+        Console.println("ObjectTreeMode#insertNode insertion requested for node at index {0}({1}) for path [{2}] which has {3} children", idx, index, parentPath, ref.children.length);
+        ref.children.splice(idx, 0, child);
+
+        this.fireNodesInserted([
+            new TreeChange(parentPath, ref.parent, [
+                    new TreeNodeRef(__node(child), idx) ])
+        ]);
+    };
+
+    /**
+     * This method is used to perform bulk inserts beneath the
+     * particular parent so that only a single event is
+     * triggered.  It is not part of the standard Treemodel
+     * interface.  The nodes will be inserted from the
+     * specified insertion point in the order in which they
+     * are passed to the method.
+     *
+     * @param parentPath the path of the parent where the
+     *      insertions should take place.
+     * @param index the insert point
+     * @param nodes the array of nodes to be inserted at the
+     *      specified child index
+     */
+
+    this.insertNodes = function(parentPath, index, nodes)
+    {
+        var ref = childArray(parentPath);
+        var idx = mapIndex(index, ref.children.length + 1);
+        Console.println("ObjectTreeMode#insertNodes insertion requested for {0} nodes at index {1}({2}) for path [{3}] which has {4} children", nodes.length, idx, index, parentPath, ref.children.length);
+        var args = [ idx, 0 ].concat(nodes);
+        ref.children.splice.apply(ref.children, args);
+
+        var refs = [];
+        nodes.each(function(i) {
+            refs.add(new TreeNodeRef(__node(ref.children[idx + i]), idx + i));
+        });
+
+        this.fireNodesInserted([ new TreeChange(parentPath, ref.parent, refs) ]);
+    };
+
+    /**
+     * This method is used to remove a child node from the
+     * model at the given path.  This method is not part of
+     * the standard TreeModel interface.
+     *
+     * @param path the path to the node to be removed
+     * @returns the node that was removed
+     */
+
+    this.removeNode = function(path)
+    {
+        var ppath = parentPath(path);
+        var ref = childArray(ppath);
+        var idx = path[path.length - 1];
+        var child = ref.children.removeAtIndex(idx);
+        
+        var node = __removeNode(child);
+        if(!node)
+        {
+            node = __adapter(child);
+            if(!node)
+            {
+                throw createError("RuntimeError:  unable to create adapter for child at path [{0}] ({1})", path.join(", "), toHashString(child));
+            }
+        }
+        this.fireNodesRemoved([
+            new TreeChange(ppath, ref.parent, [ 
+                    new TreeNodeRef(node, idx) ])
+        ]);
+        return node;
+    };
+
+    /**
+     * This method is used to indicate that the specified path
+     * has been changed.
+     *
+     * @param path the path to the node that was changed
+     */
+
+    this.nodeChanged = function(path)
+    {
+        var ppath = parentPath(path);
+        var ref = childArray(ppath);
+        var idx = path[path.length - 1];
+        var child = ref.children[idx];
+        if(child === null)
+        {
+            throw createError("Path error:  no node found for path [{0}]", [path]);
+        }
+
+        this.fireNodesChanged([
+            new TreeChange(ppath, ref.parent, [ 
+                    new TreeNodeRef(__node(child), idx) ])
+        ]);
     };
 };

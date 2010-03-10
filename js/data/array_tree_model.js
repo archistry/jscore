@@ -119,6 +119,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     }
 
     var _self = this;
+    var _root = new archistry.data.tree.ObjectAdapter(_self)
     var _nodes = new archistry.data.tree.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
 
     /**
@@ -193,19 +194,19 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     // define the column interface since we're going to be the
     // root of the tree model.
-    this.key = function() { return "label"; };
+//    this.key = function() { return "label"; };
 
     // we have a default label that can be changed via the
     // properties if the root should be shown.  Normally it
     // isn't, because you wouldn't use this model otherwise!
-    this.label = function() { return "Root"; };
+//    this.label = function() { return "Root"; };
 
     /**
      * This method returns the model as the root node of the
      * tree.
      */
 
-    this.root = function() { return _self; };
+    this.root = function() { return _root; };
 
     /**
      * This method ensures that the contents of the array will
@@ -214,7 +215,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     this.isLeaf = function(node) 
     {
-        if(node === _self)
+        if(_root.equals(node))
             return false;
 
         return true;
@@ -227,7 +228,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     this.childCount = function(node)
     {
-        if(node === _self)
+        if(_root.equals(node))
             return data.length;
 
         return 0;
@@ -245,7 +246,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     this.child = function(parent, index)
     {
-        if(parent === _self)
+        if(_root.equals(parent))
             return __node(index);
 
         return null;
@@ -262,7 +263,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     this.indexOfChild = function(parent, node)
     {
-        if(parent !== _self)
+        if(!_root.equals(parent))
             return -1;
 
         var rval = data.each(function(i) {
@@ -287,7 +288,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         if(path.length > 1)
             return null;
         else if(path.length === 0)
-            return this;
+            return _root;
 
         return __node(path[0]);
     };

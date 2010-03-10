@@ -50,7 +50,11 @@
 .ui-icon-none {
 	background-position: 0 200px;
 }
-    
+
+div.aui-grid
+{
+}
+
 .aui-grid-expander-open
 {
 	background-position: -64px -128px;

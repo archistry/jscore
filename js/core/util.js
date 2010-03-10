@@ -99,6 +99,9 @@ archistry.core.Util = {
         if(obj === undefined)
             return "undefined";
 
+        if(obj.toHashString)
+            return obj.toHashString();
+
         // BS stuff for IE
         if(!obj.keys)
             obj.keys = Object.prototype.keys;

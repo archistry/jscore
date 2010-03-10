@@ -168,7 +168,8 @@
         { key: "key", label: "Key", editor: editor },
         { key: "value", label: "Value", editor: editor }
       ]);
-      var grid = new archistry.ui.TreeGrid("testgrid", cols, buildModel(), {
+      var model = buildModel();
+      var grid = new archistry.ui.TreeGrid("testgrid", cols, model, {
         showRoot: false,
         showSelectorColumn: true,
         showHeader: true
@@ -196,30 +197,33 @@
 
       $("#delete-rows").click(function(event) {
         grid.selection().reverseEach(function() {
-//        grid.selection.each(function() {
-          var path = this;
-//          println("node: {0}; path: {1}", [ this.key, printPath(path) ]);
-          grid.deleteRow(path);
+          model.removeNode(this);
         });
       });
 
       $("#insert-row").click(function(event) {
-        if(grid.selection().length !== 1)
+        var selection = grid.selection();
+        if(selection.length > 1)
         {
           alert("Can't insert under more than one parent!");
           return;
         }
 
-        var node = null;
-        grid.selection().each(function() { node = this; });
-        var path = node.path();
+        if(selection.length !== 1)
+        {
+          return;
+        }
+
+        var path = selection[0];
         var count = Math.floor(Math.random() * 6);
-        println("Inserting {0} rows at path: [{1}]", [ count, path.join(", ")] );
-        var idx = path[path.length - 1];
+        Console.println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
+        var rows = [];
+        var index = model.childCount(model.nodeForPath(path));
         for(var j = 0; j < count; ++j)
         {
-          model.insertRow(path, -1, { key: "New key " + j, value: null });
+          rows.add({ key: "New key " + ++index, value: "value {0}".format(index) });
         }
+        model.insertNodes(path, -1, rows);
       });
 
       var expanded = false;

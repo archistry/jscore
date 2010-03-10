@@ -127,39 +127,39 @@ var jester = {
 
 jester.util.objectEquals = function(lhs, rhs)
 {
-    var l = rhs, r = rhs;
+    var l = lhs, r = rhs;
 
     if(l !== r)
     {
-        if(l.length !== undefined)
+        if(l && l.length !== undefined)
         {
             // maybe it's an array, so try that
-            return jester.util.ArrayEquals(lhs, rhs);
+            return jester.util.arrayEquals(lhs, rhs);
         }
 
         // it's an object or a literal
-        if(l.equals !== undefined && !l.equals(r))
+        if(l && l.equals !== undefined && l.equals(r))
         {
-            return false;
+            return true;
         }
-        else if(r.equals !== undefined && !r.equals(l))
+        else if(r && r.equals !== undefined && r.equals(l))
         {
-            return false;
+            return true;
         }
         else
         {
-            if(l.valueOf)
+            if(l && l.valueOf)
             {
                 l = l.valueOf();
             }
-            if(r.valueOf)
+            if(r && r.valueOf)
             {
                 r = r.valueOf();
             }
 
-            if(l !== r)
+            if(l === r)
             {
-                return false;
+                return true;
             }
         }
 

@@ -720,7 +720,7 @@ Array.prototype.reverseEach = function(callback)
 
 Array.prototype.equals = function(rhs)
 {
-    if(this.length != rhs.length)
+    if(!rhs || this.length != rhs.length)
         return false;
 
     for(var i = 0; i < this.length; ++i)
