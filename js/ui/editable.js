@@ -173,7 +173,7 @@ archistry.ui.Editable = function(arg, options)
 		var _newval = _self.editor.value();
 		if(_oldval != _newval)
 		{
-			appendAttr(_node, "class", archistry.ui.GridStyles.CELL_DIRTY);
+			appendAttr(_node, "class", archistry.ui.Styles.Grid.CELL_DIRTY);
 			_obj[_key] = _newval;
 			if(this.changeSet)
 			{

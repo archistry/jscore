@@ -23,11 +23,15 @@
 - js/data/tree.js
 - js/data/array_tree_model.js
 - js/data/object_tree_model.js
+- js/ui/styles.js
 - js/ui/selection.js
 - js/ui/renderer.js
 - js/ui/editable.js
 - js/ui/helpers.js
 - js/ui/tree_selection.js
+- js/ui/array_column_model.js
+- js/ui/default_key_nav_strategy.js
+- js/ui/table_layout.js
 - js/ui/grid.js
 - js/ui/property_editors.js
 - js/ui/console.js

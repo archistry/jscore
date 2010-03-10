@@ -41,604 +41,6 @@
 namespace("archistry.ui");
 
 /**
- * This object defines the default styles used for the grid
- * as it creates the various control objects.
- */
-
-archistry.ui.GridStyles = {
-    GRID                : "aui-grid " + archistry.ui.Styles.Widget.CONTROL,
-    CELL                : "aui-grid-cell",
-    CELL_SELECTED       : "aui-grid-cell-selected " + archistry.ui.Styles.State.HIGHLIGHT,
-    CELL_DIRTY          : "aui-grid-cell-dirty " + archistry.ui.Styles.State.DIRTY,
-    ROW                 : "aui-grid-row",
-    ROW_CONTENT         : "aui-grid-row-data",
-    ROW_HEADER          : "aui-grid-header " + archistry.ui.Styles.Widget.HEADER,
-    ROW_SELECTED        : "aui-grid-row-selected " + archistry.ui.Styles.State.HIGHLIGHT,
-    ROW_DIRTY           : "aui-grid-row-dirty",
-    ROW_SENTINAL        : "aui-grid-row-sentinal",
-    COLUMN_BASE         : "aui-grid-col-"
-};
-
-/**
- * @class
- *
- * This class provides a ColumnModel based on using an array
- * of JavaScript objects to define the properties of the
- * particular column.
- * <p>
- * In this case, the properties MUST include:
- * <ul>
- * <li>
- *   key: the key to use when requesting data for this
- *            column from the row model
- * </li>
- * </ul>
- * </p>
- * <p>
- * The object properties MAY include the following keys:
- * <ul>
- * <li>label: a label that should be used for this column</li>
- * <li>renderer: a reference to a JavaScript instance that
- * will be used to render the particular column
- * cell</li>
- * <li>headerRenderer: a reference to a JavaScript instance
- *    that will be used to render the particular column
- *    cell header.  It must implement the following
- *    interface:
- *    <pre>
- *      callback(grid, col, cell)
- *    </pre>
- * </li>
- * <li>editor: a reference to a JavaScript instance that will
- *            be used to edit the particular column cell if the
- *            grid is editable</li>
- * <li>value: a function that will be called with the row to
- *            retrieve the value to be displayed for the column
- *            </li>
- * </ul>
- */
-
-archistry.ui.ArrayColumnModel = function(cols, options)
-{
-    var _self = this;
-    this.mixin(options);
-
-    if(!this.defaultRenderer)
-    {
-        this.defaultRenderer = new archistry.ui.CellRenderer();
-    }
-
-    cols.each(function(i) {
-        if(!this.renderer) { this.renderer = _self.defaultRenderer; }
-        if(!this.label)
-        {
-            var s = this.key;
-            this.label = s.charAt(0).toUpperCase() + s.slice(1);
-        }
-        if(!this.style)
-        {
-            var s = archistry.ui.GridStyles.COLUMN_BASE + this.key + " ";
-            this.style = s;
-        }
-        Console.println("Column[{0}]: {1}", i, archistry.core.Util.toHashString(this));
-    });
-
-    /**
-     * This method is used to access a particular column by
-     * index.
-     *
-     * @param idx the index of the column to retrieve
-     *        (relative to the current rendering of the grid)
-     * @return the column instance.
-     */
-
-    this.col = function(idx) { return cols[idx]; };
-
-    this.length = function() { return cols.length; };
-
-    /**
-     * This method calls the callback with a reference to each
-     * column definition as the this pointer and the index of
-     * the column in the model.
-     *
-     * @param callback the callback function
-     */
-
-    this.each = function(callback)
-    {
-        for(var i = 0; i < cols.length; ++i)
-        {
-            callback.apply(cols[i], [ i ]);
-        }
-
-        return this;
-    };
-};
-
-/**
- * @class
- *
- * This class implements the default keyboard navigation
- * strategy for the grid control.  The idea is that various
- * strategies can be provided to mimic various types of
- * familar user navigation environments.
- */
-
-archistry.ui.DefaultKeyNavStrategy = function(grid)
-{
-    var parentWithTag = archistry.ui.Helpers.parentWithTag;
-    var eventTarget = archistry.ui.Helpers.eventTarget;
-    var kc = archistry.ui.Helpers.keyCode;
-    var _this = this;
-
-    /** @private */
-    function findNextCell(cell, forward, down)
-    {
-        var row = cell.parentNode;
-//        Console.println("row: " + row.innerHTML);
-
-        if(forward)
-        {
-            if(cell.nextSibling)
-                return cell.nextSibling;
-            else
-            {
-                var nextRow = row.nextSibling;
-                if(nextRow)
-                {
-                    return nextRow.firstChild;
-                }
-            }
-        }
-        else
-        {
-            if(cell.previousSibling)
-                return cell.previousSibling;
-            else
-            {
-                var prevRow = row.previousSibling;
-                if(prevRow)
-                {
-                    return prevRow.lastChild;
-                }
-            }
-        }
-        return null;
-    }
-
-    /** @private */
-    function onKeyDown(event)
-    {
-        if(!event)
-            event = window.event;
-
-        var down = null;
-        var keyCode = kc(event);
-//        Console.println("KeyCode: " + keyCode);
-        switch(keyCode)
-        {
-            case 9:        // TAB
-                break;
-//            case 13:    // ENTER
-//                down = !event.shiftKey;
-//                break;
-            default:
-                return true;
-        }
-
-        var thisCell = parentWithTag(eventTarget(event), "td");
-        var nextCell = findNextCell(thisCell, !event.shiftKey, down)
-//        if(nextCell && nextCell.outerHTML)
-//            Console.println("nextCell: " + nextCell.outerHTML);
-//        else
-//            Console.println("nextCell: " + nextCell.toXML());
-        if(nextCell)
-        {
-            var path = grid.pathForElement(nextCell);
-            while(!grid.isCellEditable(path))
-            {
-//                Console.println("<<<< Cell({0}) is not editable", [ path ]);
-                nextCell = findNextCell(nextCell, !event.shiftKey, down)
-                if(!nextCell)
-                    return true;
-
-                path = grid.pathForElement(nextCell);
-            }
-            if(grid.completeEditing())
-            {
-                grid.editCell(path);
-            }
-            event.cancelBubble = true;
-            if(event.stopPropagation)
-                event.stopPropagation();
-            if(event.preventDefault)
-                event.preventDefault();
-            
-            return false;
-        }
-
-        return true;
-    }
-
-    this.pushEvent = function(event)
-    {
-        return onKeyDown(event);
-    };
-
-    /**
-     * This is the public API that is used to notify the key
-     * navigation strategy that a new cell has been added to
-     * the grid.
-     *
-     * @param cell the cell element
-     */
-
-    this.onCellAdded = function(cell)
-    {
-        // We only register this handler if we're able to
-        // capture the events
-        if(cell.addEventListener)
-        {
-            cell.addEventListener("keydown", onKeyDown, true);
-        }
-//        else if(cell.attachEvent)
-//        {
-//            cell.attachEvent("onkeydown", onKeyDown);
-//        }
-//        else
-//        {
-//            cell.onkeydown = onKeyDown;
-//        }
-    };
-};
-
-/**
- * @class
- *
- * This class represents a row reference in the layout.  It is
- * used to encapsulate any particular accessors (and crazy API
- * calls) required for the specific layout implementation's
- * concept of rows and columns.
- *
- * @param layout a reference to the containing layout
- * @param row an opaque reference to the actual layout row
- *        element
- * @param cols an array of opaque references to the actual
- *        layout column elements
- */
-
-archistry.ui.GridLayoutRow = function(layout, row, cols)
-{
-    this.layout = layout;
-    this.row = row;
-    this.cell = cols;
-};
-
-/**
- * @class
- *
- * This class creates a grid using the default browser layout
- * behavior.  Rendering performance is based on the browser
- * and no additional optimizations are provided.
- *
- * @param id the element ID of the grid's containing div
- */
-
-archistry.ui.BrowserGridLayout = function(id)
-{
-
-    var GridLayoutRow = archistry.ui.GridLayoutRow;
-    var Style = archistry.ui.Styles;
-    var GridStyle = archistry.ui.GridStyles;
-    
-    var mapIndex = archistry.data.Indexer.mapIndex;
-    var e = archistry.ui.Helpers.e;
-    var ne = archistry.ui.Helpers.ne;
-    var appendAttr = archistry.ui.Helpers.appendAttr;
-
-    var _self = this;
-    var _tabid = "ag-table-" + id;
-    var _root = e(id);
-    var _table = null;
-
-    /**
-     * @private
-     *
-     * This method is used to calculate the row insertion
-     * point based on mapping the appropriate index
-     *
-     * @param index raw index
-     * @return the mapped index
-     */
-
-    function insertIndex(index)
-    {
-        return mapIndex(index, _table.rows.length + 1);
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to calculate the row reference
-     * point everywhere that IS NOT row insertion.
-     *
-     * @param index raw index
-     * @return the mapped index
-     */
-
-    function rowIndex(index)
-    {
-        return mapIndex(index, _table.rows.length);
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to retrieve the TABLE row reference
-     * as opposed t the GridLayoutRow reference that is
-     * expected from the GridLayout API.
-     *
-     * This method also does index translation for negative
-     * values.
-     *
-     * @param row the row to retreive
-     */
-
-    function row(row)
-    {
-        return _table.rows[rowIndex(row)];
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to return the specific TABLE cell,
-     * using full index translation.
-     *
-     * @param row the row index
-     * @param col the column index
-     */
-
-    function cell(row, col)
-    {
-        var row = row(row);
-        return row.cells[mapIndex(col, row.cells.length)];
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to return the number of columns in
-     * the table.
-     */
-
-    function cols()
-    {
-        if(_table && _table.rows.length > 0)
-            return _table.rows[0].cells.length;
-    
-        return 0;
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to create a single row with the
-     * specified number of columns and return a GridLayoutRow
-     * reference.
-     */
-
-    function insertRow(index, cols)
-    {
-        var ri = insertIndex(index);
-//        Console.println("rows: {0}; insert row index: {1}; ri: {2}", [
-//                _table.rows.length, index, ri ]);
-        var row = _table.insertRow(ri);
-        var rval = new GridLayoutRow(_self, row, []);
-
-        for(var i = 0; i < cols; ++i)
-        {
-            rval.cell.add(row.insertCell(i));
-        }
-
-        return rval;
-    }
-
-    //////// PUBLIC API ////////
-
-    /**
-     * This method is used to search for the actual row index
-     * of the particular row.
-     *
-     * @param row a layout row instance
-     * @return the row index
-     */
-
-    this.indexOfRow = function(row)
-    {
-        for(var i = 0; i < _table.rows.length; ++i)
-        {
-            if(_table.rows[i] === row)
-                return i;
-        }
-        return -1;
-    };
-
-    /**
-     * This method is used to return the content element for
-     * the cell at the specified row index and column index.
-     *
-     * @param row the row index
-     * @param col the column index
-     */
-
-    this.cell = function(row, col)
-    {
-        if(!_table)
-            return null;
-
-        return cell(row, col);
-    };
-    
-    /**
-     * This method returns a reference to the referenced row
-     *
-     * @param idx the row index to retrieve
-     */
-
-    this.row = function(idx)
-    {
-        var r = row(idx);
-        if(!r)
-            return null;
-
-        var ref = new GridLayoutRow(_self, r);
-        ref.cell = ref.row.cells;
-        return ref;
-    };
-
-    /**
-     * This method is used to insert a new colum into the
-     * table FOR ALL ROWS.  Rendering/update of the rows will
-     * be taken care of by the grid
-     *
-     * @param colIdx the insert index
-     */
-
-    this.insertColumn = function(colIdx)
-    {
-        var ci = mapIndex(colIdx, cols() + 1);
-        _table.rows.each(function() {
-            this.insertCell(ci);
-        });
-    };
-
-    /**
-     * This methd is used to insert the specified number of
-     * rows in the table starting from the given index.  If
-     * the index is negative, it represents a reverse index
-     * into the table, e.g. -1 is the last row in the table,
-     * -2 is the second-to-last row, etc.
-     *
-     * @param idx the insert point
-     * @param cols the number of columns to insert
-     * @param count the number of rows to insert
-     * @return an array containing references to the rows
-     *        created
-     */
-
-    this.insertRows = function(idx, cols, count)
-    {
-        var rval = [];
-        var si = insertIndex(idx);
-//        Console.println("inserting {0} rows at {1}; si: {2}", [ count, idx, si ]);
-        for(var i = 0; i < count; ++i)
-        {
-            rval.add(insertRow(si + i, cols));
-        }
-
-        return rval;
-    };
-
-    /**
-     * This method is used to delete the specified number of
-     * rows from the table.
-     *
-     * @param idx the deletion point
-     * @param count the number of rows to delete.
-     */
-
-    this.deleteRows = function(idx, count)
-    {
-        var di = rowIndex(idx);
-//        Console.println("Delete {0} rows starting with {1}", [ count, di ]); 
-        for(var i = count - 1; i >= 0; --i)
-        {
-            _table.deleteRow(di + i);
-        }
-    };
-
-    /**
-     * This method is used to delete the specific column from
-     * the table.
-     * <p>
-     * NOTE:  if you are only interested in showing/hiding
-     * columns, you should do this with CSS and not do it by
-     * adding/removing the whole column!
-     * </p>
-     *
-     * @param idx the row index
-     * @param col the column to delete
-     */
-
-    this.deleteColumn = function(idx, col)
-    {
-        var ci = mapIndex(col, cols());
-        for(var i = 0; i < _table.rows.length; ++i)
-        {
-            row(i).deleteCell(ci);
-        }
-    };
-
-    /**
-     * This method is used to ensure that the specified cell
-     * index is visible.
-     *
-     * @param row the row index
-     * @param col (optional) the column index
-     */
-
-    this.ensureVisible = function(row, col) {};
-
-    /**
-     * This method is used to "clear" the underlying layout by
-     * deleting all of the rows from the table.
-     */
-
-    this.reset = function()
-    {
-        for(var i = 0; i < _table.rows.length; ++i)
-        {
-            _table.deleteRow(0);
-        }
-    };
-
-    /**
-     * This method is used to reorder a particular column in
-     * the layout.
-     *
-     * @param oldIdx the original column index
-     * @param newIdx the new column index
-     */
-
-    this.reorderColumn = function(oldIdx, newIdx)
-    {
-        var oi = mapIndex(oldIdx, cols());
-        var ni = mapIndex(newIdx, cols());
-        for(var i = 0; i < _table.rows.length; ++i)
-        {
-            var row = row(i);
-            var targ = row.cells[ni];
-            var old = row.removeChild(row.cells[oi]);
-            row.insertBefore(old, targ);
-        }
-    };
-
-    /**
-     * Returns the number of rows in the layout
-     */
-
-    this.length = function() { return _table.rows.length; };
-
-    // initialize the object
-    appendAttr(_root, "class", GridStyle.GRID);
-    _table = ne("table");
-    appendAttr(_table, "class", Style.Widget.CONTENT);
-    _table.id = _tabid;
-    _root.appendChild(_table);
-};
-
-/**
  * @class
  *
  * This class implements a TreeGrid control that is similar in
@@ -689,7 +91,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 {
     var CellRenderer            = archistry.ui.CellRenderer;
     var CheckboxRenderer        = archistry.ui.CheckboxRenderer;
-    var GridStyle               = archistry.ui.GridStyles;
+    var GridStyle               = archistry.ui.Styles.Grid;
     var H                       = archistry.ui.Helpers;
     var Hash                    = archistry.core.Hash;
     var Renderer                = archistry.ui.Renderer;
@@ -989,6 +391,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var _loaded = false;
 
         /**
+         * @private
+         *
          * This method is used to retrieve the actual column
          * index relative to all the available columns.
          */
@@ -999,6 +403,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         }
 
         /**
+         * @private
+         *
          * This method is used to retrieve the actual child
          * index based on the current child nodes.
          */
@@ -1007,6 +413,16 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         {
             return Tree.mapIndex(idx, (isNew ? _children.length + 1 : _children.length));
         }
+
+        /**
+         * @private
+         *
+         * This method is used to update the dirty status and
+         * ensure that the appropriate style classes are
+         * added/removed.
+         *
+         * @param dirty the new dirty value for the row
+         */
 
         function updateDirty(dirty)
         {
@@ -2254,6 +1670,17 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         _signaler.signalEmit("cell-editing-cancelled", parent, node, path);
     }
 
+    /**
+     * @private
+     *
+     * This method is used to set up the overall event
+     * handling strategy for the actual layout.
+     */
+
+    function initLayoutEvents()
+    {
+    }
+
     //////// START PUBLIC API ////////
     
     /**
@@ -2269,10 +1696,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
      */
 
     this.signalDisconnect = _signaler.signalDisconnect;
-
-    
-// FIXME:  I'm not sure that this one should really be here
-// either since we're going for a model-driven view....
 
     /**
      * This method is used to trigger cell editing on the
@@ -2375,57 +1798,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                     size);
         }, 50);
     };
-
-// FIXME:  I don't really think we want to do this.  There's
-// too many special cases here, and the model should drive the
-// view, not the other way around...
-//
-//    /**
-//     * This method is used to programmatically insert a new
-//     * row at the specified path.
-//     * <p>
-//     * Normally, row insertions/deletions SOULD be performed
-//     * on the underly TreeRowModel and not directly on the
-//     * TreeGrid itself.  However, there are situations where
-//     * it is useful to create rows in the tree which are not
-//     * part of the model (e.g. to provide summary information,
-//     * etc.
-//     * </p>
-//     * <p>
-//     * Therefore, it is possible to insert arbitrary rows into
-//     * the grid with the following limitations:
-//     * <ul>
-//     * <li>They WILL NOT be managed by the underlying TreeRow
-//     * model.</li>
-//     * <li>They may only be leaf nodes</li>
-//     * </ul>
-//     *
-//     * @param path the insertion point.  The last path
-//     *        component represents the desired location of the
-//     *        node in relation to the parent.
-//     * @param index the child index of the new row
-//     * @param data the object to be displayed in the current
-//     *        row
-//     * @param options options to configure the node instance
-//     */
-//
-//    this.insertRow = function(path, index, data, options)
-//    {
-//        var node = nodeForPath(path);
-//        if(!node)
-//        {
-//            throw createError("No node found for path [ {0} ]!", [
-//                        path.join(", ") ]);
-//        }
-//
-//        var lrows = _self.layout.insertRows(node.rowIndex() + 1, _allCols.length, 1);
-//        var child = buildRow(node.insertChild(index, 
-//                                new UserRow(lrows[0], data, options)));
-//        node.expanded(true);
-//        renderRow(node);
-//        clearSelection();
-//        child.selected(true);
-//    };
 
     /**
      * This method returns true or false depending on whether
