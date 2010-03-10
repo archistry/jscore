@@ -78,10 +78,10 @@ archistry.data.ChangeOp = {
 
 archistry.data.ChangeMemento = function(object, change, key, oldVal)
 {
-	this.object = object;
-	this.change = change;
-	this.key = key;
-	this.oldVal = oldVal;
+	this.object = function() { return object; };
+	this.change = function() { return change; };
+	this.key = function() { return key; };
+	this.oldVal = function() { return oldVal; };
 };
 
 /**

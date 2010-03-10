@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>ArchistryJS Grid Test #1</title>
+  <title>ArchistryJS Grid Test #3</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <style type="text/css" media="screen">
 /*
@@ -129,17 +129,7 @@
       float: right;
     }
   </style>
-  <script type="text/javascript" src="../js/ext/Math.uuid.js"></script>
-  <script type="text/javascript" src="../js/ext/md5.js"></script>
-  <script type="text/javascript" src="../js/core/core.js"></script>
-  <script type="text/javascript" src="../js/core/observer.js"></script>
-  <script type="text/javascript" src="../js/core/version.js"></script>
-  <script type="text/javascript" src="../js/data/changeset.js"></script>
-  <script type="text/javascript" src="../js/ui/console.js"></script>
-  <script type="text/javascript" src="../js/ui/helpers.js"></script>
-  <script type="text/javascript" src="../js/ui/property_editors.js"></script>
-  <script type="text/javascript" src="../js/ui/grid.js"></script>
-  <script type="text/javascript" src="../js/ext/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
 <body>
@@ -169,7 +159,7 @@
       var ChangeSetRowModel = function(ch)
       {
         var _self = this;
-        this.mixin(archistry.core.SignalSource);
+        this.mixin(new archistry.core.SignalSource(this));
         this.addValidSignals([
           "row-inserted",
           "row-deleted",
@@ -199,8 +189,8 @@
         { key: "key", label: "Property Key" },
         { key: "oldVal", label: "Previous Value" }
       ]);
-      var chGrid = new archistry.ui.Grid("changes", chCols,
-                    new ChangeSetRowModel(changes), { showHeader: true });
+//      var chGrid = new archistry.ui.TreeGrid("changes", chCols,
+//                    new ChangeSetRowModel(changes), { showHeader: true });
 
       var editor = new archistry.ui.editor.TextFieldEditor();
       
@@ -216,19 +206,12 @@
         { key: "key", label: "Key", editor: editor },
         { key: "value", label: "Value", editor: editor }
       ]);
-      var data = new archistry.ui.ArrayRowModel(darray, {
-                    createRow: function()
-                    {
-                      var len = darray.length;
-                      darray.add({ key: "Key " + len, value: null });
-                      return darray[darray.length - 1];
-                    }
-      });
-      var grid = new archistry.ui.Grid("testgrid", cols, data, {
-                    changeSet: changes,
+      var data = new archistry.data.tree.ArrayTreeModel(darray);
+      var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
                     showHeader: true,
                     editable: true,
-                    clicksToEdit: 2,
+                    showExpanders: false,
+                    eventModeOptions: { clicksToEdit: 3, dt: 600 },
                     showSentinalRow: true
       });
     });

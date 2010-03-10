@@ -63,8 +63,8 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
     var _target = { element: null, clicks: 0, time: null };
 
     this.mixin(options);
-    if(!this.dt) this.dt = 300;
     if(!this.clicksToEdit) this.clicksToEdit = 2;
+    if(!this.dt) this.dt = 300;
 
     /**
      * @private
@@ -78,6 +78,13 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
     function onMouseUp(event)
     {
         if(!event) event = window.event;
+        
+        if((event.which && event.which == 3)
+                || (event.button && event.button == 2))
+        {
+            // right click, we don't care
+            return true;
+        }
 
         var target = eventTarget(event);
         if(_target.element != target)
@@ -96,17 +103,19 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
             Console.println("Timer reset");
             _target.time = now;
             _target.clicks = 1;
-            return true;
+            if(_target.clicks < _self.clicksToEdit)
+                return true;
         }
 
         var cell = parentWithTag(eventTarget(event), "td");
-        Console.println("clicks: {0}; now: {4}; _target.time: {5}; dt: {1}\n\ttarget: {2}\n\tcell: {3}", 
+        Console.println("clicksToEdit: {4}; clicks: {0}; this.dt: {5}; dt: {1}\n\ttarget: {2}\n\tcell: {3}", 
                 _target.clicks, now - _target.time,
-                target.toXML(), cell.toXML(), now, _target.time);
+                target.toXML(), cell.toXML(), _self.clicksToEdit, _self.dt);
 
-        if(!cell)
+        if(!cell || (cell 
+                && cell.parentNode.getAttribute("class").match(/header/)))
         {
-            Console.println("Unable to find cell!");
+            Console.println("Unable to find cell or attempt to edit header");
             return true;
         }
 
@@ -115,16 +124,18 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
             var path = grid.pathForElement(cell);
             Console.println("supposed to edit path: {0}", path);
             grid.editCell(path);
-        }
         
-        _target.clicks = 0;
-        event.cancelBubble = true;
-        if(event.stopPropagation)
-            event.stopPropagation();
-        if(event.preventDefault)
-            event.preventDefault();
-       
-        return false;
+            _target.clicks = 0;
+            event.cancelBubble = true;
+            if(event.stopPropagation)
+                event.stopPropagation();
+            if(event.preventDefault)
+                event.preventDefault();
+           
+            return false;
+        }
+
+        return true;
     }
 
     /**

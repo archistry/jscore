@@ -106,9 +106,13 @@ try
 
     Element.prototype.toXML = function(str)
     {
-        if(this.xml != null)
+        if(this.xml)
         {
             return this.xml;
+        }
+        else if(this.outerHTML)
+        {
+            return this.outerHTML;
         }
 
         // do it ourselves...

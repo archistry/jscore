@@ -150,6 +150,7 @@
         { key: "value", label: "Value", editor: editor }
       ]);
       var grid = new archistry.ui.TreeGrid("testgrid", cols, model, {
+        eventModeOptions: { clicksToEdit: 3 },
         showExpanders: false,
         showSelectorColumn: true,
         showHeader: true
