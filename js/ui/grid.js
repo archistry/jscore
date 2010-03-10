@@ -118,6 +118,11 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         this.nav = new archistry.ui.DefaultKeyNavStrategy(this);
     }
 
+    if(!this.eventMode)
+    {
+        this.eventMode = new archistry.ui.TableModeStrategy(this, this.layout, this.eventModeOptions);
+    }
+
     if(this.showRoot === undefined)
     {
         this.showRoot = false;

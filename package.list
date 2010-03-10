@@ -32,6 +32,7 @@
 - js/ui/array_column_model.js
 - js/ui/default_key_nav_strategy.js
 - js/ui/table_layout.js
+- js/ui/table_mode_strategy.js
 - js/ui/grid.js
 - js/ui/property_editors.js
 - js/ui/console.js
