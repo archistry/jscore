@@ -307,7 +307,7 @@ Jester.testing("ChangeSet functionality", {
                     fired = true;
                     result.check("memento index is correct", {
                         actual: index,
-                        expect: 1
+                        expect: 0
                     });
 
                     result.check("memento values are correct", {

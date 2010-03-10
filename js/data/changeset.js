@@ -333,7 +333,7 @@ archistry.data.CompactChangeSet = function(options)
 		{
 			_keys.remove(key);
             delete _changes[key];
-			this.fireObjectDeleted(keys.length, obj);
+			this.fireObjectDeleted(_keys.length, obj);
 		}
 		return obj;
 	};
