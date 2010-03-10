@@ -236,8 +236,8 @@ Jester.testing("TreeSelectionRange functionality", {
                     range.insert(i, new T(this));
                 });
                 var r2 = range.split(new T(1));
-                println(range.toString());
-                println(r2.toString());
+                Console.println(range.toString());
+                Console.println(r2.toString());
 
                 result.check("start path is correct", {
                     actual: range.start(),

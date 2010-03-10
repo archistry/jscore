@@ -86,7 +86,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 for(var i = 0; i < node.childCount(); ++i)
                 {
                     var child = node.child(i);
-                    println("selecting node: " + child.path().join(","));
+                    Console.println("selecting node: " + child.path().join(","));
                     child.selected(true);
                     selection.add(child);
                 }
@@ -271,7 +271,7 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: 1
                 });
              
-//                println("range length: " + range.length);
+//                Console.println("range length: " + range.length);
                 result.check("The range contains correct node count", {
                     actual: range[0].length(),
                     expect: 3

@@ -97,6 +97,11 @@ archistry.data.ChangeMemento = function(object, change, key, value)
     {
         return [ object, change, key, value ];
     };
+
+    this.toString = function()
+    {
+        return "[ChangeMemento object: {0}, change: {1}, key: {2}, value: {3} ]".format(object, change, key, value);
+    };
 };
 
 /**
@@ -264,7 +269,7 @@ archistry.data.CompactChangeSet = function(options)
 	{
 		this.getKey = function(memento)
 		{
-			return memento.object;
+			return memento.object();
 		};
 	}
 
@@ -296,6 +301,7 @@ archistry.data.CompactChangeSet = function(options)
 	this.add = function(memento)
 	{
 		var key = this.getKey(memento);
+//        println("Generated key '{0}' for object '{1}'", key, (memento ? memento : "(null)"));
 		var old = _changes[key];
 		_changes[key] = memento;
 		if(!old)
@@ -320,11 +326,13 @@ archistry.data.CompactChangeSet = function(options)
 
 	this.remove = function(memento)
 	{
-		var key = getKey(memento);
+		var key = this.getKey(memento);
 		var obj = _changes[key];
-		if(old)
+//        println("retrieved '{0}' for key '{1}'", (obj ? obj : "(null)"), key);
+		if(obj)
 		{
 			_keys.remove(key);
+            delete _changes[key];
 			this.fireObjectDeleted(keys.length, obj);
 		}
 		return obj;
@@ -351,4 +359,5 @@ archistry.data.CompactChangeSet = function(options)
 	 */
 	
     this.length = function() { return _keys.length; };
+    this.size = this.length;
 };

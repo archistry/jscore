@@ -40,16 +40,14 @@
 
 Jester.console = "";
 
-if(this.println === undefined)
+// redefine println so that we can capture test output
+Console.println = function(fmt)
 {
-    function println(fmt)
+    var args = [];
+    for(var i = 1; i < arguments.length; ++i)
     {
-        var args = [];
-        for(var i = 1; i < arguments.length; ++i)
-        {
-            args[i-1] = arguments[i];
-        }
-//        alert("println: fmt: '{3}'; arguments.length: {0}; args.length: {1}; args: {2}".format(arguments.length, args.length, args.inspect(), fmt));
-        Jester.console += "{0}<br />".format(fmt.format(args));
+        args[i-1] = arguments[i];
     }
-}
+//        alert("println: fmt: '{3}'; arguments.length: {0}; args.length: {1}; args: {2}".format(arguments.length, args.length, args.inspect(), fmt));
+    Jester.console += "{0}<br />".format(fmt.format(args));
+};

@@ -179,6 +179,237 @@ Jester.testing("ChangeSet functionality", {
                     expect: true
                 });
 			}
+		},
+		{
+			what: "CompactChangeSet folds entries correctly with defaults",
+			how: function(result)
+			{
+                var changes = new CompactChangeSet();
+
+                result.check("size is correctly initialized", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                changes.add(new ChangeMemento(this,
+                        ChangeOp.PROPERTY_CHANGED, "xxx", "xxx"));
+
+                var change = new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
+                changes.add(change);
+                
+                result.check("size represents folded changes", {
+                    actual: changes.size(),
+                    expect: 1
+                });
+                
+                result.check("last change returned correctly", {
+                    actual: changes.get(0),
+                    expect: change
+                });
+			}
+		},
+		{
+			what: "CompactChangeSet folds entries correctly with user function",
+			how: function(result)
+			{
+                var changes = new CompactChangeSet({
+                    getKey: function(memento) {
+                        return [ memento.object().object_id(), memento.key() ].join(":");
+                    }
+                });
+
+                result.check("size is correctly initialized", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                changes.add(new ChangeMemento(this,
+                        ChangeOp.PROPERTY_CHANGED, "xxx", "xxx"));
+                
+                changes.add(new ChangeMemento(this,
+                        ChangeOp.PROPERTY_CHANGED, "sam", "xxx"));
+
+
+                var change = new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
+                changes.add(change);
+                
+                result.check("size represents folded changes", {
+                    actual: changes.size(),
+                    expect: 2
+                });
+                
+                result.check("last change returned correctly", {
+                    actual: changes.get(1),
+                    expect: change
+                });
+			}
+		},
+        {
+			what: "CompactChangeSet fires object-inserted on insert",
+			how: function(result)
+			{
+                var changes = new CompactChangeSet();
+                var fired = false;
+                changes.immediate = true;
+                changes.signalConnect("object-inserted", function(index, event) {
+                    fired = true;
+                    result.check("memento index is correct", {
+                        actual: index,
+                        expect: 0
+                    });
+
+                    result.check("memento values are correct", {
+                        actual:  event.valueOf(),
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                    
+                    result.check("memento accessor values are correct", {
+                        actual:  [ event.object(), event.change(), event.key(), event.value() ],
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                });
+
+                result.check("size is correctly initialized", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                changes.add(new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "spade"));
+
+                result.check("size is correctly incremented", {
+                    actual: changes.size(),
+                    expect: 1
+                });
+                
+                var m = changes.get(0);
+                result.check("memento retrieved correctly", {
+                    actual:  [ m.object(), m.change(), m.key(), m.value() ],
+                    expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                });
+
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+			}
+		},
+		{
+			what: "CompactChangeSet fires object-deleted on remove",
+			how: function(result)
+			{
+                var changes = new CompactChangeSet();
+                var fired = false;
+                changes.immediate = true;
+                changes.signalConnect("object-deleted", function(index, event) {
+                    fired = true;
+                    result.check("memento index is correct", {
+                        actual: index,
+                        expect: 1
+                    });
+
+                    result.check("memento values are correct", {
+                        actual:  event.valueOf(),
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                    
+                    result.check("memento accessor values are correct", {
+                        actual:  [ event.object(), event.change(), event.key(), event.value() ],
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                });
+
+                result.check("size is correctly initialized", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                changes.add(new ChangeMemento(this,
+                        ChangeOp.PROPERTY_CHANGED, "xxx", "xxx"));
+
+                var change = new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
+                changes.add(change);
+                
+                result.check("size is correctly incremented", {
+                    actual: changes.size(),
+                    expect: 1
+                });
+                
+                var val = changes.remove(change);
+                
+                result.check("value returned correctly", {
+                    actual: change,
+                    expect: val
+                });
+                
+                result.check("size is correctly decremented", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+			}
+		},
+		{
+			what: "CompactChangeSet fires object-changed on add same key",
+			how: function(result)
+			{
+                var changes = new CompactChangeSet();
+                var fired = false;
+                changes.immediate = true;
+                changes.signalConnect("object-changed", function(index, event) {
+                    fired = true;
+                    result.check("memento index is correct", {
+                        actual: index,
+                        expect: 0
+                    });
+
+                    result.check("memento values are correct", {
+                        actual:  event.valueOf(),
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                    
+                    result.check("memento accessor values are correct", {
+                        actual:  [ event.object(), event.change(), event.key(), event.value() ],
+                        expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "spade" ]
+                    });
+                });
+
+                result.check("size is correctly initialized", {
+                    actual: changes.size(),
+                    expect: 0
+                });
+                
+                changes.add(new ChangeMemento(this,
+                        ChangeOp.PROPERTY_CHANGED, "sam", "xxx"));
+
+                var change = new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
+                changes.add(change);
+                
+                result.check("size is correctly incremented", {
+                    actual: changes.size(),
+                    expect: 1
+                });
+                
+                var val = changes.get(0);
+                
+                result.check("value returned correctly", {
+                    actual: change,
+                    expect: val
+                });
+                
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+			}
 		}
 	]
 });
