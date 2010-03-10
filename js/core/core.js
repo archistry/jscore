@@ -720,7 +720,7 @@ Array.prototype.reverseEach = function(callback)
 
 Array.prototype.equals = function(rhs)
 {
-    if(!rhs || this.length != rhs.length)
+    if(!rhs || this.length !== rhs.length)
         return false;
 
     for(var i = 0; i < this.length; ++i)
@@ -729,17 +729,9 @@ Array.prototype.equals = function(rhs)
         var r = rhs[i];
         if(!l && r)
             return false;
-
-        if(l.equals && r.equals)
-        {
-            if(!(l.equals(r)))
-                return false;
-        }
-        else
-        {
-            if(l != r)
-                return false;
-        }
+        
+        if(!l.equals(r))
+            return false;
     }
     return true;
 };
@@ -792,7 +784,7 @@ Array.prototype.compare = function(rhs)
             return 1;
     });
 
-    if(rval === undefined)
+    if(rval === this)
         return 0;
 
     return rval;

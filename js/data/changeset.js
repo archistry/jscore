@@ -72,16 +72,31 @@ archistry.data.ChangeOp = {
  * @param change the nature of the change as a ChangeOp
  *			property value
  * @param key the property key that was changed (optional)
- * @param oldVal the original property key value, if
+ * @param value the original property key value, if
  *			appropriate for the nature of the change (optional)
  */
 
-archistry.data.ChangeMemento = function(object, change, key, oldVal)
+archistry.data.ChangeMemento = function(object, change, key, value)
 {
 	this.object = function() { return object; };
 	this.change = function() { return change; };
 	this.key = function() { return key; };
-	this.oldVal = function() { return oldVal; };
+	this.value = function() { return value; };
+
+    this.equals = function(rhs)
+    {
+        return this.valueOf().equals(rhs.valueOf());
+    };
+
+    this.compare = function(rhs)
+    {
+        return this.valueOf().compare(rhs.valueOf());
+    };
+
+    this.valueOf = function()
+    {
+        return [ object, change, key, value ];
+    };
 };
 
 /**
@@ -111,9 +126,9 @@ archistry.data.ChangeMemento = function(object, change, key, oldVal)
  * @param sender the sender
  */
 
-archistry.data.ObjectChangeSignalSource = function()
+archistry.data.ObjectChangeSignalSource = function(sender)
 {
-	this.mixin(new archistry.core.SignalSource(this));
+	this.mixin(new archistry.core.SignalSource(sender));
 	this.addValidSignals([
 		"object-inserted",
 		"object-deleted",
@@ -173,7 +188,7 @@ archistry.data.ObjectChangeSignalSource = function()
 
 archistry.data.ChangeSet = function(options)
 {
-	this.mixin(archistry.data.ObjectChangeSignalSource)
+	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
 	this.mixin(options);
 
 	var _changes = [];
@@ -226,6 +241,7 @@ archistry.data.ChangeSet = function(options)
 
 	/** returns the number of items in the changeset */
     this.length = function() { return _changes.length; };
+    this.size = this.length;
 };
 
 /**
@@ -242,7 +258,7 @@ archistry.data.ChangeSet = function(options)
 
 archistry.data.CompactChangeSet = function(options)
 {
-	this.mixin(archistry.data.ObjectChangeSignalSource)
+	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
 	this.mixin(options);
 	if(!this.getKey)
 	{

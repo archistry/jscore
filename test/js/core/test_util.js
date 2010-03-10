@@ -579,6 +579,102 @@ Jester.testing("Core library functionality", {
 			}
 		},
 		{
+			what: "ensure Array#equals works correctly",
+			how: function(result)
+			{
+				var arr0 = [ 1, 2, 3, "four" ];
+
+				result.check("Array#equals works for basic types.", {
+					actual: arr0.equals([ 1, 2, 3, "four" ]),
+					expect: true
+				});
+
+                function A(x)
+                {
+                    this.valueOf = function() { return x; };
+                }
+
+                var arr0 = [ 1, "two", new A(3), new A("four") ];
+                result.check("Array#equals supports element #valueOf for Object#equals", {
+                    actual: arr0.equals([ 1, "two", new A(3), new A("four") ]),
+                    expect: true
+                });
+
+                function B(x)
+                {
+                    this.x = x;
+                    this.equals = function(rhs)
+                    {
+                        return this.x === rhs.x;
+                    };
+                }
+
+                var arr0 = [ new B(2) ];
+                result.check("Array#equals supports element #equals", {
+                    actual: arr0.equals([ new B(2) ]),
+                    expect: true
+                });
+			}
+		},
+		{
+			what: "ensure Array#compare works correctly",
+			how: function(result)
+			{
+				var arr0 = [ 1, 2, 3, "four" ];
+
+				result.check("Array#compare returns 0 for equal arrays of primitives.", {
+					actual: arr0.compare([ 1, 2, 3, "four" ]),
+					expect: 0
+				});
+
+                function A(x)
+                {
+                    this.valueOf = function() { return x; };
+                }
+
+                var arr0 = [ 1, "two", new A(3), new A("four") ];
+                result.check("Array#compare supports element #valueOf for Object#compare", {
+                    actual: arr0.compare([ 1, "two", new A(3), new A("four") ]),
+                    expect: 0
+                });
+
+                result.check("Array#compare will return -1 for shorter arrays", {
+                    actual: [].compare([1]),
+                    expect: -1
+                });
+
+                result.check("Array#compare will return 1 for longer arrays", {
+                    actual: [ 1 ].compare([]),
+                    expect: 1
+                });
+
+                result.check("Array#compare will order by value order", {
+                    actual: [ 1 ].compare([ 2 ]),
+                    expect: -1
+                });
+
+                result.check("Array#compare reversed value order is correct", {
+                    actual: [ 2 ].compare([1]),
+                    expect: 1
+                });
+
+                function B(x)
+                {
+                    this.x = x;
+                    this.compare = function(rhs)
+                    {
+                        return this.x.compare(rhs.x);
+                    };
+                }
+
+                var arr0 = [ new B(2) ];
+                result.check("Array#compare supports element #compare", {
+                    actual: arr0.compare([ new B(2) ]),
+                    expect: 0
+                });
+			}
+		},
+		{
 			what: "ensure String trim methods work correctly",
 			how: function(result)
 			{
