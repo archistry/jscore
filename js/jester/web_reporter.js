@@ -72,7 +72,8 @@ jester.reporter.WebReporter = function(elt)
         // NOTE:  IE re-parses on innerHTML, so it will lose
         // the newlines in the output unless you regenerate
         // the whole PRE tag.  FFS!
-        _output.innerHTML = String.format("<pre>{0}</pre>", _yaml.toString());
+        _output.innerHTML = String.format("<pre>{0}</pre>", 
+                _yaml.toString().replace(/failure/g, "<span style='background: red; color: white; font-style: bold;'>failure</span>"));
         _failures.innerHTML = "Failures: {0}".format(_yaml.failures());
         _tests.innerHTML = "Tests: {0} ({1})".format(_yaml.testCount(), _yaml.checkCount());
     }
