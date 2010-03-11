@@ -212,8 +212,13 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         if(!obj)
             return;
 
-        _self.fireObjectPropertyChanged(obj, path.key(), newval, oldval);
-        _self.nodeChanged(pa);
+        Console.println("path: [{0}]; oldval: '{1}'; newval: '{2}'", path, oldval, newval);
+        if((oldval && !oldval.equals(newval))
+                || (newval && !newval.equals(oldval)))
+        {
+            _self.fireObjectPropertyChanged(obj, path.key(), newval, oldval);
+            _self.rowChanged(pa[0]);
+        }
     }
 
     // define the column interface since we're going to be the
@@ -405,6 +410,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     this.insertRow = function(index, node)
     {
         var idx = Indexer.mapIndex(index, data.length + 1);
+        Console.println("ArrayTreeModel#insertRow({0} [{2}], {1})", index, node, idx);
         data.splice(idx, 0, node);
 
         var obj = __addNode(idx, node);

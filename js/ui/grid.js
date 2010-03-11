@@ -1424,14 +1424,14 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     function rowIndex(node)
     {
         var ri = node.rowIndex();
-        if(ri === -1 && !_header)
+        if(ri === -1) // && !_header)
         {
             ri = 0;
         }
-        else if(ri === -1 && _header)
-        {
-            ri = 1;
-        }
+//        else if(ri === -1 && _header)
+//        {
+//            ri = 1;
+//        }
 
         return ri;
     }
@@ -1552,10 +1552,12 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 var child = parent.child(index - 1);
                 if(child)
                 {
+                    Console.println("Child present at index: {0}", rowIndex(child));
                     ri = rowIndex(child) + child.rowCount();
                 }
                 else
                 {
+                    Console.println("Child not present; parent index: {0}", rowIndex(parent));
                     ri = rowIndex(parent) + 1;
                 }
                 Console.println("ri: {0}, ref[0].index: {1}", ri, index);
@@ -1611,12 +1613,20 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     function modelNodesChanged(eventlist)
     {
         processEventList(this, eventlist, function(node) {
-            var obj = _ignoreList.remove(this.path())
-            if(!obj)
-            {
-                // assume the node is dirty if we're editable
-                renderRow(node, _self.editable);
-            }
+            this.refs().each(function(i) {
+                var child = node.child(this.index());
+                var p = null;
+                if(child && !(p = _ignoreList.remove(child.path())))
+                {
+                    Console.println("Rendering node for [{0}]", child.path().join(", "));
+                    // assume the node is dirty if we're editable
+                    renderRow(child, _self.editable);
+                }
+                else if(p)
+                {
+                    Console.println("Skipping rendering of my own change");
+                }
+            });
         });
     }
 
@@ -1659,10 +1669,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         if(!model.signalConnect)
             return;
 
-        model.signalDisconnect("tree-nodes-inserted");
-        model.signalDisconnect("tree-nodes-removed");
-        model.signalDisconnect("tree-nodes-changed");
-        model.signalDisconnect("tree-structure-changed");
+        model.signalDisconnect("tree-nodes-inserted", modelNodesInserted);
+        model.signalDisconnect("tree-nodes-removed", modelNodesRemoved);
+        model.signalDisconnect("tree-nodes-changed", modelNodesChanged);
+        model.signalDisconnect("tree-structure-changed", modelTreeChanged);
     }
 
     //////// INTERNAL EVENT TRIGGERS ////////

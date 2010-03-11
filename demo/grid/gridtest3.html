@@ -5,20 +5,14 @@
   <title>ArchistryJS Grid Test #3</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <style type="text/css" media="screen">
-/*
-    .aui-grid 
+    #console
     {
-      font-family: sans-serif;
-      border: 1px solid red;
-      padding: 2px;
+      margin-top: 1em;
+      border: 1px solid #002654;
+      padding: 5px;
+      clear: both;
     }
 
-    .aui-grid > table
-    {
-      border: 1px solid green;
-      margin: 3px;
-    }
-*/
     .aui-grid td
     {
       vertical-align: top;
@@ -26,16 +20,14 @@
 
     .aui-grid td input
     {
-      border: 1px solid #e0aa0f;
       padding: 0;
       margin: 0;
+      border: 0;
     }
 
     .aui-grid > table th
     {
-/*      color: white; */
       text-align: left;
-/*      background: green; */
       border: 1px solid #aed0ea;
     }
 
@@ -44,20 +36,8 @@
       padding: 3px;
     }
 
-/*    .aui-grid > table th.aui-grid-col-key
-    {
-      background: blue;
-      color: white;
-    }
-
-    .aui-grid > table th.aui-grid-col-value
-    {
-      background: yellow;
-    }
-*/
     td.aui-grid-cell
     {
-/*      border: 1px solid #002654; */
       border: 1px solid rgb(221,221,221);
     }
 
@@ -74,7 +54,6 @@
 
     td.aui-grid-col-value
     {
-/*      width: 250px; */
     }
 
     .aui-grid tr.aui-grid-header:hover
@@ -126,6 +105,12 @@
 
     #changes
     {
+      margin-top: 1em;
+ /*     float: right; */
+    }
+
+    #grid2
+    {
       float: right;
     }
   </style>
@@ -149,70 +134,82 @@
   by the first as it is edited.
   </p>
 
-  <div id="changes"></div>
+  <div id="grid2"></div>
   <div id="testgrid"></div>
+  <div id="changes"></div>
+  <div id="console"></div>
 
   <script type="text/javascript">
     $(function()
     {
-      // configure the ChangeSet
-      var ChangeSetRowModel = function(ch)
-      {
-        var _self = this;
-        this.mixin(new archistry.core.SignalSource(this));
-        this.addValidSignals([
-          "row-inserted",
-          "row-deleted",
-          "row-changed"
-        ]);
-        ch.signalConnect("object-inserted", function(sender, idx, data) {
-          _self.signalEmit("row-inserted", _self, idx, data);
-        });
-        ch.signalConnect("object-deleted", function(sender, idx, data) {
-          _self.signalEmit("row-deleted", _self, idx, data);
-        });
-        ch.signalConnect("object-changed", function(sender, idx, data) {
-          _self.signalEmit("row-changed", _self, idx, data);
-        });
-        this.row = ch.get;
-        this.ensureRange = function(startIdx, count)
-        {
-          return ((startIdx + count) < ch.length ? count : ch.length - startIdx);
-        };
+      archistry.ui.Console.attach("console");
+      
+      var ArrayColumnModel  = archistry.ui.ArrayColumnModel;
+      var ArrayTreeModel    = archistry.data.tree.ArrayTreeModel;
+      var ChangeSet         = archistry.data.ChangeSet;
+      var TextFieldEditor   = archistry.ui.editor.TextFieldEditor;
+      var TreeGrid          = archistry.ui.TreeGrid;
 
-        this.dump = function() { return ""; /* no-op */ };
-      };
-      var changes = new archistry.data.ChangeSet();
-      var chCols = new archistry.ui.ArrayColumnModel([
-        { key: "object", label: "Object" },
+      // configure the ChangeSet Display
+      var changeModel = new ArrayTreeModel([], { useAdapter: false });
+      var chCols = new ArrayColumnModel([
+        { key: "object", label: "Object", value: function(node) { return node.getProperty("object").object_id(); } },
         { key: "change", label: "Change Type" },
         { key: "key", label: "Property Key" },
-        { key: "oldVal", label: "Previous Value" }
+        { key: "oldValue", label: "Previous Value" }
       ]);
-//      var chGrid = new archistry.ui.TreeGrid("changes", chCols,
-//                    new ChangeSetRowModel(changes), { showHeader: true });
-
-      var editor = new archistry.ui.editor.TextFieldEditor();
+      var changes = new ChangeSet();
+      changes.signalConnect("object-added", function(memento) {
+        memento = memento.object();
+        memento.getProperty = function(key) {
+          switch(key)
+          {
+            case "change":
+              return this.change();
+            case "key":
+              return this.key();
+            case "oldValue":
+              return this.oldValue();
+            case "value":
+              return this.value();
+            default:  
+              return "Unsupported key '{0}'".format(key);
+          }
+        };
+        changeModel.insertRow(-1, memento);
+      });
+      var chGrid = new TreeGrid("changes", chCols, changeModel, {
+                    showHeader: true,
+                    editable: false,
+                    showExpanders: false
+      });
       
+      var editor = new TextFieldEditor();
       var darray = [];
-//      for(var i = 0; i < 20; ++i)
-      for(var i = 0; i < 2; ++i)
+      for(var i = 0; i < 5; ++i)
       {
-        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
-//        darray.add({ key: "Key " + i, value: "Value " + i });
+        darray.add({ key: "Key " + i, value: "Value " + i });
       }
 
-      var cols = new archistry.ui.ArrayColumnModel([
+      var cols = new ArrayColumnModel([
         { key: "key", label: "Key", editor: editor },
         { key: "value", label: "Value", editor: editor }
       ]);
-      var data = new archistry.data.tree.ArrayTreeModel(darray);
-      var grid = new archistry.ui.TreeGrid("testgrid", cols, data, {
+
+      var data = new ArrayTreeModel(darray);
+      changes.attach(data);
+
+      var grid = new TreeGrid("testgrid", cols, data, {
                     showHeader: true,
                     editable: true,
                     showExpanders: false,
-                    eventModeOptions: { clicksToEdit: 3, dt: 600 },
                     showSentinalRow: true
+      });
+
+      var grid2 = new TreeGrid("grid2", cols, data, {
+                    showHeader: true,
+                    editable: false,
+                    showExpanders: false
       });
     });
   </script>
