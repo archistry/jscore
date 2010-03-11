@@ -97,6 +97,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     var TreeNodeRef = archistry.data.tree.TreeNodeRef;
     var Util = archistry.core.Util;
 
+	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
    
@@ -192,6 +193,29 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         return _nodes.removeKey(index);
     }
 
+    /**
+     * @private
+     *
+     * Called whenever cell editing is completed in the grid.
+     *
+     * @param parent the parent TreeRow instance
+     * @param row the TreeRow instance being edited
+     * @param path the TreeCellPath of the cell
+     * @param oldval the original cell value
+     * @param newval the new cell value
+     */
+
+    function onCellEditingCompleted(parent, row, path, oldval, newval)
+    {   
+        var pa = path.path();
+        var obj = _self.nodeForPath(pa);
+        if(!obj)
+            return;
+
+        _self.fireObjectPropertyChanged(obj, path.key(), newval, oldval);
+        _self.nodeChanged(pa);
+    }
+
     // define the column interface since we're going to be the
     // root of the tree model.
 //    this.key = function() { return "label"; };
@@ -200,6 +224,31 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     // properties if the root should be shown.  Normally it
     // isn't, because you wouldn't use this model otherwise!
 //    this.label = function() { return "Root"; };
+
+    /**
+     * This method is called when the model is attached to a
+     * TreeGrid control so that the appropriate listeners can
+     * be registered.
+     *
+     * @param grid the grid reference
+     */
+
+    this.attach = function(grid)
+    {
+        grid.signalConnect("cell-editing-completed", onCellEditingCompleted);
+    };
+
+    /**
+     * This method is called when the model is detached from
+     * a TreeGrid control.
+     *
+     * @param grid the grid reference
+     */
+
+    this.detach = function(grid)
+    {
+        grid.signalDisconnect("cell-editing-completed", onCellEditingCompleted);
+    };
 
     /**
      * This method returns the model as the root node of the
@@ -358,9 +407,11 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         var idx = Indexer.mapIndex(index, data.length + 1);
         data.splice(idx, 0, node);
 
-        this.fireNodesInserted([
+        var obj = __addNode(idx, node);
+        _self.fireObjectAdded(obj);
+        _self.fireNodesInserted([
             new TreeChange([], _self, [ 
-                    new TreeNodeRef(__addNode(idx, node), idx) ])
+                    new TreeNodeRef(obj, idx) ])
         ]);
     };
 
@@ -381,15 +432,18 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         data.splice.apply(data, args);
 
         var refs = [];
+        var obj = null;
         nodes.each(function(i) {
             // NOTE:  the 'this' reference IS NOT used here on
             // purpose because it converts primitive values
             // into objects (boxes them), so it makes simple
             // checks fail with number vs. object for ===
-            refs.add( new TreeNodeRef(__addNode(idx + i, nodes[i]), idx + i) );
+            obj = __addNode(idx + i, nodes[i]);
+            _self.fireObjectAdded(obj);
+            refs.add( new TreeNodeRef(obj, idx + i) );
         });
 
-        this.fireNodesInserted([ new TreeChange([], _self, refs) ]);
+        _self.fireNodesInserted([ new TreeChange([], _self, refs) ]);
     };
 
     /**
@@ -413,7 +467,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             {
                 obj = __adapter(node);
             }
-            this.fireNodesRemoved([ 
+            _self.fireObjectRemoved(obj);
+            _self.fireNodesRemoved([ 
                 new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
             ]);
             return node;
@@ -454,10 +509,11 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
                 {
                     obj = __adapter(nodes[i]);
                 }
+                _self.fireObjectRemoved(obj);
                 refs.add( new TreeNodeRef(obj, idx + i) );
             });
 
-            this.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
+            _self.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
         }
 
         return nodes;
@@ -473,8 +529,10 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     this.rowChanged = function(index)
     {
         var idx = Indexer.mapIndex(index, data.length);
-        this.fireNodesChanged([ 
-            new TreeChange([], _self, [ new TreeNodeRef(__node(idx), idx) ])
+        var obj = __node(idx);
+        _self.fireObjectChanged(obj);
+        _self.fireNodesChanged([ 
+            new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
         ]);
     };
 };

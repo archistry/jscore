@@ -48,6 +48,5 @@ Console.println = function(fmt)
     {
         args[i-1] = arguments[i];
     }
-//        alert("println: fmt: '{3}'; arguments.length: {0}; args.length: {1}; args: {2}".format(arguments.length, args.length, args.inspect(), fmt));
     Jester.console += "{0}<br />".format(fmt.format(args));
 };

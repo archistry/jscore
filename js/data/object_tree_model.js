@@ -64,6 +64,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     var mapIndex        = archistry.data.Indexer.mapIndex;
     var toHashString    = archistry.core.Util.toHashString;
 
+	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
    
@@ -224,6 +225,54 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
         return [];
     }
+    
+    /**
+     * @private
+     *
+     * Called whenever cell editing is completed in the grid.
+     *
+     * @param parent the parent TreeRow instance
+     * @param row the TreeRow instance being edited
+     * @param path the TreeCellPath of the cell
+     * @param oldval the original cell value
+     * @param newval the new cell value
+     */
+
+    function onCellEditingCompleted(parent, row, path, oldval, newval)
+    {
+        var pa = path.path();
+        var obj = _self.nodeForPath(pa);
+        if(!obj)
+            return;
+
+        _self.fireObjectPropertyChanged(obj, path.key(), newval, oldval);
+        _self.nodeChanged(pa);
+    }
+
+    /**
+     * This method is called when the model is attached to a
+     * TreeGrid control so that the appropriate listeners can
+     * be registered.
+     *
+     * @param grid the grid reference
+     */
+
+    this.attach = function(grid)
+    {
+        grid.signalConnect("cell-editing-completed", onCellEditingCompleted);
+    };
+
+    /**
+     * This method is called when the model is detached from
+     * a TreeGrid control.
+     *
+     * @param grid the grid reference
+     */
+
+    this.detach = function(grid)
+    {
+        grid.signalDisconnect("cell-editing-completed", onCellEditingCompleted);
+    };
 
     /**
      * The root of the tree will be taken as the object and

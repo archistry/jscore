@@ -473,6 +473,9 @@ Object.prototype.compare = function(rhs)
     var tval = this;
     var rval = rhs;
 
+    if(rhs === undefined)
+        return 0;
+
     if(this.valueOf) tval = this.valueOf();
     if(rhs.valueOf) rval = rhs.valueOf();
 
@@ -727,11 +730,13 @@ Array.prototype.equals = function(rhs)
     {
         var l = this[i];
         var r = rhs[i];
-        if(!l && r)
-            return false;
-        
-        if(!l.equals(r))
-            return false;
+        if(l !== r)
+        {
+            if(l && !l.equals(r))
+                return false;
+            else if(!l && r && !r.equals(l))
+                return false;
+        }
     }
     return true;
 };
@@ -762,26 +767,34 @@ Array.prototype.compare = function(rhs)
     var rval = this.each(function(i) {
         var l = this;
         var r = rhs[i];
-        var rc = 0;
-        if(l.compare)
+        if(r === undefined)
         {
-            rc = l.compare(r);
-            if(rc !== 0)
-                return rc;
+            if(this[i] !== undefined)
+                return false;
         }
-        else if(r.compare)
+        else
         {
-            rc = r.compare(l);
-            if(rc !== 0)
-                return 1 - rc;
-        }
-        if(l.valueOf) l = l.valueOf();
-        if(r.valueOf) r = r.valueOf();
+            var rc = 0;
+            if(l.compare)
+            {
+                rc = l.compare(r);
+                if(rc !== 0)
+                    return rc;
+            }
+            else if(r.compare)
+            {
+                rc = r.compare(l);
+                if(rc !== 0)
+                    return 1 - rc;
+            }
+            if(l.valueOf) l = l.valueOf();
+            if(r.valueOf) r = r.valueOf();
 
-        if(l < r)
-            return -1;
-        else if(l > r)
-            return 1;
+            if(l < r)
+                return -1;
+            else if(l > r)
+                return 1;
+        }
     });
 
     if(rval === this)

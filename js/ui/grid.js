@@ -107,6 +107,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     this.mixin(options);
     
+    if(this.editable === undefined)
+    {
+        this.editable = true;
+    }
 
     if(!this.layout)
     {
@@ -147,6 +151,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     var _nodeById = new Hash();
     var _checkRenderer = new CheckboxRenderer();
     var _renderer = new Renderer();
+    var _ignoreList = [];
     var _selectAll = false;
     var _selection = new TreeSelection(this, function(item, sel) {
         item.selected(sel);
@@ -1605,6 +1610,14 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function modelNodesChanged(eventlist)
     {
+        processEventList(this, eventlist, function(node) {
+            var obj = _ignoreList.remove(this.path())
+            if(!obj)
+            {
+                // assume the node is dirty if we're editable
+                renderRow(node, _self.editable);
+            }
+        });
     }
 
     function modelTreeChanged(eventlist)
@@ -1667,23 +1680,13 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function fireEditCompleted(parent, node, path, oval, nval)
     {
+        _ignoreList.add(path.path());
         _signaler.signalEmit("cell-editing-completed", parent, node, path, oval, nval);
     }
 
     function fireEditCancelled(parent, node, path)
     {
         _signaler.signalEmit("cell-editing-cancelled", parent, node, path);
-    }
-
-    /**
-     * @private
-     *
-     * This method is used to set up the overall event
-     * handling strategy for the actual layout.
-     */
-
-    function initLayoutEvents()
-    {
     }
 
     //////// START PUBLIC API ////////
@@ -1999,8 +2002,12 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         // take care of event listener registration
         unregisterDataListeners(_data);
+        _data.detach(this);
         _data = model;
         registerDataListeners(_data);
+        _data.attach(this);
+        if(_data.editable !== undefined)
+            this.editable = _data.editable;
 
         // make sure we don't whack the header!!
         if(!_header)

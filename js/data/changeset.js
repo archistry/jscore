@@ -33,8 +33,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		changeset.js
-// Created:		Thu Jan 21 16:08:45 GMT 2010
+// Name:        changeset.js
+// Created:        Thu Jan 21 16:08:45 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -54,11 +54,12 @@ namespace("archistry.data");
  */
 
 archistry.data.ChangeOp = {
-	OBJECT_ADDED		: "obj-add",
-	OBJECT_DELETED		: "obj-del",
-	PROPERTY_CHANGED	: "prop-change",
-	PROPERTY_ADDED		: "prop-add",
-	PROPERTY_DELETED	: "prop-del"
+    OBJECT_ADDED        : "object-added",
+    OBJECT_CHANGED      : "object-changed",
+    OBJECT_DELETED      : "object-removed",
+    PROPERTY_CHANGED    : "property-changed",
+    PROPERTY_ADDED      : "property-added",
+    PROPERTY_REMOVED    : "property-removed"
 };
 
 /**
@@ -70,18 +71,19 @@ archistry.data.ChangeOp = {
  *
  * @param object the object that was changed
  * @param change the nature of the change as a ChangeOp
- *			property value
- * @param key the property key that was changed (optional)
- * @param value the original property key value, if
- *			appropriate for the nature of the change (optional)
+ *            property value
+ * @param key (optional) the property key that was changed (optional)
+ * @param value (optional) the property key value
+ * @param old (optional) the previous property key value, if any
  */
 
-archistry.data.ChangeMemento = function(object, change, key, value)
+archistry.data.ChangeMemento = function(object, change, key, value, old)
 {
-	this.object = function() { return object; };
-	this.change = function() { return change; };
-	this.key = function() { return key; };
-	this.value = function() { return value; };
+    this.object = function() { return object; };
+    this.change = function() { return change; };
+    this.key = function() { return key; };
+    this.value = function() { return value; };
+    this.oldValue = function() { return old; };
 
     this.equals = function(rhs)
     {
@@ -95,12 +97,12 @@ archistry.data.ChangeMemento = function(object, change, key, value)
 
     this.valueOf = function()
     {
-        return [ object, change, key, value ];
+        return [ object, change, key, value, old ];
     };
 
     this.toString = function()
     {
-        return "[ChangeMemento object: {0}, change: {1}, key: {2}, value: {3} ]".format(object, change, key, value);
+        return "[ChangeMemento object: {0}, change: {1}, key: {2}, value: {3}; oldValue: {4} ]".format(object, change, key, value, old);
     };
 };
 
@@ -108,76 +110,155 @@ archistry.data.ChangeMemento = function(object, change, key, value)
  * @class
  *
  * This class defines the signals that are used by the
- * ObjectChangeObserver protocol.  This protocol defines 3
- * signals:
- * <ul>
- * <li>object-inserted &ndash; fired after a new object has
- * been added to the signal source.  The signal handler is
- * passed the following arguments:
- * <em>index</em>, and <em>data</em>.</li>
- * <li>object-deleted &ndash; fired after an object has
- * been deleted from the signal source.  The signal handler is
- * passed the following arguments: 
- * <em>index</em>, and <em>data</em>.</li>
- * <li>object-changed &ndash; fired after an object has
- * been changed in the signal source.  The signal handler is
- * passed the following arguments:
- * <em>index</em>, and <em>data</em>.</li>
- * </ul>
+ * ObjectChangeObserver protocol.
  * <p>
  * This class can simply be mixed in to any class that wishes
  * to support these signals as a signal source.
- * </>
+ * </p>
+ *
  * @param sender the sender
  */
 
 archistry.data.ObjectChangeSignalSource = function(sender)
 {
-	this.mixin(new archistry.core.SignalSource(sender));
-	this.addValidSignals([
-		"object-inserted",
-		"object-deleted",
-		"object-changed"
-	]);
+    var ChangeMemento = archistry.data.ChangeMemento;
+    var ChangeOp = archistry.data.ChangeOp;
+    var _self = this;
 
-	/**
-	 * This is a helper method to trigger the object-inserted
-	 * signal to the listeners.
-	 *
-	 * @param idx the index of the object
-	 * @param object the object added
-	 */
+    this.mixin(new archistry.core.SignalSource(sender));
+    this.addValidSignals([
+        "object-added",
+        "object-removed",
+        "object-changed"
+    ]);
 
-	this.fireObjectInserted = function(idx, object)
-	{
-		this.signalEmit("object-inserted", idx, object);
-	};
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of new
+     * objects being added to (or created by) the container
+     * object.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object added
+     */
 
-	/**
-	 * This is a helper method to trigger the object deleted
-	 * signal to the listeners.
-	 *
-	 * @param idx the index of the object
-	 * @param object the object being deleted
-	 */
+    this.fireObjectAdded = function(object)
+    {
+//        Console.println("{0} object added", sender.object_id());
+        _self.signalEmit("object-added", new ChangeMemento(object,
+                    ChangeOp.OBJECT_ADDED));
+    };
 
-	this.fireObjectDeleted = function(idx, object)
-	{
-		this.signalEmit("object-deleted", idx, object);
-	};
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of object
+     * changes, but no additional information about the change
+     * is available.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object changed
+     */
 
-	/**
-	 * This is a helper method to trigger the object changed
-	 * signal to the listeners.
-	 *
-	 * @param idx the index of the object
-	 * @param object the object that was changed
-	 */
+    this.fireObjectChanged = function(object)
+    {
+        _self.signalEmit("object-changed", new ChangeMemento(object,
+                    ChangeOp.OBJECT_CHANGED));
+    };
 
-	this.fireObjectChanged = function(idx, object)
-	{
-		this.signalEmit("object-changed", idx, object);
-	};
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of objects
+     * being removed (or deleted) from the instance.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object being removed
+     */
+
+    this.fireObjectRemoved = function(object)
+    {
+        _self.signalEmit("object-removed", new ChangeMemento(object,
+                    ChangeOp.OBJECT_REMOVED));
+    };
+
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of object
+     * properties being added to objects that the sender
+     * manages.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object that was changed
+     * @param key the property key that was added
+     * @param value the initial value for the property
+     */
+
+    this.fireObjectPropertyAdded = function(object, key, value)
+    {
+//        Console.println("{0} object property added", sender.object_id());
+        _self.signalEmit("object-changed", new ChangeMemento(object,
+                    ChangeOp.PROPERTY_ADDED, key, value));
+    };
+
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of object
+     * properties being removed from objects that the sender
+     * manages.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object that was changed
+     * @param key the property key that was removed
+     * @param value the property value when it was removed
+     */
+
+    this.fireObjectPropertyRemoved = function(object, key, value)
+    {
+        _self.signalEmit("object-changed", new ChangeMemento(object,
+                    ChangeOp.PROPERTY_REMOVED, key, value));
+    };
+
+    /**
+     * This method should be used whenever an object would
+     * like to support ChangeMemento notifications of object
+     * properties being changed for that the sender manages.
+     * <p>
+     * This method will automatically create the appropriate
+     * ChangeMemento instance and notify all registered
+     * listeners.
+     * </p>
+     *
+     * @param object the object that was changed
+     * @param key the property key that was removed
+     * @param value the new value for the property
+     * @param old the original or previous value for the
+     *      property
+     */
+
+    this.fireObjectPropertyChanged = function(object, key, value, old)
+    {
+        _self.signalEmit("object-changed", new ChangeMemento(object,
+                    ChangeOp.PROPERTY_CHANGED, key, value, old));
+    };
 };
 
 /**
@@ -185,68 +266,101 @@ archistry.data.ObjectChangeSignalSource = function(sender)
  *
  * This class plays the role of the Caretaker in the Memento
  * pattern implementation.  It tracks a history of changes, so
- * can be used as the basis of an undo/redo facility.
+ * can be used as the basis of an undo/redo facility.  It can
+ * track changes automatically by being attached to a
+ * ObjectChangeSignalSource, or change mementos can be
+ * manually added to the changeset.
  *
  * @param options initializer options to be mixed in with the
- *		instance after it is created
+ *        instance after it is created
  */
 
 archistry.data.ChangeSet = function(options)
 {
-	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
-	this.mixin(options);
+    this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+    this.mixin(options);
 
-	var _changes = [];
+    var _changes = [];
+    var _self = this;
 
-	/**
-	 * This method is used to add a new change to the
-	 * changeset.
-	 *
-	 * @param memento the change memento
-	 */
+    /**
+     * This method is used to add a new change to the
+     * changeset.
+     *
+     * @param memento the change memento
+     */
 
-	this.add = function(memento)
-	{
-		var idx = _changes.length;
-		_changes.add(memento);
-		this.fireObjectInserted(idx, memento);
-	};
+    this.add = function(memento)
+    {
+//        Console.println("{0} ChangeSet#add", _self.object_id());
+        _changes.add(memento);
+        _self.fireObjectAdded(memento);
+    };
 
-	/**
-	 * This method is used to delete a change from the
-	 * changeset.
-	 *
-	 * @param memento the instance to delete
-	 * @return a reference to the object removed or null if
-	 *		not in the changeset
-	 */
+    /**
+     * This method is used to delete a change from the
+     * changeset.
+     *
+     * @param memento the instance to delete
+     * @return a reference to the object removed or null if
+     *        not in the changeset
+     */
 
-	this.remove = function(memento)
-	{
-		var obj = _changes.remove(memento);
-		if(obj)
-		{
-			this.fireObjectDeleted(_changes.length, obj);
-		}
-		return obj;
-	};
+    this.remove = function(memento)
+    {
+        var obj = _changes.remove(memento);
+        if(obj)
+        {
+            _self.fireObjectRemoved(obj);
+        }
+        return obj;
+    };
 
-	/**
-	 * This method is used to retrieve the specific memento by
-	 * item index.
-	 *
-	 * @param idx the index of the item
-	 * @return the change memento
-	 */
+    /**
+     * This method is used to retrieve the specific memento by
+     * item index.
+     *
+     * @param idx the index of the item
+     * @return the change memento
+     */
 
-	this.get = function(idx)
-	{
-		return _changes[idx];
-	};
+    this.get = function(idx)
+    {
+        return _changes[idx];
+    };
 
-	/** returns the number of items in the changeset */
-    this.length = function() { return _changes.length; };
-    this.size = this.length;
+    /** returns the number of items in the changeset */
+    this.size = function() { return _changes.length; };
+    
+    /**
+     * This method is used to attach the ChangeSet instance to
+     * an ObjectChangeSignalSource so that all change mementos
+     * are captured.
+     *
+     * @param source the signal source
+     */
+
+    this.attach = function(source)
+    {
+        source.signalConnect("object-added", _self.add);
+        source.signalConnect("object-removed", _self.add);
+        source.signalConnect("object-changed", _self.add);
+    };
+
+    /**
+     * This method detaches the ChangeSet instance from the
+     * ObjectChangeSignalSource.
+     *
+     * @param source the signal source
+     */
+
+    this.detach = function(source)
+    {
+        source.signalDisconnect("object-added", _self.add);
+        source.signalDisconnect("object-removed", _self.add);
+        source.signalDisconnect("object-changed", _self.add);
+    };
+
 };
 
 /**
@@ -258,106 +372,135 @@ archistry.data.ChangeSet = function(options)
  * minimum of upates necessary to apply to some data store.
  *
  * @param options any additional configuration options or
- *		properties.
+ *        properties.
  */
 
 archistry.data.CompactChangeSet = function(options)
 {
-	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
-	this.mixin(options);
-	if(!this.getKey)
-	{
-		this.getKey = function(memento)
-		{
-			return memento.object();
-		};
-	}
+    this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+    this.mixin(options);
+    if(!this.getKey)
+    {
+        this.getKey = function(memento)
+        {
+            return memento.object();
+        };
+    }
 
-	var _changes = {};
-	var _keys = [];
+    var _self = this;
+    var _changes = {};
+    var _keys = [];
 
-	/** @private */
-	function getIdx(key)
-	{
-		for(var i = 0; i < _keys.length; ++i)
-		{
-			if(key === _keys[i])
-				return i;
-		}
+    /** @private */
+    function getIdx(key)
+    {
+        for(var i = 0; i < _keys.length; ++i)
+        {
+            if(key === _keys[i])
+                return i;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * This method will store the specific change for the
-	 * object based on using the object as a key.  Therefore,
-	 * any previous change memento for that object will be
-	 * discarded.
-	 *
-	 * @param memento
-	 * @return the previous memento (if any)
-	 */
+    /**
+     * This method is used to attach the ChangeSet instance to
+     * an ObjectChangeSignalSource so that all change mementos
+     * are captured.
+     *
+     * @param source the signal source
+     */
 
-	this.add = function(memento)
-	{
-		var key = this.getKey(memento);
-//        println("Generated key '{0}' for object '{1}'", key, (memento ? memento : "(null)"));
-		var old = _changes[key];
-		_changes[key] = memento;
-		if(!old)
-		{
-			_keys.add(key);
-			this.fireObjectInserted(_keys.length - 1, memento);
-		}
-		else
-		{
-			this.fireObjectChanged(getIdx(key), memento);
-		}
-		return old;
-	};
+    this.attach = function(source)
+    {
+        source.signalConnect("object-added", _self.add);
+        source.signalConnect("object-removed", _self.add);
+        source.signalConnect("object-changed", _self.add);
+    };
 
-	/**
-	 * This method will remove any memento currently stored
-	 * for the specified object.
-	 *
-	 * @param memento
-	 * @return the memento (if present)
-	 */
+    /**
+     * This method detaches the ChangeSet instance from the
+     * ObjectChangeSignalSource.
+     *
+     * @param source the signal source
+     */
 
-	this.remove = function(memento)
-	{
-		var key = this.getKey(memento);
-		var obj = _changes[key];
-//        println("retrieved '{0}' for key '{1}'", (obj ? obj : "(null)"), key);
-		if(obj)
-		{
-			_keys.remove(key);
+    this.detach = function(source)
+    {
+        source.signalDisconnect("object-added", _self.add);
+        source.signalDisconnect("object-removed", _self.add);
+        source.signalDisconnect("object-changed", _self.add);
+    };
+
+    /**
+     * This method will store the specific change for the
+     * object based on using the object as a key.  Therefore,
+     * any previous change memento for that object will be
+     * discarded.
+     *
+     * @param memento
+     * @return the previous memento (if any)
+     */
+
+    this.add = function(memento)
+    {
+        var key = _self.getKey(memento);
+//        Console.println("Generated key '{0}' for object '{1}'", key, (memento ? memento : "(null)"));
+        var old = _changes[key];
+        _changes[key] = memento;
+        if(!old)
+        {
+            _keys.add(key);
+            _self.fireObjectPropertyAdded(this, key, memento);
+        }
+        else
+        {
+            _self.fireObjectPropertyChanged(this, key, memento, old);
+        }
+        return old;
+    };
+
+    /**
+     * This method will remove any memento currently stored
+     * for the specified object.
+     *
+     * @param memento
+     * @return the memento (if present)
+     */
+
+    this.remove = function(memento)
+    {
+        var key = _self.getKey(memento);
+        var obj = _changes[key];
+//        Console.println("retrieved '{0}' for key '{1}'", (obj ? obj : "(null)"), key);
+        if(obj)
+        {
+            _keys.remove(key);
             delete _changes[key];
-			this.fireObjectDeleted(_keys.length, obj);
-		}
-		return obj;
-	};
+            _self.fireObjectPropertyRemoved(this, key, obj);
+        }
+        return obj;
+    };
 
-	/**
-	 * This method will retrieve the specific memento by the
-	 * item index (in this case, the object key).
-	 *
-	 * @param idx the index to the item
-	 * @return the change memento (if it exists)
-	 */
+    /**
+     * This method will retrieve the specific memento by the
+     * item index (in this case, the object key).
+     *
+     * @param idx the index to the item
+     * @return the change memento (if it exists)
+     */
 
-	this.get = function(idx)
-	{
-		if(typeof idx === "number")
-			return _changes[_keys[idx]];
+    this.get = function(idx)
+    {
+        if(typeof idx === "number")
+            return _changes[_keys[idx]];
 
-		return _changes[idx];
-	};
+        return _changes[idx];
+    };
 
-	/**
-	 * This method will retrieve the length of the changeset
-	 */
-	
-    this.length = function() { return _keys.length; };
-    this.size = this.length;
+    /**
+     * This method will retrieve the size of the changeset
+     */
+    
+    this.size = function() { return _keys.length; };
 };

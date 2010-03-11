@@ -114,10 +114,10 @@ archistry.core.SignalSource = function(sender)
 		}
 		if(!sender.__signals[signal])
 		{
+//            Console.println("Creating new array ({1}) for signal '{0}'", signal, sender.object_id());
 			sender.__signals[signal] = [];
 		}
 
-//        print("sigarray (" + sender.object_id() + "): " + sender.__signals.inspect());
 		return sender.__signals[signal];
 	}
 	
