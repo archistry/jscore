@@ -111,6 +111,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     {
         this.editable = true;
     }
+    else
+    {
+        Console.println("editable state from options: " + this.editable);
+    }
 
     if(!this.layout)
     {
@@ -286,9 +290,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
      *
      * @param row the TreeRow reference of the row to be
      *        rendered
+     * @param dirty whether to render the row dirty or not
      */
 
-    function renderRow(row)
+    function renderRow(row, dirty)
     {
         if(!row.visible())
             return;
@@ -298,7 +303,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             throw createError("ArgumentError:  invalid row!");
         }
 
-        row.render();
+        row.render(dirty);
 
         // render the special columns/expanders
         // FIXME: should this stuff be done in the row
@@ -1093,7 +1098,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function colEditable(col)
     {
-        if(!_data.editable || !col.editor)
+        Console.println("\n>>>>> Editable? " + _self.editable);
+        if(!_self.editable || !_data.editable || !col.editor)
             return false;
 
         return true;
@@ -1745,7 +1751,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             cellPath = new TreeCellPath(path, kol.key);
         }
         
-        if(!_data.editable || !kol.editor)
+//        if(!_data.editable || !kol.editor)
+        if(!_self.isCellEditable(cellPath))
         {
             Console.println("Model is not editable or no editor defined. Aborted.");
             return false;
@@ -2016,7 +2023,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         _data = model;
         registerDataListeners(_data);
         _data.attach(this);
-        if(_data.editable !== undefined)
+        if(_data.editable !== undefined && this.editable)
             this.editable = _data.editable;
 
         // make sure we don't whack the header!!
