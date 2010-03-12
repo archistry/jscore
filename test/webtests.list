@@ -12,11 +12,13 @@
 - lib/util.js
 - lib/tree.js
 - js/core/test_util.js
+- js/core/test_hash.js
 - js/core/test_observer.js
 - js/core/test_path.js
 - js/core/test_string_format.js
 - js/data/test_indexer.js
 - js/data/test_changeset.js
+- js/data/test_object_adapter_manager.js
 - js/data/test_array_tree_model.js
 - js/data/test_object_tree_model.js
 - js/ui/test_tree_selection.js

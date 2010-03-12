@@ -688,7 +688,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         this.data = function(val)
         {
-            return modelNode;
+            if(arguments.length === 0)
+                return modelNode;
+
+            modelNode = val;
         };
 
         /**
@@ -1625,6 +1628,18 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 if(child && !(p = _ignoreList.remove(child.path())))
                 {
                     Console.println("Rendering node for [{0}]", child.path().join(", "));
+                    // FIXME:  this is really a structure
+                    // changed notification in this case
+                    // rather than the node changed.
+                    // Replacement !== change!
+                    if(!child.data().equals(this.node()))
+                    {
+                        // reset the model node (in case the node
+                        // was replaced in the model)
+                        Console.println("TreeRow: " + child.data());
+                        Console.println("ModelNode: " + this.node());
+                        child.data(this.node());
+                    }
                     // assume the node is dirty if we're editable
                     renderRow(child, _self.editable);
                 }

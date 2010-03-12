@@ -41,6 +41,40 @@
 Jester.testing("Core library functionality", {
 	tests: [
 		{
+			what: "__ajs_sweep works correctly",
+			how: function(result)
+			{
+                var obj = {};
+                var keys = obj.keys(true);
+
+				result.check("Object has properties", {
+					actual: keys.length != 0,
+					expect: true
+				});
+
+                __ajs_sweep(obj);
+                keys.each(function(i) {
+                    result.check("sweep undefined property '{0}'".format(this), {
+                        actual: obj[this] === undefined,
+                        expect: true
+                    });
+                });
+
+                function A()
+                {
+                }
+
+                A.prototype.foo = 7;
+                A.prototype.bar = function() {};
+
+                var a = __ajs_sweep(new A());
+                result.check("Non-Object prototype properties not cleared", {
+                    actual: [ a.foo, a.bar ],
+                    expect: [ A.prototype.foo, A.prototype.bar ]
+                });
+			}
+		},
+		{
 			what: "Object#equals works correctly",
 			how: function(result)
 			{
@@ -116,49 +150,6 @@ Jester.testing("Core library functionality", {
                 result.check("object key values are correct", {
                     actual: keys,
                     expect: allprops
-                });
-			}
-		},
-		{
-			what: "Hash#clear works correctly",
-			how: function(result)
-			{
-                var obj = new archistry.core.Hash();
-                obj.set("key1", true);
-                obj.set("context", this);
-                obj.set("key2", true);
-
-                var proplist = [];
-                obj.each(function(key, val) {
-                    proplist.add(key);
-                });
-                proplist.sort();
-
-                var keys = obj.keys().sort();
-				result.check("initial object key count", {
-					actual: keys.length,
-					expect: proplist.length
-				});
-
-                result.check("size matches key count", {
-                    actual: obj.size(),
-                    expect: 3
-                });
-
-                result.check("pre-clear object key values are correct", {
-                    actual: keys,
-                    expect: [ "context", "key1", "key2" ]
-                });
-
-                keys = obj.clear().keys();
-				result.check("object key count", {
-					actual: keys.length,
-					expect: 0
-				});
-
-                result.check("post-clear object key values are correct", {
-                    actual: keys,
-                    expect: []
                 });
 			}
 		},

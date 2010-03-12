@@ -794,6 +794,8 @@ archistry.data.tree.TreeNode = function()
 
 archistry.data.tree.ObjectAdapter = function(obj, getter, setter)
 {
+    Console.println("ObjectAdapter created for object {0} with object ID: {1}", archistry.core.Util.toHashString(obj), this.object_id());
+
     /**
      * This method is used to get the specified property from
      * the object.
@@ -923,7 +925,10 @@ archistry.data.tree.ObjectAdapterManager = function(enabled, getter, setter)
      * @return the node or null if no value is present
      */
 
-    this.getKey = _nodes.get;
+    this.getKey = function(key)
+    {
+        return _nodes.get(key);
+    };
 
     /**
      * This method is used to remove the given key entry from
@@ -933,5 +938,18 @@ archistry.data.tree.ObjectAdapterManager = function(enabled, getter, setter)
      * @return the key value (if any) or null if none exists
      */
 
-    this.removeKey = _nodes.remove;
+    this.removeKey = function(key)
+    {
+        return _nodes.remove(key);
+    };
+
+    /**
+     * This is used to get the number of object mappings
+     * currently stored.
+     */
+
+    this.size = function()
+    {
+        return _nodes.size();
+    };
 };

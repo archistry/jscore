@@ -360,6 +360,19 @@ Jester.testing("Concrete TreeRowModel functionality", {
                     actual: model.root().toHashString !== undefined,
                     expect: true
                 });
+
+                var n1 = model.nodeForPath([3]);
+                var n2 = model.nodeForPath([3]);
+
+                result.check("Successive requests for node get same wrapped object", {
+                    actual: n1.equals(n2),
+                    expect: true
+                });
+
+                result.check("Successive returned objects have same ID", {
+                    actual: n1.object_id() === n2.object_id(),
+                    expect: true
+                });
 			}
 		},
 		{

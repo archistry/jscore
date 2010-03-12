@@ -108,9 +108,9 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
         }
 
         var cell = parentWithTag(eventTarget(event), "td");
-        Console.println("clicksToEdit: {4}; clicks: {0}; this.dt: {5}; dt: {1}\n\ttarget: {2}\n\tcell: {3}", 
-                _target.clicks, now - _target.time,
-                target.toXML(), cell.toXML(), _self.clicksToEdit, _self.dt);
+//        Console.println("clicksToEdit: {4}; clicks: {0}; this.dt: {5}; dt: {1}\n\ttarget: {2}\n\tcell: {3}", 
+//                _target.clicks, now - _target.time,
+//                target.toXML(), cell.toXML(), _self.clicksToEdit, _self.dt);
 
         if(!cell || (cell 
                 && cell.parentNode.getAttribute("class").match(/header/)))

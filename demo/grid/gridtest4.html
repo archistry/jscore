@@ -2,7 +2,7 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title>ArchistryJS Grid Test #3</title>
+  <title>ArchistryJS Grid Test #4</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
   <style type="text/css" media="screen">
     #console
@@ -12,42 +12,22 @@
       padding: 5px;
       clear: both;
     }
-/*
-    .aui-grid 
-    {
-      font-family: sans-serif;
-      border: 1px solid red;
-      padding: 2px;
-    }
 
-    .aui-grid > table
-    {
-      border: 1px solid green;
-      margin: 3px;
-    }
-*/
     .aui-grid td
     {
       vertical-align: top;
     }
 
-    .aui-grid td.aui-editing
-    {
-      padding: 2px;
-    }
-
     .aui-grid td input
     {
-      border: 1px solid #e0aa0f;
       padding: 0;
       margin: 0;
+      border: 0;
     }
 
     .aui-grid > table th
     {
-/*      color: white; */
       text-align: left;
-/*      background: green; */
       border: 1px solid #aed0ea;
     }
 
@@ -56,20 +36,8 @@
       padding: 3px;
     }
 
-/*    .aui-grid > table th.aui-grid-col-key
-    {
-      background: blue;
-      color: white;
-    }
-
-    .aui-grid > table th.aui-grid-col-value
-    {
-      background: yellow;
-    }
-*/
     td.aui-grid-cell
     {
-/*      border: 1px solid #002654; */
       border: 1px solid rgb(221,221,221);
     }
 
@@ -86,7 +54,6 @@
 
     td.aui-grid-col-value
     {
-/*      width: 250px; */
     }
 
     .aui-grid tr.aui-grid-header:hover
@@ -138,21 +105,26 @@
 
     #changes
     {
-      margin-top: 2em;
-/*      float: right; */
+      font-size: 9pt;
+      margin-top: 1em;
+ /*     float: right; */
+    }
+
+    #testgrid
+    {
+      font-size: 9pt;
+      float: left;
+    }
+
+    #grid2
+    {
+      font-size: 9pt;
+      float: left;
+      margin-left: 2em;
+      clear: right;
     }
   </style>
-  <script type="text/javascript" src="../js/ext/Math.uuid.js"></script>
-  <script type="text/javascript" src="../js/ext/md5.js"></script>
-  <script type="text/javascript" src="../js/core/core.js"></script>
-  <script type="text/javascript" src="../js/core/observer.js"></script>
-  <script type="text/javascript" src="../js/core/version.js"></script>
-  <script type="text/javascript" src="../js/data/changeset.js"></script>
-  <script type="text/javascript" src="../js/ui/helpers.js"></script>
-  <script type="text/javascript" src="../js/ui/console.js"></script>
-  <script type="text/javascript" src="../js/ui/property_editors.js"></script>
-  <script type="text/javascript" src="../js/ui/grid.js"></script>
-  <script type="text/javascript" src="../js/ext/jquery-1.3.2.js"></script>
+  <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
 <body>
@@ -169,82 +141,142 @@
   </p>
 
   <div id="testgrid"></div>
+  <div id="grid2"></div>
+  <div style="clear:both">&nbsp;</div>
   <div id="changes"></div>
-  <!--div id="console"></div-->
+  <div id="console"></div>
 
   <script type="text/javascript">
     $(function()
     {
-//      archistry.ui.Console.attach("console");
-//      var console = archistry.ui.Console;
+      archistry.ui.Console.attach("console");
+      
+      var ArrayColumnModel  = archistry.ui.ArrayColumnModel;
+      var ArrayTreeModel    = archistry.data.tree.ArrayTreeModel;
+      var ChangeOp          = archistry.data.ChangeOp;
+      var CompactChangeSet  = archistry.data.CompactChangeSet;
+      var TextFieldEditor   = archistry.ui.editor.TextFieldEditor;
+      var TreeGrid          = archistry.ui.TreeGrid;
 
-      // configure the ChangeSet
-      var ChangeSetRowModel = function(ch)
-      {
-        var _self = this;
-        this.mixin(archistry.core.SignalSource);
-        this.addValidSignals([
-          "row-inserted",
-          "row-deleted",
-          "row-changed"
-        ]);
-        ch.signalConnect("object-inserted", function(sender, idx, data) {
-          _self.signalEmit("row-inserted", _self, idx, data);
-        });
-        ch.signalConnect("object-deleted", function(sender, idx, data) {
-          _self.signalEmit("row-deleted", _self, idx, data);
-        });
-        ch.signalConnect("object-changed", function(sender, idx, data) {
-          _self.signalEmit("row-changed", _self, idx, data);
-        });
-        this.row = ch.get;
-        this.ensureRange = function(startIdx, count)
-        {
-          return ((startIdx + count) < ch.length ? count : ch.length - startIdx);
-        };
-
-        this.dump = function() { return ""; /* no-op */ };
-      };
-      var changes = new archistry.data.CompactChangeSet({
-        getKey: function(mem) { return [ mem.object.object_id(), mem.key ].join(":"); }
-      });
-      var chCols = new archistry.ui.ArrayColumnModel([
-        { key: "id", label: "Object", value: function(row) { return row.object.object_id(); } },
+      // configure the ChangeSet Display
+      var cdata = [];
+      var changeModel = new ArrayTreeModel(cdata, { useAdapter: false });
+      
+      var chCols = new ArrayColumnModel([
+        { key: "changekey", label: "Change Key" },
         { key: "change", label: "Change Type" },
         { key: "key", label: "Property Key" },
-        { key: "oldVal", label: "Previous Value" }
+        { key: "oldValue", label: "Previous Value" }
       ]);
-      var chGrid = new archistry.ui.Grid("changes", chCols,
-                    new ChangeSetRowModel(changes), { showHeader: true });
-
-      var editor = new archistry.ui.editor.TextFieldEditor();
-      
-      var darray = [];
-      for(var i = 0; i < 2; ++i)
+     
+      function getKey(mem)
       {
-        darray.add({ key: "Key " + i, value: "<h3>Value " + i + "</h3>" });
+        return [ mem.object().object_id(), mem.key() ].join(":");
       }
 
-      var cols = new archistry.ui.ArrayColumnModel([
-        { key: "id", label: "Object ID", value: function(r) { return r.object_id(); } },
+      var changes = new CompactChangeSet({ getKey: getKey });
+
+      changes.signalConnect("object-changed", function(memento) {
+        change = memento.value();
+        change.changekey = memento.key();
+        change.getProperty = function(key) {
+          switch(key)
+          {
+            case "change":
+              return this.change();
+            case "key":
+              return this.key();
+            case "oldValue":
+              return this.oldValue();
+            case "value":
+              return this.value();
+            case "changekey":
+              return this.changekey;
+            default:  
+              return "Unsupported key '{0}'".format(key);
+          }
+        };
+
+        // FIXME:  this isn't terribly efficient, and I
+        // wouldn't recommend doing it in production code this
+        // way, but it *is* a demo, after all... ;)
+        var idx = -1;
+        switch(memento.change())
+        {
+          case ChangeOp.PROPERTY_CHANGED:
+            idx = cdata.each(function(i) {
+              if(getKey(this).equals(getKey(change)))
+                return i;
+            });
+            if(idx !== cdata)
+            {
+              Console.println("Replacing node at index {0};\nOld: {1}\nNew: {2}", idx, cdata[idx], change);
+              cdata[idx] = change;
+              // FIXME:  this should fire the structure
+              // changed event, but we don't have a method for
+              // that at the moment!!
+              changeModel.rowChanged(idx);
+            }
+            else
+            {
+              Console.println("*** Error: unable to find index for change: {0}", change);
+            }
+            break;
+          case ChangeOp.PROPERTY_ADDED:
+            changeModel.insertRow(-1, change);
+            break;
+          case ChangeOp.PROPERTY_REMOVED:
+            idx = cdata.each(function(i) {
+              if(getKey(this.valueOf()).equals(getKey(change)))
+                return i;
+            });
+            if(idx !== cdata)
+            {
+              changeModel.rowRemoved(idx);
+            }
+            else
+            {
+              Console.println("*** Error: unable to find index for change: {0}", change);
+            }
+            break;
+        }
+      });
+
+      var chGrid = new TreeGrid("changes", chCols, changeModel, {
+                    showHeader: true,
+                    editable: false,
+                    showExpanders: false
+      });
+      
+      var editor = new TextFieldEditor();
+      var darray = [];
+      for(var i = 0; i < 5; ++i)
+      {
+        darray.add({ key: "Key " + i, value: "Value " + i });
+      }
+
+      var cols = new ArrayColumnModel([
         { key: "key", label: "Key", editor: editor },
         { key: "value", label: "Value", editor: editor }
       ]);
-      var data = new archistry.ui.ArrayRowModel(darray, {
-                    createRow: function()
-                    {
-                      var len = darray.length;
-                      darray.add({ key: "Key " + len, value: null });
-                      return darray[darray.length - 1];
-                    }
-      });
-      var grid = new archistry.ui.Grid("testgrid", cols, data, {
-                    changeSet: changes,
+
+      var data = new ArrayTreeModel(darray);
+      changes.attach(data);
+
+      var grid = new TreeGrid("testgrid", cols, data, {
                     showHeader: true,
                     editable: true,
-                    clicksToEdit: 2,
+                    showExpanders: false,
                     showSentinalRow: true
       });
+
+      var grid2 = new TreeGrid("grid2", cols, data, {
+                    showHeader: true,
+                    editable: false,
+                    showExpanders: false
+      });
+
+      $("#console").resizable( { minHeight: 150, alsoResize: "#console-text" });
     });
   </script>
 </body>

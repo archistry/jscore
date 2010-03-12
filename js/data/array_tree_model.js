@@ -169,8 +169,9 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     {
         var idx = Indexer.mapIndex(index, data.length);
         var node = _nodes.getKey(idx);
-        if(node === undefined)
+        if(node === undefined || node === null)
         {
+            Console.println("********** No node for index: " + idx);
             node = __addNode(idx, data[idx]);
         }
 
@@ -213,6 +214,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             return;
 
         Console.println("path: [{0}]; oldval: '{1}'; newval: '{2}'", path, oldval, newval);
+        Console.println("Node: {0}; objectId: {1}", archistry.core.Util.toHashString(obj), obj.object_id());
         if((oldval && !oldval.equals(newval))
                 || (newval && !newval.equals(oldval)))
         {
@@ -536,6 +538,14 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     {
         var idx = Indexer.mapIndex(index, data.length);
         var obj = __node(idx);
+        // ensure that the data structure wasn't changed
+        // undeneath us...
+        if(!obj.equals(data[idx]))
+        {
+            Console.println("warning:  data structure changed!");
+            __removeNode(idx);
+            obj = __node(idx);
+        }
         _self.fireObjectChanged(obj);
         _self.fireNodesChanged([ 
             new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])

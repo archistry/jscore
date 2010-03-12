@@ -174,7 +174,7 @@ jQuery.fn = jQuery.prototype = {
 				return this[0] && jQuery[ type || "attr" ]( this[0], name );
 
 			else {
-				options = {};
+				options = __ajs_sweep({});
 				options[ name ] = value;
 			}
 
@@ -182,14 +182,12 @@ jQuery.fn = jQuery.prototype = {
 		return this.each(function(i){
 			// Set all the styles
 			for ( name in options ) {
-				if ( typeof this[ name ] !== 'function' ) {
-					jQuery.attr(
-						type ?
-							this.style :
-							this,
-						name, jQuery.prop( this, options[ name ], type, i, name )
-					);
-				}
+                jQuery.attr(
+                    type ?
+                        this.style :
+                        this,
+                    name, jQuery.prop( this, options[ name ], type, i, name )
+                );
 			}
 		});
 	},
@@ -415,7 +413,7 @@ jQuery.fn = jQuery.prototype = {
 
 			if ( elem ) {
 				if( jQuery.nodeName( elem, 'option' ) )
-					return (elem.attributes.value || {}).specified ? elem.value : elem.text;
+					return (elem.attributes.value || __ajs_sweep({})).specified ? elem.value : elem.text;
 				
 				// We need to handle select boxes special
 				if ( jQuery.nodeName( elem, "select" ) ) {
@@ -564,19 +562,19 @@ function now(){
 
 jQuery.extend = jQuery.fn.extend = function() {
 	// copy reference to target object
-	var target = arguments[0] || {}, i = 1, length = arguments.length, deep = false, options;
+	var target = arguments[0] || __ajs_sweep({}), i = 1, length = arguments.length, deep = false, options;
 
 	// Handle a deep copy situation
 	if ( typeof target === "boolean" ) {
 		deep = target;
-		target = arguments[1] || {};
+		target = arguments[1] || __ajs_sweep({});
 		// skip the boolean and the target
 		i = 2;
 	}
 
 	// Handle case when target is a string or something (possible in deep copy)
 	if ( typeof target !== "object" && !jQuery.isFunction(target) )
-		target = {};
+		target = __ajs_sweep({});
 
 	// extend jQuery itself if only one argument is passed
 	if ( length == i ) {
@@ -589,6 +587,9 @@ jQuery.extend = jQuery.fn.extend = function() {
 		if ( (options = arguments[ i ]) != null )
 			// Extend the base object
 			for ( var name in options ) {
+                if(options[name] === undefined)
+                    continue;
+
 				var src = target[ name ], copy = options[ name ];
 
 				// Prevent never-ending loop
@@ -599,23 +600,24 @@ jQuery.extend = jQuery.fn.extend = function() {
 				if ( deep && copy && typeof copy === "object" && !copy.nodeType )
 					target[ name ] = jQuery.extend( deep, 
 						// Never move original objects, clone them
-						src || ( copy.length != null ? [ ] : { } )
+						src || ( copy.length != null ? [ ] : __ajs_sweep({ }) )
 					, copy );
 
 				// Don't bring in undefined values
 				else if ( copy !== undefined )
 					target[ name ] = copy;
 
+                __ajs_sweep(target[ name ]);
 			}
 
 	// Return the modified object
-	return target;
+	return __ajs_sweep(target);
 };
 
 // exclude the following css properties to add px
 var	exclude = /z-?index|font-?weight|opacity|zoom|line-?height/i,
 	// cache defaultView
-	defaultView = document.defaultView || {},
+	defaultView = document.defaultView || __ajs_sweep({}),
 	toString = Object.prototype.toString;
 
 jQuery.extend({
@@ -676,9 +678,10 @@ jQuery.extend({
 
 		if ( args ) {
 			if ( length === undefined ) {
-				for ( name in object )
+				for ( name in object ) {
 					if ( callback.apply( object[ name ], args ) === false )
 						break;
+                }
 			} else
 				for ( ; i < length; )
 					if ( callback.apply( object[ i++ ], args ) === false )
@@ -737,7 +740,7 @@ jQuery.extend({
 
 	// A method for quickly swapping in/out CSS properties to get correct calculations
 	swap: function( elem, options, callback ) {
-		var old = {};
+		var old = __ajs_sweep({});
 		// Remember the old values, and insert the new ones
 		for ( var name in options ) {
 			old[ name ] = elem.style[ name ];
@@ -1117,7 +1120,7 @@ jQuery.extend({
 	},
 
 	unique: function( array ) {
-		var ret = [], done = {};
+		var ret = [], done = __ajs_sweep({});
 
 		try {
 
@@ -1272,10 +1275,10 @@ jQuery.each({
 function num(elem, prop) {
 	return elem[0] && parseInt( jQuery.curCSS(elem[0], prop, true), 10 ) || 0;
 }
-var expando = "jQuery" + now(), uuid = 0, windowData = {};
+var expando = "jQuery" + now(), uuid = 0, windowData = __ajs_sweep({});
 
 jQuery.extend({
-	cache: {},
+	cache: __ajs_sweep({}),
 
 	data: function( elem, name, data ) {
 		elem = elem == window ?
@@ -1291,11 +1294,11 @@ jQuery.extend({
 		// Only generate the data cache if we're
 		// trying to access or manipulate it
 		if ( name && !jQuery.cache[ id ] )
-			jQuery.cache[ id ] = {};
+			jQuery.cache[ id ] = __ajs_sweep({});
 
 		// Prevent overriding the named cache with undefined values
 		if ( data !== undefined )
-			jQuery.cache[ id ][ name ] = data;
+			jQuery.cache[ id ][ name ] = __ajs_sweep(data);
 
 		// Return the named cache data, or the ID for the element
 		return name ?
@@ -2469,7 +2472,7 @@ jQuery.event = {
 		}
 
 		// Init the element's event structure
-		var events = jQuery.data(elem, "events") || jQuery.data(elem, "events", {}),
+		var events = jQuery.data(elem, "events") || jQuery.data(elem, "events", __ajs_sweep({})),
 			handle = jQuery.data(elem, "handle") || jQuery.data(elem, "handle", function(){
 				// Handle the second event of a trigger and when
 				// an event is called after a page has unloaded
@@ -2498,7 +2501,7 @@ jQuery.event = {
 
 			// Init the event handler queue
 			if (!handlers) {
-				handlers = events[type] = {};
+				handlers = events[type] = __ajs_sweep({});
 
 				// Check for a special event handler
 				// Only use addEventListener/attachEvent if the special
@@ -2524,7 +2527,7 @@ jQuery.event = {
 	},
 
 	guid: 1,
-	global: {},
+	global: __ajs_sweep({}),
 
 	// Detach an event or set of events from an element
 	remove: function(elem, types, handler) {
@@ -2537,8 +2540,9 @@ jQuery.event = {
 		if ( events ) {
 			// Unbind all events for the element
 			if ( types === undefined || (typeof types === "string" && types.charAt(0) == ".") )
-				for ( var type in events )
+				for ( var type in events ) {
 					this.remove( elem, type + (types || "") );
+                }
 			else {
 				// types is actually an event object here
 				if ( types.type ) {
@@ -2561,10 +2565,14 @@ jQuery.event = {
 
 						// remove all handlers for the given type
 						else
-							for ( var handle in events[type] )
+							for ( var handle in events[type] ) {
+                                if(events[type][handle] === undefined)
+                                    continue;
+
 								// Handle the removal of namespaced events
 								if ( namespace.test(events[type][handle].type) )
 									delete events[type][handle];
+                            }
 
 						if ( jQuery.event.specialAll && jQuery.event.specialAll[type] && jQuery.event.specialAll[type].teardown )
 							jQuery.event.specialAll[type].teardown.call(elem, namespaces);
@@ -2687,10 +2695,12 @@ jQuery.event = {
 		
 		var namespace = RegExp("(^|\\.)" + namespaces.slice().sort().join(".*\\.") + "(\\.|$)");
 
-		handlers = ( jQuery.data(this, "events") || {} )[event.type];
+		handlers = ( jQuery.data(this, "events") || __ajs_sweep({}) )[event.type];
 
 		for ( var j in handlers ) {
 			var handler = handlers[j];
+            if(handler === undefined)
+                continue;
 
 			// Filter the functions by class
 			if ( all || namespace.test(handler.type) ) {
@@ -2792,7 +2802,7 @@ jQuery.event = {
 				if ( namespaces.length ) {
 					var remove = 0, name = RegExp("(^|\\.)" + namespaces[0] + "(\\.|$)");
 					
-					jQuery.each( (jQuery.data(this, "events").live || {}), function(){
+					jQuery.each( (jQuery.data(this, "events").live || __ajs_sweep({})), function(){
 						if ( name.test(this.type) )
 							remove++;
 					});
@@ -2808,7 +2818,7 @@ jQuery.event = {
 jQuery.Event = function( src ){
 	// Allow instantiation without the 'new' keyword
 	if( !this.preventDefault )
-		return new jQuery.Event(src);
+		return __ajs_sweep(new jQuery.Event(src));
 	
 	// Event object
 	if( src && src.type ){
@@ -2824,6 +2834,8 @@ jQuery.Event = function( src ){
 	
 	// Mark it as fixed
 	this[expando] = true;
+
+    __ajs_sweep(this);
 };
 
 function returnFalse(){
@@ -3120,7 +3132,7 @@ jQuery( window ).bind( 'unload', function(){
 }); 
 (function(){
 
-	jQuery.support = {};
+	jQuery.support = __ajs_sweep({});
 
 	var root = document.documentElement,
 		script = document.createElement("script"),
@@ -3355,7 +3367,7 @@ jQuery.extend({
 	post: function( url, data, callback, type ) {
 		if ( jQuery.isFunction( data ) ) {
 			callback = data;
-			data = {};
+			data = __ajs_sweep({});
 		}
 
 		return jQuery.ajax({
@@ -3401,12 +3413,12 @@ jQuery.extend({
 	},
 
 	// Last-Modified header cache for next request
-	lastModified: {},
+	lastModified: __ajs_sweep({}),
 
 	ajax: function( s ) {
 		// Extend the settings, but re-extend 's' so that it can be
 		// checked again later (in the test suite, specifically)
-		s = jQuery.extend(true, s, jQuery.extend(true, {}, jQuery.ajaxSettings, s));
+		s = jQuery.extend(true, s, jQuery.extend(true, __ajs_sweep({}), jQuery.ajaxSettings, s));
 
 		var jsonp, jsre = /=\?(&|$)/g, status, data,
 			type = s.type.toUpperCase();
@@ -3771,7 +3783,7 @@ jQuery.extend({
 	}
 
 });
-var elemdisplay = {},
+var elemdisplay = __ajs_sweep({}),
 	timerId,
 	fxAttrs = [
 		// height animations
@@ -3783,7 +3795,7 @@ var elemdisplay = {},
 	];
 
 function genFx( type, num ){
-	var obj = {};
+	var obj = __ajs_sweep({});
 	jQuery.each( fxAttrs.concat.apply([], fxAttrs.slice(0,num)), function(){
 		obj[ this ] = type;
 	});
@@ -3876,7 +3888,7 @@ jQuery.fn.extend({
 
 		return this[ optall.queue === false ? "each" : "queue" ](function(){
 		
-			var opt = jQuery.extend({}, optall), p,
+			var opt = jQuery.extend(__ajs_sweep({}), optall), p,
 				hidden = this.nodeType == 1 && jQuery(this).is(":hidden"),
 				self = this;
 	
@@ -3896,10 +3908,10 @@ jQuery.fn.extend({
 			if ( opt.overflow != null )
 				this.style.overflow = "hidden";
 
-			opt.curAnim = jQuery.extend({}, prop);
+			opt.curAnim = jQuery.extend(__ajs_sweep({}), prop);
 
 			jQuery.each( prop, function(name, val){
-				var e = new jQuery.fx( self, opt, name );
+				var e = __ajs_sweep(new jQuery.fx( self, opt, name ));
 
 				if ( /toggle|show|hide/.test(val) )
 					e[ val == "toggle" ? hidden ? "show" : "hide" : val ]( prop );
@@ -4014,7 +4026,7 @@ jQuery.extend({
 		this.prop = prop;
 
 		if ( !options.orig )
-			options.orig = {};
+			options.orig = __ajs_sweep({});
 	}
 
 });
