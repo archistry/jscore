@@ -87,7 +87,7 @@ namespace("archistry.data.tree");
  *                  be used to wrap the objects in the model.
  *      </li>
  *      </ul>
- * @see archistry.data.tree.ObjectAdapter
+ * @see archistry.data.ObjectAdapter
  */
 
 archistry.data.tree.ArrayTreeModel = function(data, options)
@@ -120,8 +120,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     }
 
     var _self = this;
-    var _root = new archistry.data.tree.ObjectAdapter(_self)
-    var _nodes = new archistry.data.tree.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
+    var _root = new archistry.data.ObjectAdapter(_self)
+    var _nodes = new archistry.data.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
 
     /**
      * @private

@@ -468,11 +468,12 @@ archistry.ui.editor.InlineTextEditor = function(config)
 
     var _inputEditor = new archistry.ui.editor.TextFieldEditor();
     var _textEditor = new archistry.ui.editor.TextAreaEditor();
+    var Helpers = archistry.ui.Helpers;
 
     this.createEditor = function(cell, name, value)
     {
         var editor = null;
-        if((getStyle(cell, "display") === "block")
+        if((Helpers.getStyle(cell, "display") === "block")
             || (value && this.maxLength && value.length > this.maxLength))
         {
             editor = _textEditor;

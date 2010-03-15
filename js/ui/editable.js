@@ -33,8 +33,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:		editable.js
-// Created:		Wed Jan 20 13:45:22 GMT 2010
+// Name:        editable.js
+// Created:        Wed Jan 20 13:45:22 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -52,139 +52,155 @@ namespace("archistry.ui");
 
 archistry.ui.Editable = function(arg, options)
 {
-	var _oldval = null;
-	var _node = null;
-	var _self = this;
-	var _obj = null;
-	var _key = null
-	var _global = (function(){return this;}).call();
-	
-	_self.mixin(options);
+    var H = archistry.ui.Helpers;
 
-	if(!_self.renderer)
-	{
-		_self.renderer = new archistry.ui.DefaultPropertyRenderer();
-	}
+    var _oldval = null;
+    var _node = null;
+    var _self = this;
+    var _obj = null;
+    var _key = null
+    var _global = (function(){return this;}).call();
+    
+    _self.mixin(options);
 
-	if(arg instanceof Element)
-	{
-		_node = arg;
-	}
-	else
-	{
-		_node = e(arg);
-	}
+    if(!_self.renderer)
+    {
+        _self.renderer = new archistry.ui.PropertyRenderer(null, options);
+    }
 
-	if(!_node)
-	{
-		throw new ReferenceError("unable to find node for '{0}'".format([ arg ]));
-	}
+    if(arg instanceof Element)
+    {
+        _node = arg;
+    }
+    else
+    {
+        _node = e(arg);
+    }
 
-	/** @private */
-	function getAttribute(attr)
-	{
-		var _val = _node.getAttribute(attr);
-		if(!_val || _val === "")
-		{
-			throw new ReferenceError(format("Node {0} does not include the '{1}' attribute".format( _node, attr)));
-		}
+    if(!_node)
+    {
+        throw new ReferenceError("unable to find node for '{0}'".format([ arg ]));
+    }
 
-		return _val;
-	}
+    /** @private */
+    function getAttribute(attr)
+    {
+        var _val = _node.getAttribute(attr);
+        if(!_val || _val === "")
+        {
+            throw new ReferenceError(format("Node {0} does not include the '{1}' attribute".format( _node, attr)));
+        }
 
-	/** @private */
-	function onEdit(event)
-	{
-		_oldval = _obj[_key];
-		_self.editor.startEditing(_self, _obj, _key, _node);
-	}
+        return _val;
+    }
 
-	/** @private */
-	function render()
-	{
-		_self.renderer.render(_obj, _key, _node);
-	}
+    /** @private */
+    function onEdit(event)
+    {
+        _oldval = _obj.getProperty(_key);
+        _self.editor.startEditing(_self, _obj, _key, _node);
+    }
 
-	/** @private */
-	function init()
-	{
-		// first, validate that the element has all the right
-		// attributes
-		ref = getAttribute("object");
-		_obj = _global[ref];
-		if(!_obj)
-		{
-			throw new ReferenceError("Unable to find the object!");
-		}
+    /** @private */
+    function render()
+    {
+        _self.renderer.render(_obj, _key, _node);
+    }
 
-		_key = getAttribute("property")
-		if(!_self.editor)
-		{
-			_self.editor = _node.getAttribute("editor");
-			if(_self.editor)
-			{
-				if(_self.editor instanceof String)
-				{
-					_self.editor = new _self.editor();
-				}
-				else
-				{
-					_self.editor = _global[_self.editor];
-				}
-			}
-			else
-			{
-				_self.editor = new archistry.ui.editor.InlineTextEditor();
-			}
-		}
-		var signal = (_self.clicksToEdit == 2 ? "dblclick" : "click");
-		_node.addEventListener(signal, onEdit, true);
+    /** @private */
+    function init()
+    {
+        // first, validate that the element has all the right
+        // attributes
+        ref = getAttribute("object");
+        _obj = _global[ref];
+        if(!_obj && !(_obj = window[ref]))
+        {
+            throw new ReferenceError("Unable to find the object!");
+        }
 
-		if(_node.getAttribute("title") === null)
-		{
-			var name = (_self.clicksToEdit == 2 ? "Double click" : "Click");
-			_node.setAttribute("title", String.format("{0} on the text to edit it", [ name ]));
-		}
+        if(!_obj.getProperty)
+        {
+            var getter = this.getter || (function(obj, key) {
+                            return obj[key];
+                        });
+            var setter = this.getter || (function(obj, key, val) {
+                            obj[key] = val;
+                            return val;
+                        });
+            _obj = new archistry.data.ObjectAdapter(
+                        _obj, getter, setter);
+        }
 
-		render();
-	}
+        _key = getAttribute("property")
+        if(!_self.editor)
+        {
+            _self.editor = _node.getAttribute("editor");
+            if(_self.editor)
+            {
+                if(_self.editor instanceof String)
+                {
+                    _self.editor = new _self.editor();
+                }
+                else
+                {
+                    _self.editor = _global[_self.editor];
+                }
+            }
+            else
+            {
+                _self.editor = new archistry.ui.editor.InlineTextEditor();
+            }
+        }
 
-	/**
-	 * This is part of the EditingObserver interface that will
-	 * be called from the editors.
-	 *
-	 * @param context the context (in our case null)
-	 */
+        // FIXME:  this doesn't work cross-browser
+        if(!_self.clicksToEdit || _self.clicksToEdit === 2)
+        {
+            _node.ondblclick = onEdit;
+        }
+        else
+        {
+            _node.onclick = onEdit;
+        }
 
-	this.editingCancelled = function(context)
-	{
-		render();
-	};
+        if(_node.getAttribute("title") === null)
+        {
+            var name = (_self.clicksToEdit == 2 ? "Double click" : "Click");
+            _node.setAttribute("title", String.format("{0} on the text to edit it", [ name ]));
+        }
 
-	/**
-	 * This is part of the EditingObserver interface that will
-	 * be called when the editing function is completed.
-	 *
-	 * @param context the context of the edit
-	 */
+        render();
+    }
 
-	this.editingCompleted = function(context)
-	{
-		var _newval = _self.editor.value();
-		if(_oldval != _newval)
-		{
-			appendAttr(_node, "class", archistry.ui.Styles.Grid.CELL_DIRTY);
-			_obj[_key] = _newval;
-			if(this.changeSet)
-			{
-				this.changeSet.add(
-					new archistry.data.ChangeMemento(_obj,
-							archistry.data.ChangeOp.PROPERTY_CHANGE,
-							_key, _oldval));
-			}
-		}
-		render();
-	};
+    /**
+     * This is part of the EditingObserver interface that will
+     * be called from the editors.
+     *
+     * @param context the context (in our case null)
+     */
 
-	init();
+    this.editingCancelled = function(context)
+    {
+        render();
+    };
+
+    /**
+     * This is part of the EditingObserver interface that will
+     * be called when the editing function is completed.
+     *
+     * @param context the context of the edit
+     */
+
+    this.editingCompleted = function(context)
+    {
+        var _newval = _self.editor.value();
+        if(_oldval != _newval)
+        {
+            H.appendAttr(_node, "class", archistry.ui.Styles.Grid.CELL_DIRTY);
+            _obj.setProperty(_key, _newval);
+        }
+        render();
+    };
+
+    init();
 };

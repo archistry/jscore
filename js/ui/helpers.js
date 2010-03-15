@@ -263,8 +263,8 @@ archistry.ui.Helpers = {
 
 	ewidth: function(elt, raw)
 	{
-		var width = this.getStyle(elt, "width");
-		if("auto" === width || this.getStyle(elt, "display") == "inline")
+		var width = archistry.ui.Helpers.getStyle(elt, "width");
+		if("auto" === width || archistry.ui.Helpers.getStyle(elt, "display") == "inline")
 		{
 			if(elt.clip)
 			{
@@ -293,8 +293,8 @@ archistry.ui.Helpers = {
 
 	eheight: function(elt, raw)
 	{
-		var height = this.getStyle(elt, "height");
-		if("auto" === height || this.getStyle(elt, "display") == "inline")
+		var height = archistry.ui.Helpers.getStyle(elt, "height");
+		if("auto" === height || archistry.ui.Helpers.getStyle(elt, "display") == "inline")
 		{
 			if(elt.clip)
 			{

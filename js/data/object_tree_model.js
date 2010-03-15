@@ -57,7 +57,7 @@ namespace("archistry.data.tree");
 
 archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 {
-    var ObjectAdapter   = archistry.data.tree.ObjectAdapter;
+    var ObjectAdapter   = archistry.data.ObjectAdapter;
     var TreeChange      = archistry.data.tree.TreeChange;
     var TreeNodeRef     = archistry.data.tree.TreeNodeRef;
     var createError     = archistry.core.Util.createError;
@@ -88,7 +88,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         };
     }
 
-    var _nodes = new archistry.data.tree.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
+    var _nodes = new archistry.data.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
 
     // support user-defined key definitions
     if(!this.keys)
