@@ -208,7 +208,7 @@ Jester.testing("ChangeSet functionality", {
             {
                 var changes = new CompactChangeSet({
                     getKey: function(memento) {
-                        return [ memento.object().object_id(), memento.key() ].join(":");
+                        return [ memento.object().objectId(), memento.key() ].join(":");
                     }
                 });
 
@@ -412,7 +412,7 @@ Jester.testing("ChangeSet functionality", {
                 });
 
 //Console.println("****************** Attached ChangeSet observer");
-//Console.println("observer: {0}; changes: {1}", observer.object_id(), changes.object_id());
+//Console.println("observer: {0}; changes: {1}", observer.objectId(), changes.objectId());
                 observer.attach(changes);
                 changes.immediate = true;
                 changes.add(change1);

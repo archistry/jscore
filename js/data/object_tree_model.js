@@ -64,7 +64,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     var mapIndex        = archistry.data.Indexer.mapIndex;
     var toHashString    = archistry.core.Util.toHashString;
 
-	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+	$A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
    
@@ -138,7 +138,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         {
             throw createError("Attempt to double-wrap node!");
         }
-        return _nodes.setKey(node.object_id(), node);
+        return _nodes.setKey(node.objectId(), node);
     }
 
     /**
@@ -157,7 +157,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
             return rnode;
         }
 
-        var node = _nodes.getKey(rnode.object_id());
+        var node = _nodes.getKey(rnode.objectId());
         if(node === undefined)
         {
             node = __addNode(rnode);
@@ -177,7 +177,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __removeNode(node)
     {
-        return _nodes.removeKey(node.object_id());
+        return _nodes.removeKey(node.objectId());
     }
 
     /**

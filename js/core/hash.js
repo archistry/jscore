@@ -151,7 +151,7 @@ archistry.core.Hash = function()
     {
         var k = key;
         if(typeof key === 'object')
-            k = key.object_id();
+            k = key.objectId();
 
         if(this[k] === undefined)
             _size++;
@@ -172,7 +172,7 @@ archistry.core.Hash = function()
     {
         var k = key;
         if(typeof key === 'object')
-            k = key.object_id();
+            k = key.objectId();
 
         return this[k];
     };
@@ -188,7 +188,7 @@ archistry.core.Hash = function()
     {
         var k = key;
         if(typeof key === 'object')
-            k = key.object_id();
+            k = key.objectId();
 
         var rval = this[k];
         _size--;

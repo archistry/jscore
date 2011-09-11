@@ -67,7 +67,7 @@ Jester.testing("ObjectAdapterManager core functionality", {
                 });
 
                 result.check("set object and get object have same ID", {
-                    actual: sobj.object_id() === gobj.object_id(),
+                    actual: sobj.objectId() === gobj.objectId(),
                     expect: true
                 });
 

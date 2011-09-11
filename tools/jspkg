@@ -1,27 +1,12 @@
 #! /usr/bin/env ruby
 # Created: Sat Feb 13 11:47:11 GMT 2010
 
+require 'rubygems'
 require 'tempfile'
 require 'fileutils'
 require 'time'
 require 'yaml'
-
-yuicpath = "/opt/devel/yuicompressor-2.4.2"
-yuicjar = File.join(yuicpath, "build/yuicompressor-2.4.2.jar")
-packagelist = ARGV.shift
-if packagelist.nil?
-  packagelist = "package.list"
-end
-
-# FIXME:  need command-line argument handling here.  NOTE
-# should really only minify for non-developer "builds" of the
-# package.
-minify = false;
-if(ENV['JSPKG_MINIFY'] == "1")
-  minify = true
-end
-
-@pkg = YAML.load(File.open(packagelist))
+require 'tecode/command'
 
 def check_prop(prop, exit_code, msg)
   if @pkg[prop].nil?
@@ -30,52 +15,92 @@ def check_prop(prop, exit_code, msg)
   end
 end
 
-check_prop(:package_name, 1, "no package name specified")
-check_prop(:package, 2, "no destination package file specified")
-check_prop(:files, 3, "no input file list specified")
-check_prop(:version_major, 4, "no major version specified")
-check_prop(:version_minor, 5, "no minor version specified")
-check_prop(:version_release, 6, "version release specified")
-check_prop(:version_count, 7, "build count specified")
+# set up the defaults for our local environment
+yuicpath = "/opt/devel/yuicompressor"
+yuicjar = File.join(yuicpath, "build/yuicompressor-2.4.5.jar")
 
-@pkg[:version_date] = Time.now.utc.xmlschema
+include TECode::Command
+parser = TECode::Command::Parser.new(__FILE__, "[PKG]")
+parser.add_options(OptionGroup.new(
+  Option.new("count",
+      :description => "increment the build count for official builds"),
 
-# FIXME: need command-line argument handling here to determine
-# when build counting should be done.  For now, we'll never
-# increment the build...
+  Option.new("yui-jar",
+      :description => "specify an alternative location of the YUI jar file",
+      :default => "${YUIHOME}/yuicompressor.jar"),
 
-if @count
-  @pkg[:version_count] += 1
-else
-  @pkg[:version_count] = "DEVELOPER"
-end
+  Option.new("minify", "m",
+      :description => "minify the generated JavaScript using the YUI compressor")
+  )
+)
 
-@vars = @pkg.clone
-@vars[:version] = "#{@pkg[:version_major]}.#{@pkg[:version_minor]}.#{@pkg[:version_release]} (Build #{@pkg[:version_count]}; #{@pkg[:version_date]})"
-
-file = Tempfile.new(@pkg[:package])
-@pkg[:files].each do |fn|
-  File.open(fn, "r") do |inf|
-    s = inf.read.gsub(/@([-a-zA-Z0-9_]+)@/) do |key|
-      v = @vars[$1.to_sym]
-#      puts "Found '#{v}' for key: #{$1}"
-      next v if v
-      key
-    end
-    file.write s
+parser.execute(ARGV) do |args|
+  packagelist = args.shift
+  if packagelist.nil?
+    packagelist = "package.list"
   end
-end
-file.flush
-file.close
 
-if minify
-  if (rc = system("java -jar #{yuicjar} --type js #{file.path} -o #{@pkg[:package]}"))
-    File.delete(file.path)
-    File.open(packagelist, "w+") { |f| f.write @pkg.to_yaml } if @count
+  @pkg = YAML.load(File.open(packagelist))
+
+  check_prop(:package_name, 1, "no package name specified")
+  check_prop(:package, 2, "no destination package file specified")
+  check_prop(:files, 3, "no input file list specified")
+  check_prop(:version_major, 4, "no major version specified")
+  check_prop(:version_minor, 5, "no minor version specified")
+  check_prop(:version_release, 6, "version release specified")
+  check_prop(:version_count, 7, "build count specified")
+
+  @pkg[:version_date] = Time.now.utc.xmlschema
+
+  if parser["count"].matched?
+    @pkg[:version_count] += 1
   else
-    STDERR.puts "java process exited with status: #{rc}"
-    exit rc
+    @pkg[:version_count] = "DEVELOPER"
   end
-else
-  FileUtils.install(file.path, @pkg[:package], :mode => 0644)
+
+  @vars = @pkg.clone
+  @vars[:version] = "#{@pkg[:version_major]}.#{@pkg[:version_minor]}.#{@pkg[:version_release]} (Build #{@pkg[:version_count]}; #{@pkg[:version_date]})"
+
+  file = Tempfile.new(@pkg[:package])
+  @pkg[:files].each do |fn|
+    File.open(fn, "r") do |inf|
+      s = inf.read.gsub(/@([-a-zA-Z0-9_]+)@/) do |key|
+        v = @vars[$1.to_sym]
+  #      puts "Found '#{v}' for key: #{$1}"
+        next v if v
+        key
+      end
+      file.write s
+    end
+  end
+  file.flush
+  file.close
+
+  if parser["minify"].matched?
+    if (jar = parser["yui-jar"]).matched?
+      yuicjar = jar.value
+    else
+      if !File.exist? yuicjar
+        # try the environment
+        if (yuih = ENV["YUIHOME"])
+          yuicjar = File.join(yuih, "yuicompressor.jar")
+        end
+
+        if !File.exist? yuicjar
+          parser.error("minify requested but unable to locate YUI compressor jar", 1)
+        end
+      end
+    end
+
+    ofn = @pkg[:package]
+    ext = File.extname(ofn)[1..-1]
+    if (rc = system("java -jar #{yuicjar} --type #{ext} #{file.path} -o #{@pkg[:package]}"))
+      File.delete(file.path)
+      File.open(packagelist, "w+") { |f| f.write @pkg.to_yaml } if @count
+    else
+      parser.error "java process exited with status: #{rc}", rc
+    end
+  else
+    FileUtils.install(file.path, @pkg[:package], :mode => 0644)
+  end
 end

@@ -311,6 +311,8 @@ namespace("archistry.data.tree");
 
 archistry.data.tree.TreeCellPath = function(path, key)
 {
+    $A(this);
+
     this.path = function() { return path; };
     this.key = function() { return key; };
     this.toString = function()
@@ -333,6 +335,7 @@ archistry.data.tree.TreeCellPath = function(path, key)
 
 archistry.data.tree.TreeNodeRef = function(node, index)
 {
+    $A(this);
     this.node = function() { return node; };
     this.index = function() { return index; };
 };
@@ -379,6 +382,7 @@ archistry.data.tree.TreeNodeRef = function(node, index)
 
 archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 {
+    $A(this);
     this.path = function() { return path; };
     this.parent = function() { return parent; };
     this.refs = function() { return refs; };
@@ -436,7 +440,7 @@ archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 
 archistry.data.tree.Notifier = function(sender)
 {
-    this.mixin(new archistry.core.SignalSource(sender));
+    $A(this).mixin(new archistry.core.SignalSource(sender));
     this.addValidSignals([
         "tree-nodes-inserted",
         "tree-nodes-changed",
@@ -540,6 +544,8 @@ archistry.data.tree.Notifier = function(sender)
 
 archistry.data.tree.TreeNode = function()
 {
+    $A(this);
+
     var Tree = archistry.data.Tree;
     var _parent = null;
     var _children = [];

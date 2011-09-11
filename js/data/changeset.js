@@ -125,7 +125,7 @@ archistry.data.ObjectChangeSignalSource = function(sender)
     var ChangeOp = archistry.data.ChangeOp;
     var _self = this;
 
-    this.mixin(new archistry.core.SignalSource(sender));
+    $A(this).mixin(new archistry.core.SignalSource(sender));
     this.addValidSignals([
         "object-added",
         "object-removed",
@@ -148,7 +148,7 @@ archistry.data.ObjectChangeSignalSource = function(sender)
 
     this.fireObjectAdded = function(object)
     {
-//        Console.println("{0} object added", sender.object_id());
+//        Console.println("{0} object added", sender.objectId());
         _self.signalEmit("object-added", new ChangeMemento(object,
                     ChangeOp.OBJECT_ADDED));
     };
@@ -210,7 +210,7 @@ archistry.data.ObjectChangeSignalSource = function(sender)
 
     this.fireObjectPropertyAdded = function(object, key, value)
     {
-//        Console.println("{0} object property added", sender.object_id());
+//        Console.println("{0} object property added", sender.objectId());
         _self.signalEmit("object-changed", new ChangeMemento(object,
                     ChangeOp.PROPERTY_ADDED, key, value));
     };
@@ -277,7 +277,7 @@ archistry.data.ObjectChangeSignalSource = function(sender)
 
 archistry.data.ChangeSet = function(options)
 {
-    this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+    $A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(options);
 
     var _changes = [];
@@ -292,7 +292,7 @@ archistry.data.ChangeSet = function(options)
 
     this.add = function(memento)
     {
-//        Console.println("{0} ChangeSet#add", _self.object_id());
+//        Console.println("{0} ChangeSet#add", _self.objectId());
         _changes.add(memento);
         _self.fireObjectAdded(memento);
     };
@@ -377,7 +377,7 @@ archistry.data.ChangeSet = function(options)
 
 archistry.data.CompactChangeSet = function(options)
 {
-    this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+    $A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(options);
     if(!this.getKey)
     {

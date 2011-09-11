@@ -157,7 +157,7 @@ archistry.ui.editor.AbstractEditor = function()
     this.dim2style = function(cell, dim)
     {
         var style = STYLEFMT;
-        var mdim = {}.mixin(dim);
+        var mdim = $A().mixin(dim);
         if(mdim.top)
         {
             style += "top:{1}px;".format(mdim.top);
@@ -399,7 +399,7 @@ archistry.ui.editor.AbstractEditor = function()
 archistry.ui.editor.TextFieldEditor = function()
 {
     var e = archistry.ui.Helpers.e;
-    this.mixin(archistry.ui.editor.AbstractEditor);
+    $A(this).mixin(archistry.ui.editor.AbstractEditor);
 
     var INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><input id=\"{0}\" autocomplete='off' value=\"{1}\" style='{2}'/></form>";
     /**
@@ -427,7 +427,7 @@ archistry.ui.editor.TextFieldEditor = function()
 archistry.ui.editor.TextAreaEditor = function()
 {
     var e = archistry.ui.Helpers.e;
-    this.mixin(archistry.ui.editor.AbstractEditor);
+    $A(this).mixin(archistry.ui.editor.AbstractEditor);
     this.completionKeyCodes = [];
 
     var INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><textarea id=\"{0}\" style='{2}'>{1}</textarea></form>";
@@ -463,7 +463,7 @@ archistry.ui.editor.TextAreaEditor = function()
 
 archistry.ui.editor.InlineTextEditor = function(config)
 {
-    this.mixin(archistry.ui.editor.AbstractEditor);
+    $A(this).mixin(archistry.ui.editor.AbstractEditor);
     this.mixin(config);
 
     var _inputEditor = new archistry.ui.editor.TextFieldEditor();

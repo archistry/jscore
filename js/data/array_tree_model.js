@@ -97,7 +97,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     var TreeNodeRef = archistry.data.tree.TreeNodeRef;
     var Util = archistry.core.Util;
 
-	this.mixin(new archistry.data.ObjectChangeSignalSource(this))
+	$A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
    
@@ -214,7 +214,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             return;
 
         Console.println("path: [{0}]; oldval: '{1}'; newval: '{2}'", path, oldval, newval);
-        Console.println("Node: {0}; objectId: {1}", archistry.core.Util.toHashString(obj), obj.object_id());
+        Console.println("Node: {0}; objectId: {1}", archistry.core.Util.toHashString(obj), obj.objectId());
         if((oldval && !oldval.equals(newval))
                 || (newval && !newval.equals(oldval)))
         {

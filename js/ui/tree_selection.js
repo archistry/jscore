@@ -71,6 +71,8 @@ namespace("archistry.ui.selection");
 
 archistry.ui.selection.TreeSelectionRange = function(owner)
 {
+    $A(this);
+
     var Indexer = archistry.data.Indexer;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
@@ -173,7 +175,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
     this.equals = function(rhs)
     {
-        return this.object_id() === rhs.object_id();
+        return this.objectId() === rhs.objectId();
     };
 
     this.toString = function()
@@ -237,7 +239,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
 archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
 {
-    this.mixin(new archistry.ui.selection.Notifier(this));
+    $A(this).mixin(new archistry.ui.selection.Notifier(this));
     this.mixin(options);
    
     if(!selectfn)

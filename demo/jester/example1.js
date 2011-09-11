@@ -39,7 +39,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 load('/opt/devel/env-js/src/env.rhino.js');
-load('jester.js');
+load('../../jester-min.js');
 
 var x = {
 	one: {

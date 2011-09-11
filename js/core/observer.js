@@ -70,7 +70,7 @@ namespace("archistry.core");
  * <pre>
  *   var A = function()
  *   {
- *     this.mixin(new archistry.core.SignalSource(this));
+ *     $A(this).mixin(new archistry.core.SignalSource(this));
  *     ...
  *   }
  * </pre>

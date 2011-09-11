@@ -44,7 +44,7 @@ var TreeSelection = archistry.ui.selection.TreeSelection;
 
 var TestTreeNode = function(data)
 {
-    this.mixin(TreeNode);
+    $A(this).mixin(TreeNode);
     var _selected = false;
     this.data = function() { return data; };
     this.selected = function(val)
@@ -103,7 +103,7 @@ function buildObjectArray(keys, length, prefix)
     var arr = [];
     for(i = 0; i < length; ++i)
     {
-        var obj = {};
+        var obj = $A();
         keys.each(function() {
             obj[this] = "{0}{1}{2}".format([prefix, this, i]);
         });

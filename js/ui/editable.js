@@ -56,7 +56,7 @@ archistry.ui.Editable = function(arg, options)
 
     var _oldval = null;
     var _node = null;
-    var _self = this;
+    var _self = $A(this);
     var _obj = null;
     var _key = null
     var _global = (function(){return this;}).call();

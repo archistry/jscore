@@ -82,7 +82,7 @@ namespace("archistry.ui");
 
 archistry.ui.ArrayColumnModel = function(cols, options)
 {
-    var _self = this;
+    var _self = $A(this);
     this.mixin(options);
 
     if(!this.defaultRenderer)

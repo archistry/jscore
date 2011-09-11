@@ -59,7 +59,7 @@ namespace("archistry.ui.selection");
 
 archistry.ui.selection.Notifier = function(sender)
 {
-	this.mixin(new archistry.core.SignalSource(sender));
+	$A(this).mixin(new archistry.core.SignalSource(sender));
 	this.addValidSignals([
 		"selection-cleared",
 		"selection-changed",
@@ -177,7 +177,7 @@ archistry.ui.selection.SelectionRange = function(owner, start, end)
 
 archistry.ui.selection.SingleSelectionModel = function(owner, selectfn)
 {
-    this.mixin(archistry.core.Util);
+    $A(this).mixin(archistry.core.Util);
 	this.mixin(new archistry.ui.selection.Notifier(owner));
 
     if(!unselect)
@@ -310,7 +310,7 @@ archistry.ui.selection.SingleSelectionModel = function(owner, selectfn)
 
 archistry.ui.selection.MultiSelectionModel = function(options)
 {
-	this.mixin(new archistry.ui.selection.Notifier(this));
+	$A(this).mixin(new archistry.ui.selection.Notifier(this));
 	this.mixin(options);
 
 	var _selection = [];

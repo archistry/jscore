@@ -40,8 +40,10 @@
 
 var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
-T = function(path)
+var T = function(path)
 {
+    $A(this);
+
     this.path = function() { return path; };
     // NOTE: this is necessary because sometimes it might be a
     // boxed vs. non-boxed value--even for numbers!

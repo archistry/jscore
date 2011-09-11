@@ -43,7 +43,7 @@ namespace("archistry.core");
 /**
  * @class
  *
- * This si a static class that allows mix-in of some core
+ * This is a static class that allows mix-in of some core
  * helper methods that are independent of the UI or data
  * classes.
  */

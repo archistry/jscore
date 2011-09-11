@@ -49,20 +49,29 @@ function println(fmt)
     print(String.format(fmt, args));
 }
 
-// load the core library
-load('../rhino-core-min.js');
+// load the core libraries
+load('../archistry-core-min.js');
+load('rhino-core-min.js');
 
-// load the tests
-load('core/test_util.js');
-load('core/test_string_format.js');
-load('core/test_observer.js');
-load('core/test_path.js');
-load('data/test_indexer.js');
-load('data/test_array_tree_model.js');
-load('ui/test_tree_selection_range.js');
-load('ui/test_tree_selection.js');
+try
+{
+    // load the tests
+    load('js/core/test_util.js');
+    load('js/core/test_string_format.js');
+    load('js/core/test_observer.js');
+    load('js/core/test_path.js');
+    load('js/data/test_indexer.js');
+    load('js/data/test_array_tree_model.js');
+    load('js/ui/test_tree_selection_range.js');
+    load('js/ui/test_tree_selection.js');
 
-// print the results
-print(Jester.reporter.toString());
-println("Tests run: {0} ({1})", Jester.reporter.testCount(), Jester.reporter.checkCount());
+    // print the results
+    print(Jester.reporter.toString());
+    println("Tests run: {0} ({1})", Jester.reporter.testCount(), Jester.reporter.checkCount());
+}
+catch(e)
+{
+    println("caught unhandled error: {0}", e)
+    print(printStackTrace(e));
+}
 java.lang.System.exit(Jester.reporter.failures());

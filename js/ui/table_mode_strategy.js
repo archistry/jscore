@@ -62,7 +62,7 @@ archistry.ui.TableModeStrategy = function(grid, layout, options)
     var _self = this;
     var _target = { element: null, clicks: 0, time: null };
 
-    this.mixin(options);
+    $A(this).mixin(options);
     if(!this.clicksToEdit) this.clicksToEdit = 2;
     if(!this.dt) this.dt = 300;
 

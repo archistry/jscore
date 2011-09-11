@@ -105,7 +105,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     var createError             = Util.createError;
     var toHashString            = Util.toHashString;
 
-    this.mixin(options);
+    $A(this).mixin(options);
     
     if(this.editable === undefined)
     {
@@ -387,7 +387,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         // Right now, all of the TreeNode code was forked from
         // here, so duplicates that might be out of sync
         // ASAP!!  2010-02-28T19:46:16+0000
-        this.mixin(options);
+        $A(this).mixin(options);
         
         // set defaults for options
         if(sentinal === undefined)
@@ -1008,7 +1008,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         };
 
         // make sure that we're part of the mapping scheme
-        var rowid = "{0}-node-{1}".format(divId, this.object_id());
+        var rowid = "{0}-node-{1}".format(divId, this.objectId());
         _nodeById.set(rowid, this);
         layoutRow.row.id = rowid;
     }
@@ -1024,7 +1024,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function HeaderRow(layoutRow)
     {
-        this.mixin(new TreeRow(layoutRow, null, { header: true }));
+        $A(this).mixin(new TreeRow(layoutRow, null, { header: true }));
         layoutRow.row.onclick = null;
 
         /**
@@ -1062,7 +1062,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
     function TreeColumn(column)
     {
-        this.mixin(column);
+        $A(this).mixin(column);
         if(this.visible === undefined)
         {
             this.visible = true;

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009-2010 Archistry Limited
+// Copyright (c) 2009-2011 Archistry Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,9 @@
 // Split:       Fri Mar 12 08:06:52 GMT 2010
 //
 ///////////////////////////////////////////////////////////////////////
+
+// make sure that we extend all arrays with AObject
+$AObject(Array.prototype);
 
 /**
  * This method allows objects to be added to the array without
@@ -86,16 +89,9 @@ Array.prototype.indexOf = function(obj)
 	var idx = -1;
 	for(var i = 0; i < this.length; ++i)
 	{
-		if(this[i].equals)
-		{
-			if(this[i].equals(obj))
-			{
-				return i;
-			}
-		}
-		else if(this[i] === obj)
-		{
-			return i;
+        if(archistry.core.objectEquals(this[i], obj))
+        {
+            return i;
 		}
 	}
 	return idx;
@@ -227,22 +223,7 @@ Array.prototype.reverseEach = function(callback)
 
 Array.prototype.equals = function(rhs)
 {
-    if(!rhs || this.length !== rhs.length)
-        return false;
-
-    for(var i = 0; i < this.length; ++i)
-    {
-        var l = this[i];
-        var r = rhs[i];
-        if(l !== r)
-        {
-            if(l && !l.equals(r))
-                return false;
-            else if(!l && r && !r.equals(l))
-                return false;
-        }
-    }
-    return true;
+    return archistry.core.arrayEquals(this, rhs);
 };
 
 /**

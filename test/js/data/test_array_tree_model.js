@@ -342,7 +342,7 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 });
 
                 result.check("root node from model is ObjectAdapter", {
-                    actual: model.nodeForPath([]) instanceof archistry.data.tree.ObjectAdapter,
+                    actual: model.nodeForPath([]) instanceof archistry.data.ObjectAdapter,
                     expect: true 
                 });
 
@@ -352,7 +352,7 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 });
 
                 result.check("child node from model is ObjectAdapter", {
-                    actual: model.nodeForPath([3]) instanceof archistry.data.tree.ObjectAdapter,
+                    actual: model.nodeForPath([3]) instanceof archistry.data.ObjectAdapter,
                     expect: true 
                 });
 
@@ -370,7 +370,7 @@ Jester.testing("Concrete TreeRowModel functionality", {
                 });
 
                 result.check("Successive returned objects have same ID", {
-                    actual: n1.object_id() === n2.object_id(),
+                    actual: n1.objectId() === n2.objectId(),
                     expect: true
                 });
 			}

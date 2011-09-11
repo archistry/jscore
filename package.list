@@ -11,9 +11,6 @@
 - js/ext/stacktrace.js
 - js/ext/md5.js
 - js/ext/date.format.js
-- js/ext/jquery-1.3.2.js
-- js/ext/ui.core-1.7.2.js
-- js/ext/ui.resizable-1.7.2.js
 - js/core/object.js
 - js/core/array.js
 - js/core/string.js

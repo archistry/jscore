@@ -46,7 +46,7 @@ Jester.testing("Observer functionality", {
 			{
 				var Actor = function(name)
 				{
-					this.mixin(new archistry.core.SignalSource(this));
+					$A(this).mixin(new archistry.core.SignalSource(this));
 					this.name = name;
 					this.immediate = true;
 
@@ -93,7 +93,7 @@ Jester.testing("Observer functionality", {
 			{
 				var Actor = function(name)
 				{
-					this.mixin(new archistry.core.SignalSource(this));
+					$A(this).mixin(new archistry.core.SignalSource(this));
                     this.addValidSignals([ "signal1" ]);
 					this.name = name;
 					this.immediate = true;
@@ -138,7 +138,7 @@ Jester.testing("Observer functionality", {
 			{
 				var Actor = function(name)
 				{
-					this.mixin(new archistry.core.SignalSource(this));
+					$A(this).mixin(new archistry.core.SignalSource(this));
                     this.addValidSignals([ "signal1" ]);
 					this.name = name;
 					this.immediate = true;
@@ -197,7 +197,7 @@ Jester.testing("Observer functionality", {
 			{
 				var Actor = function(name)
 				{
-					this.mixin(new archistry.core.SignalSource(this));
+					$A(this).mixin(new archistry.core.SignalSource(this));
 					this.name = name;
 					this.immediate = true;
 

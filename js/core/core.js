@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009-2010 Archistry Limited
+// Copyright (c) 2009-2011 Archistry Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -156,34 +156,4 @@ function namespace(ns)
             // Opera pukes because Window isn't defined...
         }
     }
-}
-
-/**
- * This function is used to clear all an object's properties
- * and methods that have not been explicitly set so that it
- * behaves like a vanilla JavaScript object without our
- * extensions.
- * <p>
- * This method is really required for use with jQuery, since
- * jQuery doesn't support extending JavaScript's Object class.
- * </p>
- *
- * @param obj the object to clear
- * @return the object reference
- */
-
-function __ajs_sweep(obj)
-{
-    if(!obj)
-        return;
-
-    // NOTE:  we only want to get rid of what we've added to
-    // Object.  Unfortunately, we'll also whack anyone else's
-    // additions, but jQuery assumes empty objects
-    for(p in Object.prototype)
-    {
-        obj[p] = function() { };
-    }
-    
-    return obj;
 }
