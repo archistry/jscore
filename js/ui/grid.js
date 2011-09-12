@@ -150,8 +150,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     var _root = null;
     var _cols = [];
     var _allCols = [];
-    var _colByKey = {};
-    var _colIndexByKey = {};
+    var _colByKey = $A();
+    var _colIndexByKey = $A();
     var _nodeById = new Hash();
     var _checkRenderer = new CheckboxRenderer();
     var _renderer = new Renderer();
@@ -402,7 +402,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var _children = [];
         var _deleted = false;
         var _dirty = false;
-        var _cellState = {};
+        var _cellState = $A();
         var _loaded = false;
 
         /**
@@ -1809,8 +1809,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             var dcellmg = H.styleBox(dcell, "margin", true);
             var doffset = H.offset(dcell, true);
 
-//            Console.println("Cell {0}x{1}; Meta: {2}x{3}; Data: {4}x{5}, offset: '{6}', padding: {7}, margin: {8}", cellw, cellh, metaw, metah, dataw, datah, toHashString(doffset), toHashString(cellpad), toHashString(dcellmg));
-            var size = {};
+            Console.println("Cell {0}x{1}; Meta: {2}x{3}; Data: {4}x{5}, offset: '{6}', padding: {7}, margin: {8}", cellw, cellh, metaw, metah, dataw, datah, toHashString(doffset), toHashString(cellpad), toHashString(dcellmg));
+            var size = $A();
             if(0 === metaw)
             {
                 size.width = cellw;
@@ -2080,8 +2080,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         _columns = model;
         _cols = [];
         _allCols = [];
-        _colIndexByKey = {};
-        _colByKey = {};
+        _colIndexByKey = $A();
+        _colByKey = $A();
 
         if(this.showSelectorColumn)
         {

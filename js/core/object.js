@@ -538,7 +538,7 @@ archistry.core.AObject = function() {
  * @return the wrapper object
  */
 
-var $AM = function(targ)
+var $AW = function(targ)
 {
     if(!targ)
         return $A();

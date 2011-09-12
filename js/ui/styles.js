@@ -140,7 +140,7 @@ archistry.ui.Styles.Grid = {
     GRID                : "aui-grid " + archistry.ui.Styles.Widget.CONTROL,
     CELL                : "aui-grid-cell",
     CELL_SELECTED       : "aui-grid-cell-selected " + archistry.ui.Styles.State.HIGHLIGHT,
-    CELL_DIRTY          : "aui-grid-cell-dirty " + archistry.ui.Styles.State.DIRTY,
+    CELL_DIRTY          : "aui-grid-cell-dirty ", // + archistry.ui.Styles.State.DIRTY,
     ROW                 : "aui-grid-row",
     ROW_CONTENT         : "aui-grid-row-data",
     ROW_HEADER          : "aui-grid-header " + archistry.ui.Styles.Widget.HEADER,

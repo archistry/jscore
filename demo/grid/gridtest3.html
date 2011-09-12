@@ -4,6 +4,7 @@
 <head>
   <title>ArchistryJS Grid Test #3</title>
   <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <link type="text/css" href="../css/archistryui.css" rel="stylesheet" />
   <style type="text/css" media="screen">
     #console
     {
@@ -124,6 +125,8 @@
       clear: right;
     }
   </style>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
   <script type="text/javascript" src="../archistry-core-min.js"></script>
 </head>
  
@@ -164,7 +167,7 @@
       // configure the ChangeSet Display
       var changeModel = new ArrayTreeModel([], { useAdapter: false });
       var chCols = new ArrayColumnModel([
-        { key: "object", label: "Object", value: function(node) { return node.getProperty("object").object_id(); } },
+        { key: "object", label: "Object", value: function(node) { return node.getProperty("object").objectId(); } },
         { key: "change", label: "Change Type" },
         { key: "key", label: "Property Key" },
         { key: "oldValue", label: "Previous Value" }

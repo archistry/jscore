@@ -45,6 +45,8 @@ Jester.testing("Hash functionality", {
 			what: "Hash basic API works correctly",
 			how: function(result)
 			{
+				$A(this);
+				$A(result);
                 var obj = new archistry.core.Hash();
                 var o1 = obj.set("key1", "val1");
                 var o2 = obj.set("context", this);
@@ -79,14 +81,14 @@ Jester.testing("Hash functionality", {
 
                 var g1 = obj.get("key1");
                 result.check("get of string key returns original value", {
-                    actual: [ g1, g1.object_id() ],
-                    expect: [ o1, o1.object_id() ]
+                    actual: [ g1, g1.objectId() ],
+                    expect: [ o1, o1.objectId() ]
                 });
 
                 var g2 = obj.get("context");
                 result.check("get of object value returns original value", {
-                    actual: [ g2, g2.object_id() ],
-                    expect: [ o2, o2.object_id() ]
+                    actual: [ g2, g2.objectId() ],
+                    expect: [ o2, o2.objectId() ]
                 });
 
                 var g3 = obj.get("one");
@@ -132,6 +134,7 @@ Jester.testing("Hash functionality", {
 			what: "Hash#clear works correctly",
 			how: function(result)
 			{
+				$A(this);
                 var obj = new archistry.core.Hash();
                 obj.set("key1", true);
                 obj.set("context", this);

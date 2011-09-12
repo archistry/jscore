@@ -79,6 +79,8 @@ archistry.data.ChangeOp = {
 
 archistry.data.ChangeMemento = function(object, change, key, value, old)
 {
+	$A(this);
+
     this.object = function() { return object; };
     this.change = function() { return change; };
     this.key = function() { return key; };
@@ -388,7 +390,7 @@ archistry.data.CompactChangeSet = function(options)
     }
 
     var _self = this;
-    var _changes = {};
+    var _changes = $A();
     var _keys = [];
 
     /** @private */

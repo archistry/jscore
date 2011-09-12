@@ -143,7 +143,7 @@ archistry.ui.editor.AbstractEditor = function()
 
     ////// INTERNAL EDITOR API //////
 
-    var STYLEFMT = "width:{0}px;height:{1}px;";
+    var STYLEFMT = "width:{0}px;height:{1}{2};";
 
     /**
      * This is used to convert a dimensions structure to CSS
@@ -158,6 +158,8 @@ archistry.ui.editor.AbstractEditor = function()
     {
         var style = STYLEFMT;
         var mdim = $A().mixin(dim);
+		var units = "px";
+
         if(mdim.top)
         {
             style += "top:{1}px;".format(mdim.top);
@@ -176,9 +178,19 @@ archistry.ui.editor.AbstractEditor = function()
         {
             mdim.height = eheight(cell, true);
             if(mdim.height === 0)
+			{
                 mdim.height = eheight(cell.parentNode, true);
+				if(mdim.height === 0)
+				{
+					// Safari 5.0.5 doesn't assign a height to
+					// empty cells, so we're just going to
+					// punt and assump 1.2em
+					mdim.height = 1.3;
+					units = "em";
+				}
+			}
         }
-        return style.format(mdim.width, mdim.height);
+        return style.format(mdim.width, mdim.height, units);
     };
 
     /**

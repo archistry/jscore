@@ -38,7 +38,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-var ObjectAdapterManager = archistry.data.tree.ObjectAdapterManager;
+var ObjectAdapterManager = archistry.data.ObjectAdapterManager;
 
 Jester.testing("ObjectAdapterManager core functionality", {
 	tests: [
@@ -47,7 +47,7 @@ Jester.testing("ObjectAdapterManager core functionality", {
 			how: function(result)
 			{
                 var manager = new ObjectAdapterManager(true);
-                var node = { key: "foo" };
+                var node = $A({ key: "foo" });
                 var sobj = manager.setKey(1, node);
                 var gobj = manager.getKey(1);
 

@@ -156,6 +156,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         {
             return rnode;
         }
+		else if(!rnode.objectId)
+		{
+			$A(rnode);
+		}
 
         var node = _nodes.getKey(rnode.objectId());
         if(node === undefined)

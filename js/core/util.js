@@ -103,8 +103,8 @@ archistry.core.Util = {
             return obj.toHashString();
 
         // BS stuff for IE
-        if(!obj.keys)
-            obj.keys = Object.prototype.keys;
+        if(!obj.objectId)
+			obj = $AW(obj);
 
         var s = "{ ";
         var keys = obj.keys().sort();

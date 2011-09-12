@@ -47,7 +47,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
 
                 result.check("model is editable", {
@@ -107,7 +107,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 });
 
                 result.check("root node from model is ObjectAdapter", {
-                    actual: model.nodeForPath([]) instanceof archistry.data.tree.ObjectAdapter,
+                    actual: model.nodeForPath([]) instanceof archistry.data.ObjectAdapter,
                     expect: true 
                 });
 
@@ -117,7 +117,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 });
 
                 result.check("child node from model is ObjectAdapter", {
-                    actual: model.nodeForPath([3]) instanceof archistry.data.tree.ObjectAdapter,
+                    actual: model.nodeForPath([3]) instanceof archistry.data.ObjectAdapter,
                     expect: true 
                 });
 
@@ -132,7 +132,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children", { useAdapter: false });
 
                 [ root ].concat(data).each(function(i) {
@@ -172,10 +172,10 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
-                var node = { key: "New node", value: "X" };
+                var node = $A({ key: "New node", value: "X" });
                 
                 model.immediate = true;
                 model.signalConnect("tree-nodes-inserted", function(event) {
@@ -215,7 +215,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
                 model.immediate = true;
@@ -257,7 +257,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
                 model.immediate = true;
@@ -288,7 +288,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 			how: function(result)
 			{
                 var data = buildObjectArray([ "key", "value" ], 5);
-                var root = { key: "Root", children: data };
+                var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
                 model.immediate = true;

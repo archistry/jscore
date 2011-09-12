@@ -181,6 +181,8 @@ archistry.data.ObjectAdapterManager = function(enabled, getter, setter)
 
         if(enabled)
             return new archistry.data.ObjectAdapter(node, _getter, setter);
+		else if(!node.objectId)
+			$A(node);
 
         return node;
     };

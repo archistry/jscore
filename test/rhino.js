@@ -56,14 +56,18 @@ load('rhino-core-min.js');
 try
 {
     // load the tests
-    load('js/core/test_util.js');
-    load('js/core/test_string_format.js');
-    load('js/core/test_observer.js');
-    load('js/core/test_path.js');
-    load('js/data/test_indexer.js');
-    load('js/data/test_array_tree_model.js');
-    load('js/ui/test_tree_selection_range.js');
-    load('js/ui/test_tree_selection.js');
+//    load('js/core/test_util.js');
+//	load('js/core/test_hash.js');
+//    load('js/core/test_observer.js');
+//    load('js/core/test_path.js');
+//    load('js/core/test_string_format.js');
+//    load('js/data/test_indexer.js');
+    load('js/data/test_changeset.js');
+//    load('js/data/test_object_adapter_manager.js');
+//    load('js/data/test_array_tree_model.js');
+//    load('js/data/test_object_tree_model.js');
+//    load('js/ui/test_tree_selection.js');
+//    load('js/ui/test_tree_selection_range.js');
 
     // print the results
     print(Jester.reporter.toString());

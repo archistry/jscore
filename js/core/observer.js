@@ -110,7 +110,7 @@ archistry.core.SignalSource = function(sender)
 
 		if(!sender.__signals)
 		{
-			sender.__signals = {};
+			sender.__signals = $A();
 		}
 		if(!sender.__signals[signal])
 		{

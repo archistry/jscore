@@ -49,7 +49,8 @@ namespace("archistry.core");
 
 archistry.core.Hash = function()
 {
-    var _index = {};
+	$A(this);
+    var _index = $A();
     var _size = 0;
 
     /**
@@ -76,7 +77,7 @@ archistry.core.Hash = function()
             if(typeof val !== 'function')
                 delete this[k];
         }
-        _index = {};
+        _index = $A();
         _size = 0;
 
         return this;

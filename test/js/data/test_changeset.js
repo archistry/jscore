@@ -206,6 +206,8 @@ Jester.testing("ChangeSet functionality", {
             what: "CompactChangeSet folds entries correctly with user function",
             how: function(result)
             {
+				$A(this);
+
                 var changes = new CompactChangeSet({
                     getKey: function(memento) {
                         return [ memento.object().objectId(), memento.key() ].join(":");
