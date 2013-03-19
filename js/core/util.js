@@ -131,5 +131,31 @@ archistry.core.Util = {
                 s += ", ";
         });
         return s += " }";
+    },
+
+    /**
+     * This method is used to convert a property key to a label
+     *
+     * @param key the property key
+     * @return the "humanized" property key label
+     */
+
+    key2label: function(key)
+    {
+        var s = key.replace(/[-_]/g, " ");
+        return s[0].toUpperCase() + s.substring(1);
+    },
+
+    /**
+     * This method is used to convert a human-readible or
+     * human-entered string into a valid proxy property key.
+     *
+     * @param label the label (or string) to process
+     * @return the property key
+     */
+
+    label2key: function(label)
+    {
+        return label.replace(/\s+/g, "-").toLowerCase();
     }
 };

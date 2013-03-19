@@ -1787,13 +1787,20 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             return false;
         }
 
+        if(kol.editor === undefined
+                || !kol.editor
+                || !kol.editor.startEditing)
+        {
+            throw createError("editor instance defined for column '{0}' is not defined.", kol.key);
+        }
+
         setTimeout(function() {
             _self.editing = {
                 parent: parent,
                 node: info.node,
                 column: kol,
                 path: cellPath,
-                editor: kol.editor
+                editor: kol.editor,
             };
             fireEditStarted(parent, info.node, cellPath);
             var cell = info.node.cell(_colIndexByKey[kol.key]);
@@ -1818,7 +1825,8 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             }
             else
             {
-                size.width = (dataw - 2);
+//                size.width = (dataw - 2);
+                size.width = (cellw - 2);
                 size.height = cellh;
             }
 
@@ -1830,12 +1838,18 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 kol.editor.fakeCapture = _self.nav.pushEvent;
             }
 
+            // set the editor options from the column definition and
+            // include our override size of the editor
+            var editOptions = $A();
+            editOptions.mixin(kol);
+            editOptions.size = size;
+
             kol.editor.startEditing(_self, 
                     info.node.data(),
                     kol.key,
                     meta.nextSibling, 
                     _self.editing,
-                    size);
+                    editOptions);
         }, 50);
     };
 

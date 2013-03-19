@@ -3,12 +3,13 @@
 :version_release: 0-pre1dev
 :package_name: Archistry Core JavaScript Library
 :version_count: 13
-:package: archistry-core-min.js
+:package: archistry-core.min.js
 :version_date: "2010-02-13T19:13:27Z"
 :files: 
 - js/core/core.js
 - js/ext/Math.uuid.js
 - js/ext/stacktrace.js
+- js/ext/json2.js
 - js/ext/md5.js
 - js/ext/date.format.js
 - js/core/object.js

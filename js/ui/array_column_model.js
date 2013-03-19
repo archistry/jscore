@@ -77,6 +77,8 @@ namespace("archistry.ui");
  * <li>value: a function that will be called with the row to
  *            retrieve the value to be displayed for the column
  *            </li>
+ * <li>style: the CSS styles to be used for the column during creating
+ *            new cells.</li>
  * </ul>
  */
 

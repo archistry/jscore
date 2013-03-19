@@ -88,7 +88,14 @@ archistry.ui.editor.ValidatingCellEditor = {
         var validator = null;
         if(helper)
         {
-            validator = helper;
+            if(helper.validate)
+            {
+                validator = helper;
+            }
+            else if(helper.validator)
+            {
+                validator = helper.validator;
+            }
         }
         else if(this.validator)
         {
@@ -125,7 +132,6 @@ archistry.ui.editor.AbstractEditor = function()
     var eheight = Helpers.eheight;
     var ewidth = Helpers.ewidth;
     var kc = Helpers.keyCode;
-    var onBeforeEditingCompleted = ValidatingCellEditor.onBeforeEditingCompleted;
     var removeAttr = Helpers.removeAttr;
 
     var _self = this;
@@ -137,6 +143,10 @@ archistry.ui.editor.AbstractEditor = function()
     var _editor = null;
     var _value = null;
     var _context = null;
+    var _options = null;
+
+    // make sure we have the validation method
+    $A(this).mixin(ValidatingCellEditor);
 
     this.cancelKeyCodes = [ 27 ];
     this.completionKeyCodes = [ 9, 13 ];
@@ -217,10 +227,11 @@ archistry.ui.editor.AbstractEditor = function()
         if(!_editing)
             return true;
 
-        if(onBeforeEditingCompleted(_obj, _key, _obj.getProperty(_key), _editor.value))
+        var vval = this.onBeforeEditingCompleted(_obj, _key, _obj.getProperty(_key), _editor.value, _options);
+        if(vval)
         {
             _editing = false;
-            _value = _editor.value;
+            _value = vval;
             _self.destroyEditor();
             if(_observer)
             {
@@ -305,7 +316,16 @@ archistry.ui.editor.AbstractEditor = function()
     {
         if(_editor)
         {
-            _cell.removeChild(_editor.parentNode);
+            try 
+            {
+                _cell.removeChild(_editor.parentNode);
+            }
+            catch(e)
+            {
+                // silently ignore this one.  If this happens
+                // (Safari), it looks like the editor's already gone.
+            }
+            
             removeAttr(_cell, "class", archistry.ui.Styles.State.EDITING);
             _editor = null;
         }
@@ -346,12 +366,19 @@ archistry.ui.editor.AbstractEditor = function()
      *        rendered
      * @param context an opaque context object that is sent to
      *        the observer when the editing operation ends
-     * @param size (optional) allows the caller to override the default
-     *      size of the editor
+     * @param options (optional) allows the caller to specifiy
+     *        additional configuration/behavior options for the
+     *        editor, including the size of the editor with the :size
+     *        property.  A validator can also be specified either
+     *        using the :validator or :validate properties.
      */
 
-    this.startEditing = function(observer, obj, key, cell, context, size)
+    this.startEditing = function(observer, obj, key, cell, context, options)
     {
+        if(!options)
+        {
+            options = {};
+        }
         if(_editing)
         {
             return false;
@@ -371,9 +398,10 @@ archistry.ui.editor.AbstractEditor = function()
         _key = key;
         _cell = cell;
         _context = context;
+        _options = options;
 
         _editor = this.createEditor(cell, "editor-" + _key, 
-                    _obj.getProperty(_key), size);
+                    _obj.getProperty(_key), _options.size);
         setTimeout(function() { _editor.focus(); }, 50);
         _editor.onkeydown = this.onKeyDown;
         _editor.onblur = this.onBlur;
