@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -313,7 +313,7 @@ archistry.ui.selection.MultiSelectionModel = function(options)
 	$A(this).mixin(new archistry.ui.selection.Notifier(this));
 	this.mixin(options);
 
-	var _selection = [];
+	var _selection = $Array();
 
 	/**
 	 * This method is part of the SelectionModel API and is
@@ -358,7 +358,7 @@ archistry.ui.selection.MultiSelectionModel = function(options)
 
 	this.clear = function()
 	{
-		_selection = [];
+		_selection = $Array();
 		this.fireSelectionChanged();
 	};
 

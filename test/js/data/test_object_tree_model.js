@@ -135,7 +135,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children", { useAdapter: false });
 
-                [ root ].concat(data).each(function(i) {
+                $Array([ root ].concat(data)).each(function(i) {
                     this.getProperty = function(key) {
                         return this[key];
                     };

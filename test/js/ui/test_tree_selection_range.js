@@ -81,7 +81,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 range.insert(-1, new T(4));
@@ -107,7 +107,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 range.insert(0, new T(4));
@@ -133,7 +133,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 range.insert(2, new T(4));
@@ -182,7 +182,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 var r2 = range.split(new T(0));
@@ -208,7 +208,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 var r2 = range.split(new T(3));
@@ -234,7 +234,7 @@ Jester.testing("TreeSelectionRange functionality", {
 			how: function(result)
 			{
                 var range = new TreeSelectionRange(this);
-                [ 0, 1, 2, 3 ].each(function(i) {
+                $Array(0, 1, 2, 3).each(function(i) {
                     range.insert(i, new T(this));
                 });
                 var r2 = range.split(new T(1));

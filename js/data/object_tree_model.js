@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -93,7 +93,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     // support user-defined key definitions
     if(!this.keys)
     {
-        var keys = [];
+        var keys = $Array()
         for(k in obj)
         {
             if(k !== childKey && typeof obj[k] !== 'function')
@@ -208,7 +208,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         var children = parent.getProperty(childKey);
         if(!children)
         {
-            children = [];
+            children = $Array();
             parent.setProperty(childKey, children);
         }
 
@@ -225,9 +225,9 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     function parentPath(path)
     {
         if(path.length > 1)
-            return path.slice(0, -1);
+            return $Array(path.slice(0, -1));
 
-        return [];
+        return $Array()
     }
     
     /**
@@ -484,7 +484,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         var args = [ idx, 0 ].concat(nodes);
         ref.children.splice.apply(ref.children, args);
 
-        var refs = [];
+        var refs = $Array()
         nodes.each(function(i) {
             refs.add(new TreeNodeRef(__node(ref.children[idx + i]), idx + i));
         });

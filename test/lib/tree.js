@@ -66,15 +66,15 @@ function buildTestTree(dump)
 {
     // build our tree
     var root = new TestTreeNode("root");
-    [ 0, 1, 2, 3, 4 ].each(function(i) {
+    $Array(0, 1, 2, 3, 4).each(function(i) {
         root.insertChild(i, new TestTreeNode("Child" + this));
     });
     var child = root.firstChild();
-    [ 0, 1, 2 ].each(function(i) {
+    $Array(0, 1, 2).each(function(i) {
         child.insertChild(i, new TestTreeNode("L1 Child" + this));
     });
     child = child.nextSibling();
-    [ 0, 1, 2 ].each(function(i) {
+    $Array(0, 1, 2).each(function(i) {
         child.insertChild(i, new TestTreeNode("L1 Child" + this));
     });
 
@@ -100,11 +100,11 @@ function buildTestTree(dump)
 
 function buildObjectArray(keys, length, prefix)
 {
-    var arr = [];
+    var arr = $Array();
     for(i = 0; i < length; ++i)
     {
         var obj = $A();
-        keys.each(function() {
+        $Array(keys).each(function() {
             obj[this] = "{0}{1}{2}".format([prefix, this, i]);
         });
         arr.add(obj);

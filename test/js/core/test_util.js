@@ -135,8 +135,8 @@ Jester.testing("Core library functionality", {
                 obj[this] = "context";
                 obj.method1 = function() {};
 
-                var functionlist = [];
-                var proplist = [];
+                var functionlist = $Array();
+                var proplist = $Array();
                 for(k in obj)
                 {
                     if(typeof obj[k] === 'function')
@@ -434,10 +434,25 @@ Jester.testing("Core library functionality", {
             }
         },
         {
+            what: "Test $Array() function initializer",
+            how: function(result)
+            {
+				var arr = $Array(0,1,2,3);
+                result.check("verify array length", {
+                    actual: arr.length,
+                    expect: 4
+                });
+                result.check("verify array methods", {
+                    actual: arr.each === undefined,
+                    expect: false 
+                });
+            }
+        },
+        {
             what: "ensure Array#indexOf works correctly",
             how: function(result)
             {
-                var arr = [ "one", 1, 3, 4 ];
+                var arr = $Array([ "one", 1, 3, 4 ]);
                 result.check("array indexOf works for string types", {
                     actual: arr.indexOf("one"),
                     expect: 0
@@ -463,7 +478,7 @@ Jester.testing("Core library functionality", {
                 }
 
                 var one = new A("one");
-                arr = [ -1, one, new A(1) ];
+                arr = $Array([ -1, one, new A(1) ]);
                 result.check("array indexOf works for equals()", {
                     actual: arr.indexOf(one),
                     expect: 1
@@ -474,7 +489,7 @@ Jester.testing("Core library functionality", {
                     this.valueOf = function() { return arg; }
                 }
 
-                arr = [ new B("foo"), new B("bar") ];
+                arr = $Array([ new B("foo"), new B("bar") ]);
                 result.check("array indexOf works for valueOf()", {
                     actual: arr.indexOf(new B("foo")),
                     expect: 0
@@ -489,7 +504,7 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#include works correctly",
             how: function(result)
             {
-                var arr = [ "one", 1, 3, 4 ];
+                var arr = $Array([ "one", 1, 3, 4 ]);
                 result.check("array include works for string types", {
                     actual: arr.include("one"),
                     expect: true
@@ -515,13 +530,13 @@ Jester.testing("Core library functionality", {
                 }
 
                 var one = new A("one");
-                arr = [ one, new A(1) ];
+                arr = $Array([ one, new A(1) ]);
                 result.check("array include works for equals()", {
                     actual: arr.include(one),
                     expect: true
                 });
 
-                result.check("array.includes also works", {
+                result.check("array includes also works", {
                     actual: arr.includes(new A(1)),
                     expect: true
                 });
@@ -531,8 +546,8 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#remove works correctly",
             how: function(result)
             {
-                var arr0 = [ "one", 1, 2, 3 ];
-                var arr1 = [ "one", 1, 2, 3 ];
+                var arr0 = $Array([ "one", 1, 2, 3 ]);
+                var arr1 = $Array([ "one", 1, 2, 3 ]);
 
                 var x = arr0.remove("one");
                 result.check("array returned the value removed", {
@@ -560,7 +575,7 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#add works correctly",
             how: function(result)
             {
-                var arr0 = [];
+                var arr0 = $Array();
                 arr0.add("one");
                 arr0.add(1);
                 arr0.add(2);
@@ -577,7 +592,7 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#clear works correctly",
             how: function(result)
             {
-                var arr0 = [];
+                var arr0 = $Array();
                 arr0.add("one");
                 arr0.add(1);
                 arr0.add(2);
@@ -593,7 +608,7 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#equals works correctly",
             how: function(result)
             {
-                var arr0 = [ 1, 2, 3, "four" ];
+                var arr0 = $Array([ 1, 2, 3, "four" ]);
 
                 result.check("Array#equals works for basic types.", {
                     actual: arr0.equals([ 1, 2, 3, "four" ]),
@@ -605,7 +620,7 @@ Jester.testing("Core library functionality", {
                     this.valueOf = function() { return x; };
                 }
 
-                var arr0 = [ 1, "two", new A(3), new A("four") ];
+                var arr0 = $Array([ 1, "two", new A(3), new A("four") ]);
                 result.check("Array#equals supports element #valueOf for Object#equals", {
                     actual: arr0.equals([ 1, "two", new A(3), new A("four") ]),
                     expect: true
@@ -620,7 +635,7 @@ Jester.testing("Core library functionality", {
                     };
                 }
 
-                var arr0 = [ new B(2) ];
+                var arr0 = $Array([ new B(2) ]);
                 result.check("Array#equals supports element #equals", {
                     actual: arr0.equals([ new B(2) ]),
                     expect: true
@@ -631,7 +646,7 @@ Jester.testing("Core library functionality", {
             what: "ensure Array#compare works correctly",
             how: function(result)
             {
-                var arr0 = [ 1, 2, 3, "four" ];
+                var arr0 = $Array([ 1, 2, 3, "four" ]);
 
                 result.check("Array#compare returns 0 for equal arrays of primitives.", {
                     actual: arr0.compare([ 1, 2, 3, "four" ]),
@@ -643,29 +658,29 @@ Jester.testing("Core library functionality", {
                     this.valueOf = function() { return x; };
                 }
 
-                var arr0 = [ 1, "two", new A(3), new A("four") ];
+                var arr0 = $Array([ 1, "two", new A(3), new A("four") ]);
                 result.check("Array#compare supports element #valueOf for Object#compare", {
                     actual: arr0.compare([ 1, "two", new A(3), new A("four") ]),
                     expect: 0
                 });
 
                 result.check("Array#compare will return -1 for shorter arrays", {
-                    actual: [].compare([1]),
+                    actual: $Array([]).compare([1]),
                     expect: -1
                 });
 
                 result.check("Array#compare will return 1 for longer arrays", {
-                    actual: [ 1 ].compare([]),
+                    actual: $Array([ 1 ]).compare([]),
                     expect: 1
                 });
 
                 result.check("Array#compare will order by value order", {
-                    actual: [ 1 ].compare([ 2 ]),
+                    actual: $Array([ 1 ]).compare([ 2 ]),
                     expect: -1
                 });
 
                 result.check("Array#compare reversed value order is correct", {
-                    actual: [ 2 ].compare([1]),
+                    actual: $Array([ 2 ]).compare([1]),
                     expect: 1
                 });
 
@@ -678,7 +693,7 @@ Jester.testing("Core library functionality", {
                     };
                 }
 
-                var arr0 = [ new B(2) ];
+                var arr0 = $Array([ new B(2) ]);
                 result.check("Array#compare supports element #compare", {
                     actual: arr0.compare([ new B(2) ]),
                     expect: 0

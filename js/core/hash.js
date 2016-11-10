@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -134,7 +134,7 @@ archistry.core.Hash = function()
 
     this.keys = function()
     {
-        var ks = [];
+        var ks = $Array();
         _index.keys().each(function() { ks.add(_index[this]); });
         return ks;
     };
