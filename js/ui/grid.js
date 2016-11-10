@@ -2171,7 +2171,6 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         fireEditCancelled(context.parent, context.node, context.path);
         context.node.renderColumn(context.column);
         _self.editing = null;
-        fireEditingCancelled
     };
 
     /**
