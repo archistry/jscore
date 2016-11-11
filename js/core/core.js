@@ -42,7 +42,7 @@
  * @package_name@
  * Version @version@
  *
- * Copyright 2009-2010 Archistry Limited.  All Rights Reserved.
+ * Copyright 2009-2016 Archistry Limited.  All Rights Reserved.
  * http://software.archistry.com/
  *
  * Redistribution and use in source and binary forms, with or without
