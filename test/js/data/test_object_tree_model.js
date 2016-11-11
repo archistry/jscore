@@ -41,11 +41,11 @@
 var ObjectTreeModel = archistry.data.tree.ObjectTreeModel;
 
 Jester.testing("Concrete ObjectTreeModel functionality", {
-	tests: [
-		{
-			what: "ObjectTreeModel default behavior",
-			how: function(result)
-			{
+    tests: [
+        {
+            what: "ObjectTreeModel default behavior",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
@@ -125,12 +125,12 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: model.root().toHashString !== undefined,
                     expect: true
                 });
-			}
-		},
-		{
-			what: "ObjectTreeModel non-wrapped behavior",
-			how: function(result)
-			{
+            }
+        },
+        {
+            what: "ObjectTreeModel non-wrapped behavior",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children", { useAdapter: false });
@@ -165,13 +165,57 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: model.child(root, 0).compare(data[0]),
                     expect: 0
                 });
-			}
-		},
-		{
-			what: "ObjectTreeModel fires tree-nodes-inserted on insert",
-			how: function(result)
-			{
+            }
+        },
+        {
+            what: "ObjectTreeModel fires tree-nodes-inserted on insert (new child)",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
+                var root = $A({ key: "Root", children: data });
+                var model = new ObjectTreeModel(root, "children");
+                var fired = false;
+                var node = $A({ key: "New node", value: "X" });
+                
+                model.immediate = true;
+                model.signalConnect("tree-nodes-inserted", function(event) {
+                    fired = true;
+                    result.check("event list length", {
+                        actual: event.length,
+                        expect: 1
+                    });
+
+                    var e = event[0];
+                    var refs = e.refs();
+                    result.check("tree-nodes-inserted event data", {
+                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
+                        expect: [ model, [0], data[0], node, 0 ]
+                    });
+                });
+
+                result.check("insertion point is a leaf node", {
+                    actual: model.isLeaf(data[0]),
+                    expect: true
+				});
+
+                model.insertNode([0], -1, node);
+                result.check("node inserted at correct location", {
+                    actual: data[0].children[0],
+                    expect: node
+                });
+                
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+            }
+        },
+        {
+            what: "ObjectTreeModel fires tree-nodes-inserted on insert",
+            how: function(result)
+            {
+                var data = buildObjectArray([ "key", "value" ], 5);
+				data[0].children = buildObjectArray([ "c-key", "c-val" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
@@ -195,25 +239,20 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 
                 model.insertNode([0], -1, node);
                 result.check("node inserted at correct location", {
-                    actual: data[0].children,
-                    expect: [ node ]
+                    actual: data[0].children[5],
+                    expect: node
                 });
                 
-                result.check("insertion point is no longer a leaf node", {
-                    actual: !model.isLeaf(data[0]),
-                    expect: true
-                });
-
                 result.check("signal was actually fired", {
                     actual: fired,
                     expect: true
                 });
-			}
-		},
-		{
-			what: "ObjectTree fires tree-nodes-removed on remove",
-			how: function(result)
-			{
+            }
+        },
+        {
+            what: "ObjectTree fires tree-nodes-removed on remove",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
@@ -250,12 +289,47 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: fired,
                     expect: true
                 });
-			}
-		},
-		{
-			what: "ObjectTreeModel fires tree-nodes-changed on nodeChanged",
-			how: function(result)
-			{
+            }
+        },
+        {
+            what: "ObjectTree fires tree-nodes-removed on remove for deep path",
+            how: function(result)
+            {
+                var fired = false;
+				var model = buildTreeModel();
+				model.immediate = true;
+                model.signalConnect("tree-nodes-removed", function(event) {
+                    fired = true;
+                    result.check("event list length", {
+                        actual: event.length,
+                        expect: 1
+                    });
+
+                    var e = event[0];
+                    var refs = e.refs();
+                    result.check("tree-nodes-removed event data", {
+                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
+                        expect: [ model, [1, 0], model.nodeForPath([]), { key: "CC1", value: "CCV #1" }, 0 ]
+                    });
+                });
+
+				var dnode = model.nodeForPath([ 1, 0 ]);
+                var node = model.removeNode([ 1, 0 ]);
+                result.check("node removed at correct location", {
+                    actual: node,
+                    expect: dnode
+                });
+
+                result.check("signal was actually fired", {
+                    actual: fired,
+                    expect: true
+                });
+            }
+        },
+        {
+            what: "ObjectTreeModel fires tree-nodes-changed on nodeChanged",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
@@ -281,12 +355,12 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: fired,
                     expect: true
                 });
-			}
-		},
-		{
-			what: "ObjectTreeModel fires tree-nodes-inserted on insertNodes",
-			how: function(result)
-			{
+            }
+        },
+        {
+            what: "ObjectTreeModel fires tree-nodes-inserted on insertNodes",
+            how: function(result)
+            {
                 var data = buildObjectArray([ "key", "value" ], 5);
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
@@ -319,7 +393,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: fired,
                     expect: true
                 });
-			}
-		}
-	]
+            }
+        }
+    ]
 });

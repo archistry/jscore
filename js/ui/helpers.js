@@ -339,7 +339,7 @@ archistry.ui.Helpers = {
 
     styleBox: function(elt, style, raw)
     {
-        var edges = [ "top", "right", "bottom", "left" ];
+        var edges = $Array("top", "right", "bottom", "left");
         var box = $A();
         var me = this;
         edges.each(function(i) {

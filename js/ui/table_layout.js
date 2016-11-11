@@ -183,7 +183,7 @@ archistry.ui.BrowserGridLayout = function(id)
 //        Console.println("rows: {0}; insert row index: {1}; ri: {2}", [
 //                _table.rows.length, index, ri ]);
         var row = _table.insertRow(ri);
-        var rval = new GridLayoutRow(_self, row, []);
+        var rval = new GridLayoutRow(_self, row, $Array());
 
         for(var i = 0; i < cols; ++i)
         {
@@ -278,7 +278,7 @@ archistry.ui.BrowserGridLayout = function(id)
 
     this.insertRows = function(idx, cols, count)
     {
-        var rval = [];
+        var rval = $Array();
         var si = insertIndex(idx);
 //        Console.println("inserting {0} rows at {1}; si: {2}", [ count, idx, si ]);
         for(var i = 0; i < count; ++i)

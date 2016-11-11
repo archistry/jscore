@@ -522,6 +522,7 @@ Jester.testing("Core library functionality", {
 
                 function A(arg)
                 {
+					$A(this)
                     this.arg = arg;
                     this.equals = function(rhs)
                     {
@@ -536,7 +537,12 @@ Jester.testing("Core library functionality", {
                     expect: true
                 });
 
-                result.check("array includes also works", {
+                result.check("array includes named object works", {
+                    actual: arr.includes(one),
+                    expect: true
+                });
+
+                result.check("array includes arbitrary object works", {
                     actual: arr.includes(new A(1)),
                     expect: true
                 });

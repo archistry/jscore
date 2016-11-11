@@ -145,17 +145,17 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     var _data = data;
     var _header = null;
     var _columns = columns;
-    var _tasks = [];
+    var _tasks = $Array();
     var _working = false;
     var _root = null;
-    var _cols = [];
-    var _allCols = [];
+    var _cols = $Array();
+    var _allCols = $Array();
     var _colByKey = $A();
     var _colIndexByKey = $A();
     var _nodeById = new Hash();
     var _checkRenderer = new CheckboxRenderer();
     var _renderer = new Renderer();
-    var _ignoreList = [];
+    var _ignoreList = $Array();
     var _selectAll = false;
     var _selection = new TreeSelection(this, function(item, sel) {
         item.selected(sel);
@@ -399,7 +399,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var _selected = false;
         var _expanded = false;
         var _parent = null;
-        var _children = [];
+        var _children = $Array();
         var _deleted = false;
         var _dirty = false;
         var _cellState = $A();
@@ -565,7 +565,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
 
         this.path = function()
         {
-            var pc = [];
+            var pc = $Array();
             Tree.visitParents(_me, function(parent, node, depth) {
                 if(parent)
                 {
@@ -699,7 +699,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
          * node.
          */
 
-        this.clearChildren = function() { _children = []; };
+        this.clearChildren = function() { _children = $Array(); };
 
         /**
          * This method is used to set/retrieve the parent of the
@@ -1177,11 +1177,18 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var lrow = treerow.row();
         if(_self.showSelectorColumn)
         {
+			Console.println("Supposed to build the selector events");
             treerow.cell(0).onclick = function(event) {
                 if(treerow.selected())
+				{
+					Console.println("remove selection {0}", treerow);
                     _selection.remove(treerow);
+				}
                 else
+				{
+					Console.println("add selection {0}", treerow);
                     _selection.add(treerow);
+				}
             };
         }
 
@@ -1511,7 +1518,9 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             return;
 
         eventlist.each(function(i) {
+Console.println("this: {0}; i: {1}", $A(this).inspect(), i);
             var tr = nodeForPath(this.path());
+Console.println("adding node: {0}", tr);
             if(!tr)
                 return;
 
@@ -1520,7 +1529,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 throw createError("StateError:  TreeGrid and TreeRowModel are not in sync!");
             }
             var event = this;
-            callback.apply(event, [ tr ]);
+            callback.apply(event, $Array([ tr ]));
         });
     }
 
@@ -1602,17 +1611,21 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
     function modelNodesRemoved(eventlist)
     {
         processEventList(this, eventlist, function(node) {
-//            Console.println("processing removal for parent: {0} at path [{1}]", node.label, this.path);
+            Console.println("processing removal for parent: {0} at path [{1}]", node.label, this.path());
             if(!node.expanded())
             {
-//                Console.println("Parent not expanded");
+                Console.println("Parent not expanded");
                 renderRow(node);
                 return;
             }
             if(this.refs().length === 0)
+			{
+				Console.println("no refs");
                 return;
+			}
 
             this.refs().each(function(i) {
+				Console.println("delete row {0}", this.index());
                 deleteRow(node.child(this.index()));
             });
             renderRow(node);
@@ -1992,10 +2005,10 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         //
         // FIXME:  also need to cache the paths until the
         // selection changes
-        var paths = [];
-//        Console.println("selection contains {0} ranges", _selection.length);
+        var paths = $Array();
+        Console.println("selection contains {0} ranges", _selection.length());
         _selection.each(function() {
-//            Console.println("selection() processing range: {0}", this);
+            Console.println("selection() processing range: {0}", this);
             this.each(function() { 
                 paths.add(this.path());
             });
@@ -2092,14 +2105,14 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
             return _columns;
 
         _columns = model;
-        _cols = [];
-        _allCols = [];
+        _cols = $Array();
+        _allCols = $Array();
         _colIndexByKey = $A();
         _colByKey = $A();
 
         if(this.showSelectorColumn)
         {
-            _allCols = [ new TreeColumn({
+            _allCols = $Array([new TreeColumn({
                 key: "__atg_selected",
                 renderer: new CellRenderer(_checkRenderer),
                 headerRenderer: {
@@ -2110,7 +2123,7 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
                 },
                 style: "aui-grid-col-selector ui-widget-header"
                 })
-            ];
+            ]);
             _colIndexByKey["__atg_selected"] = 0;
             _colByKey["__atg_selected"] = _allCols[0];
         }
@@ -2189,12 +2202,14 @@ archistry.ui.TreeGrid = function(divId, columns, data, options)
         var newVal = context.column.editor.value();
         var dirty = false;
 
+		Console.println("Context: {0}", $A(context).inspect());
+        Console.println("Old value for {0} is '{1}'", context.path, old);
         if(old != newVal)
         {
             row.setProperty(context.column.key, newVal);
             dirty = true;
 
-//            Console.println("New value for {0} is '{1}'", context.path, row[context.column.key]);
+            Console.println("New value for {0} is '{1}'", context.path, row[context.column.key]);
         }
         context.node.renderColumn(context.column, dirty);
         fireEditCompleted(context.parent, context.node, context.path, old, newVal);

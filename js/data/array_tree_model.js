@@ -419,8 +419,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         var obj = __addNode(idx, node);
         _self.fireObjectAdded(obj);
         _self.fireNodesInserted([
-            new TreeChange($Array(), _self, [ 
-                    new TreeNodeRef(obj, idx) ])
+            new TreeChange($Array(), _self, $Array([
+                    new TreeNodeRef(obj, idx) ]) )
         ]);
     };
 
@@ -478,7 +478,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             }
             _self.fireObjectRemoved(obj);
             _self.fireNodesRemoved([ 
-                new TreeChange($Array(), _self, [ new TreeNodeRef(obj, idx) ])
+                new TreeChange($Array(), _self, $Array([ new TreeNodeRef(obj, idx) ]))
             ]);
             return node;
         }
@@ -549,7 +549,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         }
         _self.fireObjectChanged(obj);
         _self.fireNodesChanged([ 
-            new TreeChange($Array(), _self, [ new TreeNodeRef(obj, idx) ])
+            new TreeChange($Array(), _self, $Array([ new TreeNodeRef(obj, idx) ]))
         ]);
     };
 };

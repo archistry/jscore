@@ -41,6 +41,7 @@
 var Tree = archistry.data.Tree;
 var TreeNode = archistry.data.tree.TreeNode;
 var TreeSelection = archistry.ui.selection.TreeSelection;
+var ObjectTreeModel = archistry.data.tree.ObjectTreeModel;
 
 var TestTreeNode = function(data)
 {
@@ -112,3 +113,27 @@ function buildObjectArray(keys, length, prefix)
 
     return arr;
 }
+
+function buildTreeModel(start)
+{
+	var darray = $Array();
+	for(var i = (start ? start : 0); i < 5; ++i)
+	{
+	  darray.add({ key: "Key " + i, value: "Value " + i, children: [
+		{ key: "Child 1", value: "Child Value #1", children: [
+		  { key: "CC1", value: "CCV #1" },
+		  { key: "Child Child 2", value: "Child Child Value #2" }
+		]},
+		{ key: "Child 2", value: "Child Value #2", children: [
+		  { key: "Child Child 1", value: "Child Child Value #1" },
+		  { key: "Child Child 2", value: "Child Child Value #2" }
+		]}
+	  ]});
+	}
+
+	return new ObjectTreeModel({
+			  key: "Root", value: "I'm the root!",
+			  children: darray
+			}, "children");
+}
+

@@ -53,8 +53,7 @@ namespace("archistry.core");
 archistry.core.Array = function()
 {
 	$A(this);
-	var _self = this;
-
+	
 	/**
 	 * This method allows objects to be added to the array without
 	 * having to deal with the length stuff.
@@ -115,12 +114,10 @@ archistry.core.Array = function()
 	 * indicated object or false if it does not.
 	 */
 
-	this.includes = function(obj)
+	this.includes = this.include = function(obj)
 	{
 		return this.indexOf(obj) != -1;
 	};
-
-	this.include = _self.includes;
 
 	// Array Remove - By John Resig (MIT Licensed)
 	this.removeRange = function(from, to)
@@ -301,6 +298,28 @@ archistry.core.Array = function()
 
 		return rval;
 	};
+
+	this.toString = function()
+	{
+		var s = "[";
+		for(var i = 0; i < this.length; ++i)
+		{
+			var x = this[i];
+			if(x.toString === undefined)
+			{
+				s += x;
+			}
+			else
+			{
+				s += x.toString();
+			}
+			if(i < this.length - 1)
+			{
+				s += ", ";
+			}
+		}
+		return s += "]";
+	};
 };
 
 /**
@@ -315,10 +334,16 @@ archistry.core.Array = function()
 
 var $Array = function()
 {
-	var arr = new archistry.core.Array();
-	var targ = [];
+	var targ = []
+	var args = "";
 
-	if(arguments.length > 1 && !(arguments[0] instanceof Array))
+	if(arguments.length == 1 && arguments[0].removeAtIndex !== undefined)
+	{
+		// attempting to wrap an existing wrapped instance, so
+		// do nothing
+		return arguments[0];
+	}
+	else if(arguments.length > 0 && !(arguments[0] instanceof Array))
 	{
 		// build a new array
 		for(var i = 0; i < arguments.length; ++i)
@@ -332,11 +357,19 @@ var $Array = function()
 		targ = arguments[0];
 	}
 
+	var arr = new archistry.core.Array();
+
 	// this is required since we don't overwrite the prototype
 	// methods anymore, and the default Array#indexOf doesn't
 	// support our enhanced object comparators (which we need
 	// for our own API implementation).
 	targ.indexOf = arr.indexOf;
+
+	// the default Array#includes method doesn't support our
+	// extended notion of equality either, and so we need to
+	// make sure we override it in the browser if it exists as
+	// well.
+	targ.includes = arr.includes;
 
 	return archistry.core.extend(targ, arr);
 };

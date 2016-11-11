@@ -423,7 +423,15 @@ archistry.core.AObject = function() {
 	//			if(this[p] instanceof Object)
 	//				s += this[p].inspect();
 	//			else
+				
+				if(this[p] && this[p].toString !== undefined)
+				{
+					s += this[p].toString();
+				}
+				else
+				{
 					s += this[p];
+				}
 			}
 		}
 
@@ -683,8 +691,18 @@ var $AW = function(targ)
 
 var $A = function(targ)
 {
-    if(!targ) return new archistry.core.AObject();
-    return archistry.core.extend(targ, new archistry.core.AObject());
+    if(!targ)
+	{
+		return new archistry.core.AObject();
+	}
+
+	// prevent double wrapping
+	if(targ.__ajs_id === undefined)
+	{
+		return archistry.core.extend(targ, new archistry.core.AObject());
+	}
+
+	return targ;
 };
 
 /**

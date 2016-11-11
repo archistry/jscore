@@ -148,8 +148,8 @@ archistry.ui.editor.AbstractEditor = function()
     // make sure we have the validation method
     $A(this).mixin(ValidatingCellEditor);
 
-    this.cancelKeyCodes = [ 27 ];
-    this.completionKeyCodes = [ 9, 13 ];
+    this.cancelKeyCodes = $Array(27);
+    this.completionKeyCodes = $Array(9, 13);
 
     ////// INTERNAL EDITOR API //////
 
@@ -231,7 +231,7 @@ archistry.ui.editor.AbstractEditor = function()
         if(vval)
         {
             _editing = false;
-            _value = vval;
+            _value = _editor.value;
             _self.destroyEditor();
             if(_observer)
             {
@@ -468,7 +468,7 @@ archistry.ui.editor.TextAreaEditor = function()
 {
     var e = archistry.ui.Helpers.e;
     $A(this).mixin(archistry.ui.editor.AbstractEditor);
-    this.completionKeyCodes = [];
+    this.completionKeyCodes = $Array();
 
     var INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><textarea id=\"{0}\" style='{2}'>{1}</textarea></form>";
 

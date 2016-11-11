@@ -152,7 +152,7 @@ archistry.core.SignalSource = function(sender)
 		if(sender.__validSignals == null)
 		{
 			sender.__validSignals = $Array();
-			return [];
+			return $Array();
 		}
 
 		var deleted = $Array();
@@ -211,9 +211,15 @@ archistry.core.SignalSource = function(sender)
 	this.signalEmit = function(signal)
 	{
 		var args = $Array();
+		var a = null;
+
         for(var i = 1; i < arguments.length; ++i)
         {
-            args[i-1] = arguments[i];
+			if((a = arguments[i]) instanceof Array && a.each === undefined)
+			{
+				a = $Array(a);
+			}
+            args[i-1] = a;
         }
 		sigarray(signal).each(function() {
 			var fn = this;

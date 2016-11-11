@@ -86,6 +86,8 @@ archistry.ui.ArrayColumnModel = function(cols, options)
 {
     var _self = $A(this);
     this.mixin(options);
+	
+	cols = $Array(cols);
 
     if(!this.defaultRenderer)
     {

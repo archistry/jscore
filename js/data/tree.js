@@ -441,12 +441,12 @@ archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 archistry.data.tree.Notifier = function(sender)
 {
     $A(this).mixin(new archistry.core.SignalSource(sender));
-    this.addValidSignals([
+    this.addValidSignals($Array(
         "tree-nodes-inserted",
         "tree-nodes-changed",
         "tree-nodes-removed",
         "tree-structure-changed"
-    ]);
+    ));
 
     /**
      * This method is used to fire the nodes inserted signal.
