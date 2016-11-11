@@ -48,7 +48,7 @@ Running the Tests
 
 The test cases for the library are written for the Archistry
 Jester test framework.  Jester is loosely based on Ara T.
-Howard's Testy test framework for Ruby, and will print results
+Howard's [Testy test framework for Ruby](https://github.com/ahoward/testy), and will print results
 using the YAML format with the command-line runner.
 
 ### Running Tests with Rhino
