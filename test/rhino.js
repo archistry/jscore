@@ -33,8 +33,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:    rhino.js
-// Created:    Mon Dec  7 17:39:41 GMT 2009
+// Name:        rhino.js
+// Created:     Mon Dec  7 17:39:41 GMT 2009
 //
 ///////////////////////////////////////////////////////////////////////
 
