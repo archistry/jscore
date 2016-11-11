@@ -88,11 +88,9 @@
     $(function()
     {
       // Editable example;
-      var elements = $(".aui-editable");
-      for(var e = 0; e < elements.length; ++e)
-      {
-        new archistry.ui.Editable(elements[e], {clicksToEdit: 2});
-      }
+      $(".aui-editable").each(function() {
+	new archistry.ui.Editable(this, { clicksToEdit: 2 });
+      });
 
       archistry.ui.Console.attach("console");
       var console = archistry.ui.Console;
