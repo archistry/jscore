@@ -114,7 +114,7 @@ Jester.testing("Hash functionality", {
                     expect: 5
                 });
 
-                var arr = [];
+                var arr = $Array();
                 obj.each(function(key, val) {
                     arr.add(key).add(val);
                 });
@@ -140,7 +140,7 @@ Jester.testing("Hash functionality", {
                 obj.set("context", this);
                 obj.set("key2", true);
 
-                var proplist = [];
+                var proplist = $Array();
                 obj.each(function(key, val) {
                     proplist.add(key);
                 });

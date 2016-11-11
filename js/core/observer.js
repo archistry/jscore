@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009 Archistry Limited
+// Copyright (c) 2009-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -115,7 +115,7 @@ archistry.core.SignalSource = function(sender)
 		if(!sender.__signals[signal])
 		{
 //            Console.println("Creating new array ({1}) for signal '{0}'", signal, sender.object_id());
-			sender.__signals[signal] = [];
+			sender.__signals[signal] = $Array();
 		}
 
 		return sender.__signals[signal];
@@ -132,11 +132,11 @@ archistry.core.SignalSource = function(sender)
 	{
 		if(sender.__validSignals == null)
 		{
-			sender.__validSignals = [];
+			sender.__validSignals = $Array();
 		}
 
         var sigs = sender.__validSignals.concat(sigs);
-        sender.__validSignals = sigs;
+        sender.__validSignals = $Array(sigs);
 	};
 
 	/**
@@ -151,11 +151,11 @@ archistry.core.SignalSource = function(sender)
 	{
 		if(sender.__validSignals == null)
 		{
-			sender.__validSignals = [];
-			return [];
+			sender.__validSignals = $Array();
+			return $Array();
 		}
 
-		var deleted = [];
+		var deleted = $Array();
 		for(var i = 0; i < sigs.length; ++i)
 		{
 			deleted.add(sender.__validSignals.remove(sigs[i]));
@@ -210,10 +210,16 @@ archistry.core.SignalSource = function(sender)
 
 	this.signalEmit = function(signal)
 	{
-		var args = [];
+		var args = $Array();
+		var a = null;
+
         for(var i = 1; i < arguments.length; ++i)
         {
-            args[i-1] = arguments[i];
+			if((a = arguments[i]) instanceof Array && a.each === undefined)
+			{
+				a = $Array(a);
+			}
+            args[i-1] = a;
         }
 		sigarray(signal).each(function() {
 			var fn = this;
@@ -265,7 +271,7 @@ archistry.core.SignalSource = function(sender)
 
 	this.signalEmitImmediate = function(signal)
 	{
-        var args = [];
+        var args = $Array();
         var listeners = sigarray(signal);
         if(listeners.length === 0)
             return true;
@@ -291,7 +297,7 @@ archistry.core.SignalSource = function(sender)
 	 */
 
 	this.signals = function() {
-		var rval = [];
+		var rval = $Array();
 		for(k in sender.__signals)
 		{
 			rval.add(k);

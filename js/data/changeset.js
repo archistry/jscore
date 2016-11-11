@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -89,12 +89,17 @@ archistry.data.ChangeMemento = function(object, change, key, value, old)
 
     this.equals = function(rhs)
     {
-        return this.valueOf().equals(rhs.valueOf());
+		// in this case, we can't assume the global methods
+		// are there in the Object prototype anymore, so we
+		// need to use our global utility method instead of
+		// relying on the instance method.  If the instance
+		// method exists, it will be used.
+        return archistry.core.objectEquals(this.valueOf(), rhs.valueOf());
     };
 
     this.compare = function(rhs)
     {
-        return this.valueOf().compare(rhs.valueOf());
+        return archistry.core.objectCompare(this.valueOf(), rhs.valueOf());
     };
 
     this.valueOf = function()
@@ -282,7 +287,7 @@ archistry.data.ChangeSet = function(options)
     $A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(options);
 
-    var _changes = [];
+    var _changes = $Array();
     var _self = this;
 
     /**
@@ -391,7 +396,7 @@ archistry.data.CompactChangeSet = function(options)
 
     var _self = this;
     var _changes = $A();
-    var _keys = [];
+    var _keys = $Array();
 
     /** @private */
     function getIdx(key)

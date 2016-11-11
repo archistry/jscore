@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -339,7 +339,7 @@ archistry.ui.Helpers = {
 
     styleBox: function(elt, style, raw)
     {
-        var edges = [ "top", "right", "bottom", "left" ];
+        var edges = $Array("top", "right", "bottom", "left");
         var box = $A();
         var me = this;
         edges.each(function(i) {

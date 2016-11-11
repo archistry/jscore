@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,12 @@ archistry.ui.ConsoleImpl = function()
     this.attach = function(divid)
     {
         this.div = H.e(divid);
-//        this.div.innerHTML = "<div id='console-title' style='font-weight:bold;font-size:10pt;font-family:sans-serif;border: 1px solid #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;'>archistry.ui.Console <img id='console-clear' src='../images/gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' disabled='no'></textarea></form>";
-        this.div.innerHTML = "<div id='console-title' style='font-weight:bold;font-size:10pt;font-family:sans-serif;border: 1px solid #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;overflow:auto'>archistry.ui.Console <img id='console-clear' src='../images/gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' ></textarea></form>";
+//        this.div.innerHTML = "<div id='console-title'
+//        style='font-weight:bold;font-size:10pt;font-family:sans-serif;border:
+//        1px solid
+//        #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;'>archistry.ui.Console
+//        <img id='console-clear' src='../../images/gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' disabled='no'></textarea></form>";
+        this.div.innerHTML = "<div id='console-title' style='font-weight:bold;font-size:10pt;font-family:sans-serif;border: 1px solid #002654;background:#ddd0aa;color:#002654;padding:3px;position:relative;overflow:auto'>archistry.ui.Console <img id='console-clear' src='../../images/gtk-clear.png' alt='clear' style='position:absolute;top:3px;right:0;' onclick='archistry.ui.Console.clear();'/></div><form action='javascript:void(0);'><textarea id='console-text' style='padding:3px;margin-top:.5em;color:#204067;background:#e6eaee;border: 1px solid #002654' rows='10' ></textarea></form>";
         this.text = H.e("console-text");
         this.title = H.e("console-title");
         this.title.hasLayout = true;

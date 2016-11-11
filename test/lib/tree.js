@@ -41,6 +41,7 @@
 var Tree = archistry.data.Tree;
 var TreeNode = archistry.data.tree.TreeNode;
 var TreeSelection = archistry.ui.selection.TreeSelection;
+var ObjectTreeModel = archistry.data.tree.ObjectTreeModel;
 
 var TestTreeNode = function(data)
 {
@@ -66,15 +67,15 @@ function buildTestTree(dump)
 {
     // build our tree
     var root = new TestTreeNode("root");
-    [ 0, 1, 2, 3, 4 ].each(function(i) {
+    $Array(0, 1, 2, 3, 4).each(function(i) {
         root.insertChild(i, new TestTreeNode("Child" + this));
     });
     var child = root.firstChild();
-    [ 0, 1, 2 ].each(function(i) {
+    $Array(0, 1, 2).each(function(i) {
         child.insertChild(i, new TestTreeNode("L1 Child" + this));
     });
     child = child.nextSibling();
-    [ 0, 1, 2 ].each(function(i) {
+    $Array(0, 1, 2).each(function(i) {
         child.insertChild(i, new TestTreeNode("L1 Child" + this));
     });
 
@@ -100,11 +101,11 @@ function buildTestTree(dump)
 
 function buildObjectArray(keys, length, prefix)
 {
-    var arr = [];
+    var arr = $Array();
     for(i = 0; i < length; ++i)
     {
         var obj = $A();
-        keys.each(function() {
+        $Array(keys).each(function() {
             obj[this] = "{0}{1}{2}".format([prefix, this, i]);
         });
         arr.add(obj);
@@ -112,3 +113,27 @@ function buildObjectArray(keys, length, prefix)
 
     return arr;
 }
+
+function buildTreeModel(start)
+{
+	var darray = $Array();
+	for(var i = (start ? start : 0); i < 5; ++i)
+	{
+	  darray.add({ key: "Key " + i, value: "Value " + i, children: [
+		{ key: "Child 1", value: "Child Value #1", children: [
+		  { key: "CC1", value: "CCV #1" },
+		  { key: "Child Child 2", value: "Child Child Value #2" }
+		]},
+		{ key: "Child 2", value: "Child Value #2", children: [
+		  { key: "Child Child 1", value: "Child Child Value #1" },
+		  { key: "Child Child 2", value: "Child Child Value #2" }
+		]}
+	  ]});
+	}
+
+	return new ObjectTreeModel({
+			  key: "Root", value: "I'm the root!",
+			  children: darray
+			}, "children");
+}
+

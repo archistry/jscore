@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 	$A(this).mixin(new archistry.data.ObjectChangeSignalSource(this))
     this.mixin(new archistry.data.tree.Notifier(this));
     this.mixin(options);
-   
+	data = $Array(data);
+
     if(this.editable === undefined)
         this.editable = true;
 
@@ -418,8 +419,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         var obj = __addNode(idx, node);
         _self.fireObjectAdded(obj);
         _self.fireNodesInserted([
-            new TreeChange([], _self, [ 
-                    new TreeNodeRef(obj, idx) ])
+            new TreeChange($Array(), _self, $Array([
+                    new TreeNodeRef(obj, idx) ]) )
         ]);
     };
 
@@ -436,10 +437,10 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     this.insertRows = function(index, nodes)
     {
         var idx = Indexer.mapIndex(index, data.length + 1);
-        var args = [ idx, 0 ].concat(nodes);
+        var args = $Array([ idx, 0 ]).concat($Array(nodes));
         data.splice.apply(data, args);
 
-        var refs = [];
+        var refs = $Array();
         var obj = null;
         nodes.each(function(i) {
             // NOTE:  the 'this' reference IS NOT used here on
@@ -451,7 +452,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             refs.add( new TreeNodeRef(obj, idx + i) );
         });
 
-        _self.fireNodesInserted([ new TreeChange([], _self, refs) ]);
+        _self.fireNodesInserted([ new TreeChange($Array(), _self, refs) ]);
     };
 
     /**
@@ -477,7 +478,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
             }
             _self.fireObjectRemoved(obj);
             _self.fireNodesRemoved([ 
-                new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
+                new TreeChange($Array(), _self, $Array([ new TreeNodeRef(obj, idx) ]))
             ]);
             return node;
         }
@@ -503,10 +504,10 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         // we get the right results!
 
         var idx = Indexer.mapIndex((index < 0 ? index - count + 1 : index), data.length);
-        var nodes = data.splice(idx, count);
+        var nodes = $Array(data.splice(idx, count));
         if(nodes.length > 0)
         {
-            var refs = [];
+            var refs = $Array();
             nodes.each(function(i) {
                 var obj = __removeNode(idx + i);
                 // NOTE:  the 'this' reference IS NOT used here on
@@ -521,7 +522,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
                 refs.add( new TreeNodeRef(obj, idx + i) );
             });
 
-            _self.fireNodesRemoved([ new TreeChange([], _self, refs) ]);
+            _self.fireNodesRemoved([ new TreeChange($Array(), _self, refs) ]);
         }
 
         return nodes;
@@ -548,7 +549,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         }
         _self.fireObjectChanged(obj);
         _self.fireNodesChanged([ 
-            new TreeChange([], _self, [ new TreeNodeRef(obj, idx) ])
+            new TreeChange($Array(), _self, $Array([ new TreeNodeRef(obj, idx) ]))
         ]);
     };
 };

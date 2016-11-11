@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -171,7 +171,7 @@ archistry.data.Tree = {
             if((n = node.child(pi)))
             {
                 if(callback)
-                    callback(path.slice(0, i + 1), n);
+                    callback($Array(path.slice(0, i + 1)), n);
                 node = n;
             }
             else
@@ -441,12 +441,12 @@ archistry.data.tree.TreeChange = function(path, parent, refs, isContiguous)
 archistry.data.tree.Notifier = function(sender)
 {
     $A(this).mixin(new archistry.core.SignalSource(sender));
-    this.addValidSignals([
+    this.addValidSignals($Array(
         "tree-nodes-inserted",
         "tree-nodes-changed",
         "tree-nodes-removed",
         "tree-structure-changed"
-    ]);
+    ));
 
     /**
      * This method is used to fire the nodes inserted signal.
@@ -548,7 +548,7 @@ archistry.data.tree.TreeNode = function()
 
     var Tree = archistry.data.Tree;
     var _parent = null;
-    var _children = [];
+    var _children = $Array();
 
     /**
      * This method is used to retrieve the actual child
@@ -643,7 +643,7 @@ archistry.data.tree.TreeNode = function()
 
     this.path = function()
     {
-        var pc = [];
+        var pc = $Array();
         Tree.visitParents(this, function(parent, node, depth) {
             if(parent)
             {

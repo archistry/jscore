@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>ArchistryJS Tree Test #2</title>
-  <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
-  <link type="text/css" href="../css/archistryui.css" rel="stylesheet" />
+  <link type="text/css" href="../../css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <link type="text/css" href="../../css/archistryui.css" rel="stylesheet" />
   <style type="text/css" media="screen">
     #console
     {
@@ -51,7 +51,7 @@
 
     .aui-grid-cell-dirty
     {
-      background: url(../images/changed-red.gif) top right no-repeat;
+      background: url(../../images/changed-red.gif) top right no-repeat;
     }
 
     td.aui-grid-col-value
@@ -87,8 +87,8 @@
 
     .aui-grid td.aui-grid-cell-dirty:hover
     {
-/*      background: #f0d588 url(../images/changed-red.gif) top right no-repeat; */
-      background: #d7ebf9 url(../images/changed-red.gif) top right no-repeat;
+/*      background: #f0d588 url(../../images/changed-red.gif) top right no-repeat; */
+      background: #d7ebf9 url(../../images/changed-red.gif) top right no-repeat;
     }
 
     .aui-grid th.aui-grid-cell:hover
@@ -109,9 +109,9 @@
       float: right;
     }
   </style>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="../archistry-core-min.js"></script>
+  <script type="text/javascript" src="../jslib/jquery-1.9.1.js"></script>
+  <script type="text/javascript" src="../jslib/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="../../archistry-core.min.js"></script>
 </head>
  
 <body>
@@ -142,7 +142,7 @@
      
       function buildModel(start)
       {
-        var darray = [];
+        var darray = $Array();
         for(var i = (start ? start : 0); i < 5; ++i)
         {
           darray.add({ key: "Key " + i, value: "Value " + i, children: [
@@ -177,6 +177,10 @@
         showHeader: true
       });
 
+      model.signalConnect("tree-nodes-removed", function(eventlist) {
+	alert("tree nodes removed from model");
+      });
+
       function printPath(path)
       {
         var s = "[ ";
@@ -198,7 +202,10 @@
       });
 
       $("#delete-rows").click(function(event) {
-        grid.selection().reverseEach(function() {
+	var sel = grid.selection();
+	alert("remove selection: " + sel);
+        sel.reverseEach(function() {
+	  alert("model.removeNode: " + this);
           model.removeNode(this);
         });
       });
@@ -219,7 +226,7 @@
         var path = selection[0];
         var count = Math.floor(Math.random() * 6);
         Console.println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
-        var rows = [];
+        var rows = $Array();
         var index = model.childCount(model.nodeForPath(path));
         for(var j = 0; j < count; ++j)
         {

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -93,7 +93,7 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     // support user-defined key definitions
     if(!this.keys)
     {
-        var keys = [];
+        var keys = $Array()
         for(k in obj)
         {
             if(k !== childKey && typeof obj[k] !== 'function')
@@ -134,9 +134,13 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __addNode(node)
     {
-        if(node instanceof ObjectAdapter)
+		if(node === undefined || !node)
+		{
+			throw createError("ArgumentError: Attempt to create undefined or empty node");
+		}
+        else if(node instanceof ObjectAdapter)
         {
-            throw createError("Attempt to double-wrap node!");
+            throw createError("RuntimeError: Attempt to double-wrap node!");
         }
         return _nodes.setKey(node.objectId(), node);
     }
@@ -152,7 +156,11 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __node(rnode)
     {
-        if(rnode instanceof ObjectAdapter)
+		if(rnode === undefined || !rnode)
+		{
+			throw createError("Attempt to map undefined or empty node");
+		}
+        else if(rnode instanceof ObjectAdapter)
         {
             return rnode;
         }
@@ -181,6 +189,17 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
 
     function __removeNode(node)
     {
+		// necessary since we took out the global object
+		// extensions
+		if(node === undefined || !node)
+		{
+			throw createError("Attempt to map undefined or empty node");
+		}
+		else if(!node.objectId)
+		{
+			$A(node);
+		}
+
         return _nodes.removeKey(node.objectId());
     }
 
@@ -205,14 +224,19 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
             throw createError("Unable to find parent node for path: [{0}]", [ path ]);
         }
 
+		// FIXME: not sure if I need to do this or not
         var children = parent.getProperty(childKey);
         if(!children)
         {
-            children = [];
+            children = $Array();
             parent.setProperty(childKey, children);
         }
+		else
+		{
+			children = $Array(children);
+		}
 
-        return { parent: parent, children: children };
+        return $A({ parent: parent, children: children });
     }
 
     /**
@@ -225,9 +249,9 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     function parentPath(path)
     {
         if(path.length > 1)
-            return path.slice(0, -1);
+            return $Array(path.slice(0, -1));
 
-        return [];
+        return $Array()
     }
     
     /**
@@ -452,12 +476,15 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     {
         var ref = childArray(parentPath);
         var idx = mapIndex(index, ref.children.length + 1);
-        Console.println("ObjectTreeMode#insertNode insertion requested for node at index {0}({1}) for path [{2}] which has {3} children", idx, index, parentPath, ref.children.length);
-        ref.children.splice(idx, 0, child);
+//        Console.println(">>>>>>>>>>>>>>> ObjectTreeMode#insertNode ref: {0}", ref.inspect());
+//        Console.println(">>>>>>>>>>>>>>> ObjectTreeMode#insertNode ref.children: {0}", ref.children.inspect());
+//        Console.println(">>>>>>>>>>>>>>> ObjectTreeMode#insertNode ref.children is Array? {0}", ref.children instanceof Array);
+//        Console.println(">>>>>>>>>>>>>>> ObjectTreeMode#insertNode insertion requested for node at index {0}({1}) for path [{2}] which has {3} children", idx, index, parentPath, ref.children.length);
+        ref.children.splice(idx, 0, $A(child));
 
         this.fireNodesInserted([
-            new TreeChange(parentPath, ref.parent, [
-                    new TreeNodeRef(__node(child), idx) ])
+            new TreeChange(parentPath, ref.parent, $Array([
+                    new TreeNodeRef(__node(child), idx) ]))
         ]);
     };
 
@@ -480,11 +507,11 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
     {
         var ref = childArray(parentPath);
         var idx = mapIndex(index, ref.children.length + 1);
-        Console.println("ObjectTreeMode#insertNodes insertion requested for {0} nodes at index {1}({2}) for path [{3}] which has {4} children", nodes.length, idx, index, parentPath, ref.children.length);
+//        Console.println("ObjectTreeMode#insertNodes insertion requested for {0} nodes at index {1}({2}) for path [{3}] which has {4} children", nodes.length, idx, index, parentPath, ref.children.length);
         var args = [ idx, 0 ].concat(nodes);
         ref.children.splice.apply(ref.children, args);
 
-        var refs = [];
+        var refs = $Array()
         nodes.each(function(i) {
             refs.add(new TreeNodeRef(__node(ref.children[idx + i]), idx + i));
         });
@@ -506,6 +533,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         var ppath = parentPath(path);
         var ref = childArray(ppath);
         var idx = path[path.length - 1];
+Console.println("#removeNode: {0}", path);
+Console.println("#removeNode parent path: {0}", ppath);
+Console.println("#removeNode idx: {0}", idx);
+Console.println("child array: {0}", ref);
         var child = ref.children.removeAtIndex(idx);
         
         var node = __removeNode(child);
@@ -518,8 +549,8 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
             }
         }
         this.fireNodesRemoved([
-            new TreeChange(ppath, ref.parent, [ 
-                    new TreeNodeRef(node, idx) ])
+            new TreeChange(ppath, ref.parent, $Array([ 
+                    new TreeNodeRef(node, idx) ]))
         ]);
         return node;
     };

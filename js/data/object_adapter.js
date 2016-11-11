@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,7 @@ namespace("archistry.data");
 archistry.data.ObjectAdapter = function(obj, getter, setter)
 {
     $A(this);
-    Console.println("ObjectAdapter created for object {0} with object ID: {1}", archistry.core.Util.toHashString(obj), this.objectId());
+//    Console.println("ObjectAdapter created for object {0} with object ID: {1}", archistry.core.Util.toHashString(obj), this.objectId());
 
     /**
      * This method is used to get the specified property from

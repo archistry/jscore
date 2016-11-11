@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>ArchistryJS Grid Test #2</title>
-  <link type="text/css" href="../jqueryui/css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
-  <link type="text/css" href="../css/archistryui.css" rel="stylesheet" />
+  <link type="text/css" href="../../css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <link type="text/css" href="../../css/archistryui.css" rel="stylesheet" />
   <style type="text/css" media="screen">
     #console
     {
@@ -112,7 +112,7 @@
   </style>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="../archistry-core-min.js"></script>
+  <script type="text/javascript" src="../../archistry-core.min.js"></script>
 </head>
  
 <body>
@@ -137,7 +137,7 @@
     {
       var editor = new archistry.ui.editor.TextFieldEditor();
      
-      var darray = [];
+      var darray = $Array();
       for(var i = 0; i < 5; ++i)
       {
         darray.add({ key: "Key " + i, value: "Value " + i });
@@ -187,7 +187,7 @@
           return;
         }
 
-        var path = [];
+        var path = $Array();
         var idx = -1;
         if(selection.length === 1)
         {
@@ -197,7 +197,7 @@
 
         var count = Math.floor(Math.random() * 6);
         Console.println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
-        var rows = [];
+        var rows = $Array();
         for(var j = 0; j < count; ++j)
         {
           rows.add({ key: "New key " + index++, value: null });

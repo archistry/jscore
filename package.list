@@ -1,6 +1,6 @@
 --- 
-:version_minor: 1
-:version_release: 0-pre1dev
+:version_minor: 9
+:version_release: 0-dev
 :package_name: Archistry Core JavaScript Library
 :version_count: 13
 :package: archistry-core.min.js

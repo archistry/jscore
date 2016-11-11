@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009-2011 Archistry Limited
+// Copyright (c) 2009-2016 Archistry Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -174,6 +174,119 @@ archistry.core.arrayEquals = function(lhs, rhs)
 };
 
 /**
+ * This is a static function that compares values as per the
+ * AObject#compare method.  However, now we can no longer
+ * assume this method will be present in all object instances,
+ * so we provide an external static implemementation.
+ */
+
+archistry.core.objectCompare = function(lhs, rhs)
+{
+	var tval = lhs;
+	var rval = rhs;
+
+	if(lhs !== undefined && rhs === undefined)
+	{
+		return 1;
+	}
+	else if(lhs === undefined && rhs !== undefined)
+	{
+		return -1;
+	}
+	else if(lhs === undefined && rhs === undefined)
+	{
+		return 0;
+	}
+
+	if(lhs && lhs.compare !== undefined)
+	{
+		return lhs.compare(rhs);
+	}
+	else if(rhs && rhs.compare !== undefined)
+	{
+		return -1 * rhs.compare(lhs);
+	}
+	else
+	{
+		if(lhs instanceof Array)
+		{
+			return archistry.core.arrayCompare(lhs, rhs);
+		}
+		
+		if(lhs && lhs.valueOf)
+		{
+			tval = lhs.valueOf();
+		}
+
+		if(rhs && rhs.valueOf)
+		{
+			rval = rhs.valueOf();
+		}
+
+		if(tval && tval.equals && tval.equals(rval))
+		{
+			return 0;
+		}
+		else if(rval && rval.equals && rval.equals(tval))
+		{
+			return 0;
+		}
+		else if(tval === rval)
+		{
+			return 0;
+		}
+		else if(tval < rval)
+		{
+			return -1;
+		}
+		
+		return 1;
+	}
+};
+
+/**
+ * This is a static function that will compare Arrays.  If the
+ * objects in the array implement a <code>#compare</code>
+ * method, that method will be used in place of the regular
+ * comparison operators.
+ *
+ * @param lhs the left array
+ * @param rhs the right array
+ * @return 0 if arrays are equal; -1 if the lhs is less than
+ * the rhs; 1 if lhs is greater than rhs
+ */
+
+archistry.core.arrayCompare = function(lhs, rhs)
+{
+	if(lhs && rhs === undefined)
+	{
+		return 1;
+	}
+	else if(rhs && lhs === undefined)
+	{
+		return -1;
+	}
+	else if(lhs && rhs && lhs.length < rhs.length)
+	{
+		return -1;
+	}
+	else if(lhs && rhs && lhs.length > rhs.length)
+	{
+		return 1;
+	}
+
+	var rc = 0;
+    for(var i = 0; i < this.length; ++i)
+    {
+        if((rc = archistry.core.objectCompare(lhs[i], rhs[i])) != 0)
+		{
+            return rc;
+		}
+    }
+    return 0;
+};
+
+/**
  * This class is used to migrate all of the original Object
  * extension methods from 2009-2010 into something that will
  * more easily play well with jQuery and other frameworks
@@ -310,7 +423,15 @@ archistry.core.AObject = function() {
 	//			if(this[p] instanceof Object)
 	//				s += this[p].inspect();
 	//			else
+				
+				if(this[p] && this[p].toString !== undefined)
+				{
+					s += this[p].toString();
+				}
+				else
+				{
 					s += this[p];
+				}
 			}
 		}
 
@@ -457,22 +578,32 @@ archistry.core.AObject = function() {
 
 	this.compare = function(rhs)
 	{
-	//    println("Object#compare called for: {0} vs. {1}".format(this, rhs));
+//		println("Object#compare called for: {0} vs. {1}".format(this, rhs));
 		var tval = this;
 		var rval = rhs;
 
 		if(rhs === undefined)
-			return 0;
+			return 1;
 
-		if(this.valueOf) tval = this.valueOf();
-		if(rhs.valueOf) rval = rhs.valueOf();
+		if(this.valueOf)
+		{
+			tval = this.valueOf();
+		}
+
+		if(rhs.valueOf)
+		{
+			rval = rhs.valueOf();
+		}
 
 		if(tval === rval)
+		{
 			return 0;
+		}
 		else if(tval < rval)
+		{
 			return -1;
-		else
-			return 1;
+		}
+		return 1;
 	};
 
 	/**
@@ -491,7 +622,7 @@ archistry.core.AObject = function() {
 
 	this.keys = function(includeMethods)
 	{
-		var keys = [];
+		var keys = $Array();
 		for(var k in this)
 		{
 			try
@@ -560,8 +691,18 @@ var $AW = function(targ)
 
 var $A = function(targ)
 {
-    if(!targ) return new archistry.core.AObject();
-    return archistry.core.extend(targ, new archistry.core.AObject());
+    if(!targ)
+	{
+		return new archistry.core.AObject();
+	}
+
+	// prevent double wrapping
+	if(targ.__ajs_id === undefined)
+	{
+		return archistry.core.extend(targ, new archistry.core.AObject());
+	}
+
+	return targ;
 };
 
 /**

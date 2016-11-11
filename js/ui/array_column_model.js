@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,8 @@ archistry.ui.ArrayColumnModel = function(cols, options)
 {
     var _self = $A(this);
     this.mixin(options);
+	
+	cols = $Array(cols);
 
     if(!this.defaultRenderer)
     {

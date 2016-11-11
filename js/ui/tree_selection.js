@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2010 Archistry Limited
+// Copyright (c) 2010-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
     var Indexer = archistry.data.Indexer;
     var TreeSelectionRange = archistry.ui.selection.TreeSelectionRange;
 
-    var _nodes = [];
+    var _nodes = $Array();
 
     function index(val, forInsert)
     {
@@ -134,7 +134,7 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
         // we're in the middle of the list somewhere
 //        println("last: {0}; idx: {1}", [ last, idx ]);
-        var ns = _nodes.splice(idx, _nodes.length - idx);
+        var ns = $Array(_nodes.splice(idx, _nodes.length - idx));
         ns.shift(); // get rid of the first node
 
         var range = new TreeSelectionRange(owner);
@@ -185,14 +185,16 @@ archistry.ui.selection.TreeSelectionRange = function(owner)
 
     this.owner = function() { return owner; };
     
-    this.start = function() {
+    this.start = function()
+	{
         if(_nodes.length)
             return _nodes[0].path();
         
         return null;
     };
 
-    this.end = function() {
+    this.end = function()
+	{
         if(_nodes.length)
             return _nodes[_nodes.length - 1].path();
         
@@ -270,7 +272,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
     var _selectAll = false;
 
     /** the list of active selection ranges */
-    var _rangelist = [];
+    var _rangelist = $Array();
 
     /**
      * @private
@@ -440,7 +442,7 @@ archistry.ui.selection.TreeSelection = function(owner, selectfn, options)
 
     function join(r1, node, r2)
     {
-        var delta = [ node.path() ];
+        var delta = $Array(node.path());
 
         r1.insert(-1, node);
         _nodeIndex.set(node, r1);

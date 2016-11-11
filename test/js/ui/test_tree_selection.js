@@ -51,7 +51,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 var node = this.tree.firstChild();
                 node.selected(true);
                 selection.add(node);
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -91,7 +91,7 @@ Jester.testing("TreeSelectionRange functionality", {
                     selection.add(child);
                 }
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -129,7 +129,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.selected(true);
                 selection.add(child);
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -168,7 +168,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 sib.selected(true);
                 selection.add(sib);
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -207,7 +207,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.selected(true);
                 selection.add(child);
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -246,7 +246,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.selected(true);
                 selection.add(child);
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -302,7 +302,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.selected(true);
                 selection.add(child);
 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -356,7 +356,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 child.selected(true);
                 selection.add(child);
 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -405,7 +405,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 node.selected(true);
                 selection.add(node);
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -439,7 +439,7 @@ Jester.testing("TreeSelectionRange functionality", {
                 node.firstChild().selected(true);
                 selection.add(node.firstChild());
                 
-                var range = [];
+                var range = $Array();
                 selection.each(function() {
                     range.add(this);
                 });
@@ -449,7 +449,7 @@ Jester.testing("TreeSelectionRange functionality", {
                     expect: 2
                 });
              
-                var paths = [];
+                var paths = $Array();
                 range.each(function() {
                     this.each(function() {
                         paths.add(this.path());

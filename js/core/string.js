@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009-2010 Archistry Limited
+// Copyright (c) 2009-2016 Archistry Limited
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -300,7 +300,7 @@ String.format = function(source, params) {
  */
 
 String.prototype.format = function() {
-    var args = [ this ];
+    var args = $Array([ this ]);
     for(var i = 0; i < arguments.length; ++i)
     {
         args.add(arguments[i]);
