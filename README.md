@@ -1,7 +1,7 @@
 README for Archistry Core JavaScript Library
 ============================================
 
-Last updated: Sun 11 Sep 2011 15:08:55 IST
+Last updated: Sat Nov 12 15:54:42 SAST 2016
 
 Getting Started - Command Line
 ==============================
@@ -31,7 +31,8 @@ Building the Library
 
 "Building" the library simply means packaging and optionally
 minimizing the library source into a single, installable
-JavaScript file.
+JavaScript file.  This requires the 'jspkg' command from the
+[tecode-ruby](https://github.com/atownley/tecode-ruby) repository.
 
 To build the unimimized package, execute the following
 command:
