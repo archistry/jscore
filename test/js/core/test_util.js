@@ -611,6 +611,26 @@ Jester.testing("Core library functionality", {
             }
         },
         {
+            what: "ensure Array#each works correctly",
+            how: function(result)
+            {
+                var arr0 = $Array();
+                arr0.add(1);
+                arr0.add(2);
+                arr0.add(3);
+                var arr1 = $Array();
+
+				arr0.each(function() {
+					arr1.add(this);
+				});
+
+                result.check("array each can create equivalent array", {
+                    actual: arr0,
+                    expect: arr1
+                });
+            }
+        },
+        {
             what: "ensure Array#equals works correctly",
             how: function(result)
             {

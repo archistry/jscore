@@ -238,6 +238,11 @@ archistry.core.XHR = function()
 			headers.add({key: "Content-Type", value: hash.contentType});
 		}
 
+		if(hash.responseType)
+		{
+			xhr.responseType(hash.responseType);
+		}
+
 		xhr.open(method, location, true);
 		xhr.onreadystatechange = readyStateHandler;
 		
