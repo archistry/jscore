@@ -27,10 +27,12 @@
 - js/data/tree.js
 - js/data/array_tree_model.js
 - js/data/object_tree_model.js
+- js/io/file_loader.js
 - js/ui/styles.js
 - js/ui/selection.js
 - js/ui/renderer.js
 - js/ui/editable.js
+- js/ui/file_opener.js
 - js/ui/helpers.js
 - js/ui/tree_selection.js
 - js/ui/array_column_model.js

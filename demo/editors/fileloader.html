@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>ArchistryJS FileLoader Test #1</title>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="../../archistry-core.min.js"></script>
+</head>
+ 
+<body>
+  <h1>Load Button Test</h1>
+  <button id="file-open">Open...</button>
+  <pre id="contents"></pre>
+  <div id="viewer"></div>
+  <script type="text/javascript">
+    $(function()
+    {
+      var fileOpen = new archistry.ui.FileOpener();
+      fileOpen.attach("file-open");
+      fileOpen.signalConnect("file-open-completed", function(fileInfo) {
+	var rImg = /image\//;
+	var rPdf = /pdf/;
+
+	// clear any existing viewer images
+	$("#viewer img").remove();
+	$("#contents").html("");
+
+	if(rImg.test(fileInfo.contentType))
+	{
+	  // probably not terribly efficient, but this is just a test
+	  var arr = new Uint8Array(fileInfo.data);
+	  var str = String.fromCharCode.apply(null, arr);
+	  $("#viewer").append("<img src='data:" + fileInfo.contentType + ";base64," + rstr2b64(str) + "'/>");
+	}
+	else if(rPdf.test(fileInfo.contentType))
+	{
+	  alert("PDFs are not currently supported");
+	}
+	else
+	{
+	  $("#contents").html(
+	    String.fromCharCode.apply(null, 
+	      new Uint8Array(fileInfo.data)));
+	}
+      });
+    });
+  </script>
+</body>
+</html>
