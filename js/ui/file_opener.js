@@ -116,22 +116,14 @@ archistry.ui.FileOpener = function(options)
 
 	function loadFile(file)
 	{
-		// FIXME: I'm not really sure whether this is
-		// necessary or not yet.
-		var reader = new FileReader();
-		var fileRef = { 
-			name: file.name, 
-			size: file.size, 
-			contentType: file.type
-		};
-
-		reader.onload = function(e) {
-			fileRef.data = e.target.result;
-			fileRef.md5 = hex_md5(fileRef.data);
-			fireOpenCompleted(fileRef);
-		};
-
-		reader.readAsBinaryString(file);
+		var loader = new archistry.io.FileLoader();
+		loader.signalConnect("file-load-completed", function(e) {
+			fireOpenCompleted(e);
+		});
+		loader.signalConnect("file-load-error", function(e) {
+			alert("Error: {0} ({1})".format(e.error.message, e.error.code));
+		});
+		loader.loadFile(file);
 	}
 
     /**

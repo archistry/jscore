@@ -15,6 +15,8 @@
   <pre id="contents"></pre>
   <div id="viewer"></div>
   <script type="text/javascript">
+    var myFile = null;
+
     $(function()
     {
       var fileOpen = new archistry.ui.FileOpener();
@@ -28,12 +30,12 @@
 	$("#contents").html("");
 	$("#hash").html(fileInfo.md5);
 
+	myFile = fileInfo;
+
 	if(rImg.test(fileInfo.contentType))
 	{
 	  // probably not terribly efficient, but this is just a test
-	  var arr = new Uint8Array(fileInfo.data);
-	  var str = String.fromCharCode.apply(null, arr);
-	  $("#viewer").append("<img src='data:" + fileInfo.contentType + ";base64," + rstr2b64(str) + "'/>");
+	  $("#viewer").append("<img src='" + fileInfo.data + "'/>");
 	}
 	else if(rPdf.test(fileInfo.contentType))
 	{
@@ -41,9 +43,8 @@
 	}
 	else
 	{
-	  $("#contents").html(
-	    String.fromCharCode.apply(null, 
-	      new Uint8Array(fileInfo.data)));
+	  var data = atob(fileInfo.data.split(',')[1]);
+	  $("#contents").html(data);
 	}
       });
     });

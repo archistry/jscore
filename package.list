@@ -12,6 +12,7 @@
 - js/ext/json2.js
 - js/ext/spark-md5.js
 - js/ext/date.format.js
+- js/ext/base64.js
 - js/core/object.js
 - js/core/array.js
 - js/core/string.js

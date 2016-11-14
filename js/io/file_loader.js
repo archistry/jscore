@@ -103,10 +103,24 @@ archistry.io.FileLoadTask = function(file, chunkSize)
 
 	function fireTaskCompleted()
 	{
-		_self.signalEmit("task-completed", $A({
-				md5: _spark.end(),
-				data: _spark.getState().buff
-				}).mixin(_eventInfo));
+		// FIXME: this is pretty annoying that we need to do
+		// things this way, and we probably are copying the
+		// information around multiple times, but right now, I
+		// don't see any other good way to do this based on
+		// what we're trying to accomplish.
+		//
+		// FIXME: investigate ObjectURLs based on this post: 
+		// https://www.bennadel.com/blog/2966-rendering-image-previews-using-object-urls-vs-base64-data-uris-in-angularjs.htm
+		
+		var reader = new FileReader();
+		var data = null;
+		reader.onload = function(e) {
+			_self.signalEmit("task-completed", $A({
+					md5: _spark.end(),
+					data: e.target.result,
+					}).mixin(_eventInfo));
+		};
+		reader.readAsDataURL(file);
 	}
 
 	function fireTaskError(event)
@@ -196,6 +210,7 @@ archistry.io.FileLoader = function()
 
 	$A(this).mixin(new archistry.core.SignalSource(this));
 	this.addValidSignals([
+		"file-load-started",
 		"file-load-completed",
 		"file-load-error",
 		"file-load-data",
@@ -274,7 +289,7 @@ archistry.io.FileLoader = function()
 
 	this.loadFile = function(file)
 	{
-		var task = archistry.io.FileLoadTask(file, CHUNKSIZE);
+		var task = new archistry.io.FileLoadTask(file, CHUNKSIZE);
 		task.signalConnect("task-started", function(e) {
 			_tasks.add(this);
 			_self.signalEmit("file-load-started", e);
@@ -287,7 +302,7 @@ archistry.io.FileLoader = function()
 			_self.signalEmit("file-load-completed", e);
 		});
 		task.signalConnect("task-status", function(e) {
-			_self.signalEmit("file-data", e);
+			_self.signalEmit("file-load-data", e);
 		});
 
 		setTimeout(task.start(), 10);
