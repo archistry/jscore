@@ -441,7 +441,7 @@ archistry.core.AObject = function() {
 
 	/**
 	 * This method returns a unique object ID for each object.  It
-	 * depends on having both the Math.uuid.js and md5.js
+	 * depends on having both the Math.uuid.js and spark-md5.js
 	 * functions available.
 	 *
 	 * @return the unique object ID for this instance
@@ -454,7 +454,7 @@ archistry.core.AObject = function() {
 			return this.__ajs_id;
 		}
 
-		this.__ajs_id = "0x" + hex_md5(Math.uuid());
+		this.__ajs_id = "0x" + SparkMD5.hash(Math.uuid());
 		return this.__ajs_id;
 	};
 

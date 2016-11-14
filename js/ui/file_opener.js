@@ -51,7 +51,6 @@ namespace("archistry.ui");
 archistry.ui.FileOpener = function(options)
 {
     var H = archistry.ui.Helpers;
-	var extend = archistry.core.extend;
 
 	$A(this).mixin(new archistry.core.SignalSource(this));
 	this.addValidSignals([
@@ -128,10 +127,11 @@ archistry.ui.FileOpener = function(options)
 
 		reader.onload = function(e) {
 			fileRef.data = e.target.result;
+			fileRef.md5 = hex_md5(fileRef.data);
 			fireOpenCompleted(fileRef);
 		};
 
-		reader.readAsArrayBuffer(file);
+		reader.readAsBinaryString(file);
 	}
 
     /**

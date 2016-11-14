@@ -11,6 +11,7 @@
 <body>
   <h1>Load Button Test</h1>
   <button id="file-open">Open...</button>
+  <div id="hash"></div>
   <pre id="contents"></pre>
   <div id="viewer"></div>
   <script type="text/javascript">
@@ -25,6 +26,7 @@
 	// clear any existing viewer images
 	$("#viewer img").remove();
 	$("#contents").html("");
+	$("#hash").html(fileInfo.md5);
 
 	if(rImg.test(fileInfo.contentType))
 	{

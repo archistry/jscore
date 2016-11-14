@@ -53,6 +53,131 @@ archistry.io.FileLoadEvent = function(xhr, responseData)
 	this.response = function() { return responseData };
 };
 
+archistry.io.FileLoadTask = function(file, chunkSize)
+{
+	$A(this).mixin(new archistry.core.SignalSource(this));
+	this.addValidSignals([
+		"task-started",
+		"task-paused",
+		"task-resumed",
+		"task-completed",
+		"task-error",
+		"task-status"
+	]);
+
+	var slice = File.prototype.slice 
+			|| File.prototype.mozSlice
+			|| File.prototype.webkitSlice
+
+	var _self = this;
+	var _spark = new SparkMD5.ArrayBuffer();
+	var	_reader = new FileReader();
+	var _eventInfo = {
+			source: file,
+			contentType: file.type,
+			size: file.size,
+			name: file.name
+		};
+	var _chunks = Math.ceil(file.size / chunkSize);
+	var	_chunk = 0;
+	var _paused = false;	
+
+	function nextChunk()
+	{
+		if(_paused)
+		{
+			return;
+		}
+
+		var start = _chunk * chunkSize;
+		var end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+
+		_reader.readAsArrayBuffer(slice.call(file, start, end));
+		fireTaskStatus();
+	}
+
+	function fireTaskStarted()
+	{
+		_self.signalEmit("task-started", $A().mixin(_eventInfo));
+	}
+
+	function fireTaskCompleted()
+	{
+		_self.signalEmit("task-completed", $A({
+				md5: _spark.end(),
+				data: _spark.getState().buff
+				}).mixin(_eventInfo));
+	}
+
+	function fireTaskError(event)
+	{
+		_self.signalEmit("task-error", $A({
+				pos: _chunk * chunkSize,
+				error: event.target.error,
+				}).mixin(_eventInfo));
+	}
+
+	function fireTaskStatus()
+	{
+		_self.signalEmit("task-status", $A({
+				pos: _chunk * chunkSize
+				}).mixin(_eventInfo));
+	}
+
+	_reader.onerror = fireTaskError;
+	_reader.onload = function(e) {
+		_spark.append(e.target.result);
+		_chunk++;
+
+		if(_chunk < _chunks)
+		{
+			nextChunk();
+		}
+		else
+		{
+			fireTaskCompleted();
+		}
+	};
+
+	/**
+	 * This method actually starts the load process.
+	 */
+
+	this.start = function()
+	{
+		// start the file loading process
+		_paused = false;
+		fireTaskStarted();
+		nextChunk();
+	};
+
+	/**
+	 * This method will pause the load process at the next
+	 * chunk.
+	 */
+
+	this.pause = function()
+	{
+		_paused = true;
+		_self.signalEmit("task-paused", $A({
+			pos: _chunk * chunkSize
+			}).mixin(_eventInfo));
+	};
+
+	/**
+	 * This method will resume the task.
+	 */
+
+	this.resume = function()
+	{
+		_paused = false;
+		_self.signalEmit("task-resumed", $A({
+			pos: _chunk * chunkSize
+			}).mixin(_eventInfo));
+		nextChunk();
+	};
+};
+
 /**
  * @class
  *
@@ -61,6 +186,8 @@ archistry.io.FileLoadEvent = function(xhr, responseData)
  * implementation is based on the example in Mozilla's PDF.js
  * web viewer
  * (https://github.com/mozilla/pdf.js/blob/master/web/viewer.js)
+ * as well as the example in the README for the SparkMD5
+ * library (https://github.com/archistry/js-spark-md5)
  */
 
 archistry.io.FileLoader = function()
@@ -70,12 +197,16 @@ archistry.io.FileLoader = function()
 	$A(this).mixin(new archistry.core.SignalSource(this));
 	this.addValidSignals([
 		"file-load-completed",
+		"file-load-error",
+		"file-load-data",
 		"file-load-failed"
 	]);
 
-	var _self = this;
-	var _xhr = new archistry.core.XHR();
-
+	var CHUNKSIZE	= 2097152;
+	var _self		= this;
+	var _xhr		= new archistry.core.XHR();
+	var _tasks		= $Array();
+	
 	/**
 	 * @private
 	 *
@@ -115,7 +246,7 @@ archistry.io.FileLoader = function()
 				var rval = {
 					uri: url,
 					contentType: xhr.getResponseHeader('content-type'),
-					hash: hex_md5(resp),
+					hash: SparkMD5.hash(resp),
 					data: resp
 				};
 
@@ -134,5 +265,31 @@ archistry.io.FileLoader = function()
 		}
 
 		xhr.get(url, hash);
+	};
+
+	/**
+	 * This method will load and return the contents of the
+	 * file object according to the given mime type.
+	 */
+
+	this.loadFile = function(file)
+	{
+		var task = archistry.io.FileLoadTask(file, CHUNKSIZE);
+		task.signalConnect("task-started", function(e) {
+			_tasks.add(this);
+			_self.signalEmit("file-load-started", e);
+		});
+		task.signalConnect("task-error", function(e) {
+			_self.signalEmit("file-load-error", e);
+		});
+		task.signalConnect("task-completed", function(e) {
+			_tasks.remove(this);
+			_self.signalEmit("file-load-completed", e);
+		});
+		task.signalConnect("task-status", function(e) {
+			_self.signalEmit("file-data", e);
+		});
+
+		setTimeout(task.start(), 10);
 	};
 };
