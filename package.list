@@ -27,6 +27,7 @@
 - js/data/object_adapter.js
 - js/data/tree.js
 - js/data/array_tree_model.js
+- js/data/hash_tree_model.js
 - js/data/object_tree_model.js
 - js/io/file_loader.js
 - js/ui/styles.js

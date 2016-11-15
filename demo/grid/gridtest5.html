@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>ArchistryJS Grid Test #2</title>
+  <link type="text/css" href="../../css/cupertino/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+  <link type="text/css" href="../../css/archistryui.css" rel="stylesheet" />
+  <style type="text/css" media="screen">
+    #console
+    {
+      margin-top: 1em;
+      border: 1px solid #002654;
+      padding: 5px;
+      clear: both;
+    }
+
+    .aui-grid td
+    {
+      vertical-align: top;
+    }
+
+    .aui-grid td input
+    {
+/*      border: 1px solid #e0aa0f;  */
+      
+      border: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .aui-grid > table th
+    {
+      text-align: left;
+      border: 1px solid #aed0ea;
+    }
+
+    .aui-grid > table td, .aui-grid > table th
+    {
+      padding: 3px;
+    }
+
+    td.aui-grid-cell
+    {
+      border: 1px solid rgb(221,221,221);
+    }
+
+    .aui-grid tr.aui-grid-row-dirty
+    {
+      background: #f0e7f3;
+      font-style: italic;
+    }
+
+    .aui-grid-cell-dirty
+    {
+      background: url(../../images/changed-red.gif) top right no-repeat;
+    }
+
+    td.aui-grid-col-value
+    {
+      width: 250px;
+    }
+
+    tr.aui-grid-row-sentinal
+    {
+      background: #bec2c6;
+      font-style: italic;
+    }
+
+    .aui-grid tr.aui-grid-row:hover
+    {
+        background: #e4f1fb;
+        border: 1px solid #74b2e2;
+    }
+
+    .aui-grid tr.aui-grid-row:hover > td
+    {
+        border: 1px solid #74b2e2;
+    }
+
+    .aui-grid td.aui-grid-cell:hover
+    {
+/*      background: #f0d588; */
+/*        background: #d7ebf9 url(../jqueryui/css/cupertino/images/ui-bg_glass_80_d7ebf9_1x400.png) 50% 50% repeat-x; */
+        background: #d7ebf9;
+        border: 1px solid #aed0ea;
+        color: #2779aa
+    }
+
+    .aui-grid td.aui-grid-cell-dirty:hover
+    {
+/*      background: #f0d588 url(../../images/changed-red.gif) top right no-repeat; */
+      background: #d7ebf9 url(../../images/changed-red.gif) top right no-repeat;
+    }
+
+    .aui-grid th.aui-grid-cell:hover
+    {
+/*      background: rgb(0,113,141); */
+        background: #3baae3 url(../jqueryui/css/cupertino/images/ui-bg_glass_50_3baae3_1x400.png) 50% 50% repeat-x;
+        border: 1px solid #294e8;
+        color: #ffffff;
+    }
+
+    td.actions
+    {
+      width: 20px;
+    }
+   
+    .controls
+    {
+      float: right;
+    }
+  </style>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="../../archistry-core.min.js"></script>
+</head>
+ 
+<body>
+  <h1>Test Grid #5</h1>
+  
+  <p> 
+  This test demonstrates the use of the HashTreeModel.
+  </p>
+
+  <div class="controls">
+    <button id="edit-row" type="button">Edit Selected Row</button><br />
+    <button id="delete-rows" type="button">Delete Selection</button><br />
+    <button id="insert-row" type="button">Insert Rows at Selection</button><br />
+  </div>
+  <div id="testgrid"></div>
+  <div id="console"></div>
+
+  <script type="text/javascript">
+    var data = new archistry.core.Hash();
+    $(function()
+    {
+      var editor = new archistry.ui.editor.TextFieldEditor();
+     
+      for(var i = 0; i < 5; ++i)
+      {
+        data.set("Key " + i, "Value " + i);
+      }
+      var model = new archistry.data.tree.HashTreeModel(data);
+
+      archistry.ui.Console.attach("console");
+      var console = archistry.ui.Console;
+
+      var cols = new archistry.ui.ArrayColumnModel([
+        { key: "key", label: "Key", editor: editor },
+        { key: "value", label: "Value", editor: editor }
+      ]);
+      var grid = new archistry.ui.TreeGrid("testgrid", cols, model, {
+        eventModeOptions: { clicksToEdit: 3 },
+        showExpanders: false,
+        showSelectorColumn: true,
+        showHeader: true
+      });
+
+      $("#edit-row").click(function(event) {
+        var selection = grid.selection();
+        if(selection.length === 1)
+        {
+          grid.editCell(selection[0], 0);
+        }
+      });
+
+      $("#delete-rows").click(function(event) {
+        // this is trickier because it depends on the new
+        // range-related functionality.  We can only delete in valid
+        // range blocks!
+        var selection = grid.selection();
+        Console.println("deleting {0} rows\n\n", selection.length);
+        selection.reverseEach(function() {
+          Console.println("Attempting to delete rows at path: " + this.join(","));
+          model.removeRow(this[0]);
+        });
+      });
+
+      var index = 0;
+      $("#insert-row").click(function(event) {
+        var selection = grid.selection();
+        if(selection.length > 1)
+        {
+          alert("Can't insert under more than one parent! Length: " + selection.length);
+          return;
+        }
+
+        var path = $Array();
+        var idx = -1;
+        if(selection.length === 1)
+        {
+          path = selection[0];
+          idx = path[0] + 1;
+        }
+
+        var count = Math.floor(Math.random() * 6);
+        Console.println("Inserting {0} rows at path: [{1}]", count, path.join(", "));
+        var rows = $Array();
+        for(var j = 0; j < count; ++j)
+        {
+          rows.add({ key: "New key " + index++, value: "value {0}".format(j) });
+        }
+        model.insertRows(idx, rows);
+      });
+
+      var observer = function()
+      {
+        function handler(name)
+        {
+          this.fn = function()
+          {
+            Console.println("\nreceived signal '{0}' with args: ({1})", name, [].join.call(arguments, ", "));
+            return true;
+          };
+        }
+
+        grid.signalConnect("sentinal-activated", new handler("sentinal-activated").fn);
+        grid.signalConnect("cell-editing-requested", new handler("cell-editing-requested").fn);
+        grid.signalConnect("cell-editing-started", new handler("cell-editing-started").fn);
+        grid.signalConnect("cell-editing-completed", new handler("cell-editing-completed").fn);
+        grid.signalConnect("cell-editing-cancelled", new handler("cell-editing-cancelled").fn);
+      };
+
+      new observer();
+    });
+  </script>
+</body>
+</html>

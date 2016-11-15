@@ -43,6 +43,7 @@
 	}
 	else
 	{
+	  // FIXME: this needs to be cleaner...
 	  var data = atob(fileInfo.data.split(',')[1]);
 	  $("#contents").html(data);
 	}
