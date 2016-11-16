@@ -93,6 +93,14 @@ archistry.ui.ConsoleImpl = function()
             this.text.value += String.format(fmt, args);
             this.text.scrollTop = this.text.scrollHeight;
         }
+		else
+		{
+			if(console && console.log)
+			{
+				// send to the JavaScript Console
+				console.log(String.format(fmt, args));
+			}
+		}
     };
 
     /**
@@ -145,4 +153,4 @@ archistry.ui.ConsoleImpl = function()
 archistry.ui.Console = new archistry.ui.ConsoleImpl();
 
 /** Define a convenient reference to the console. */
-Console = archistry.ui.Console;
+var Console = archistry.ui.Console;
