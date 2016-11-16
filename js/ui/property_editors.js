@@ -461,17 +461,82 @@ archistry.ui.editor.TextFieldEditor = function()
  * @class
  *
  * This class provides a basic multi-line text editor suitable
- * for editing multi-line text values.
+ * for editing multi-line text values.  It implements an
+ * optional variable height textarea based on the solution
+ * from "Expanding Text Areas Mad Elegant" by A List Apart, so
+ * it requires the following CSS to work correctly:
+ *
+ * <pre>
+ * .aui-flex-textarea
+ * {
+ *    position: relative;
+ * }
+ *
+ * .aui-flex-textarea textarea,
+ * .aui-flex-textarea pre
+ * {
+ *    margin: 0;
+ *    padding: 0;
+ *    outline: 0; /* may want to leave this out */
+ *    border: 0;
+ * }
+ *
+ * .aui-flex-textarea > textarea
+ * {
+ *    -webkit-box-sizing: border-box;
+ *       -moz-box-sizing: border-box;
+ *        -ms-box-sizing: border-box;
+ *            box-sizing: border-box;
+ *    width: 100%;
+ *    overflow: hidden;
+ *    position: absolute;
+ *    top: 0;
+ *    left: 0;
+ *    height: 100%;
+ *    resize: none;
+ * }
+ *
+ * .aui-flex-textarea > pre
+ * {
+ *    display: block;
+ *    visibility: hidden;
+ * }
+ *
+ * .aui-flex-textarea textarea
+ * .aui-flex-textarea pre
+ * {
+ *    white-space: pre-wrap;
+ *    wordwrap: break-word;
+ * }
+ *
+ * // when using with the grid and 5px cell padding
+ * .aui-grid td .aui-flex-textarea
+ * {
+ *    padding: 5px;
+ *    margin: -5px;
+ * }
+ *
+ * .aui-grid td textarea
+ * {
+ *    padding: 5px;
+ * }
+ *
+ * </pre>
+ *
+ * NOTE: whatever styling you set for the textarea must also
+ * apply to the pre element, otherwise, things won't work as
+ * expected.
  */
 
-archistry.ui.editor.TextAreaEditor = function()
+archistry.ui.editor.TextAreaEditor = function(options)
 {
     var e = archistry.ui.Helpers.e;
     $A(this).mixin(archistry.ui.editor.AbstractEditor);
+	this.mixin(options);
     this.completionKeyCodes = $Array();
 
-    var INPUTFMT = "<form style='display:inline;' action='javascript:void(0);'><textarea id=\"{0}\" style='{2}'>{1}</textarea></form>";
-
+//    var INPUTFMT = '<form style="display:inline;" action="javascript:void(0);"><div class="aui-flex-textarea"><pre><span id="{0}-span"></span><br></pre><textarea id="{0}" style="{2}">{1}</textarea></form>';
+    var INPUTFMT = '<form style="display:inline;" action="javascript:void(0);"><div class="aui-flex-textarea"><pre><span id="{0}-span"></span><br></pre><textarea id="{0}">{1}</textarea></form>';
 
     /**
      * This method creates the HTML form and the HTML textarea
@@ -480,9 +545,23 @@ archistry.ui.editor.TextAreaEditor = function()
 
     this.createEditor = function(cell, name, value, dim)
     {
-        var style = this.dim2style(cell, dim);
-        cell.innerHTML = String.format(INPUTFMT, [ name, value, style ]);
+        cell.innerHTML = String.format(INPUTFMT, name, value);
         var editor = e(name);
+        var span = e(name + "-span");
+
+		if(!editor || !span)
+		{
+			throw new Error("Runtime Error:  unable to initialize editor and span elements");
+		}
+
+		if(this.autoHeight)
+		{
+			editor.oninput = function() {
+				span.textContent = editor.value;
+			};
+			span.textContent = editor.value;
+		}
+
         editor.select();
         return editor;
     };
