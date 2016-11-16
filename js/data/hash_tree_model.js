@@ -459,7 +459,7 @@ Console.writeln("node: {0}", node.toString());
 
     this.rowChanged = function(index)
     {
-        var idx = Indexer.mapIndex(index, data.length);
+        var idx = Indexer.mapIndex(index, data.size());
         var obj = new KeyAdapter(_keys[index]);
         _self.fireObjectChanged(obj);
         _self.fireNodesChanged([ 
