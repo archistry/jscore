@@ -477,7 +477,7 @@ archistry.ui.editor.TextFieldEditor = function()
  * {
  *    margin: 0;
  *    padding: 0;
- *    outline: 0; /* may want to leave this out */
+ *    outline: 0;
  *    border: 0;
  * }
  *

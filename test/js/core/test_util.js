@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2009 Archistry Limited
+// Copyright (c) 2009-2016 Archistry Limited
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without

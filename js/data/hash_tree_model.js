@@ -83,7 +83,8 @@ archistry.data.tree.HashTreeModel = function(data, options)
     this.mixin(options);
 
 	// allow initialization with regular JS objects
-	if(!data instanceof archistry.core.Hash)
+	if(!data instanceof archistry.core.Hash
+			|| !data instanceof archistry.data.ObserverableHash)
 	{
 		var th = new archistry.core.Hash();
 		for(k in data)
@@ -92,6 +93,15 @@ archistry.data.tree.HashTreeModel = function(data, options)
 		}
 		data = th;
 	}
+
+	if(!data instanceof archistry.data.ObserverableHash)
+	{
+		data = new archistry.data.ObserverableHash(data);
+	}
+
+	// wire up the events so we can detect direct changes to
+	// the underlying hash instance.
+	// FIXME: TBD
 
     if(this.editable === undefined)
         this.editable = true;

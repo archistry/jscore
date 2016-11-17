@@ -12,7 +12,8 @@
         try {
             glob = window;
         } catch (e) {
-            glob = self;
+//            glob = self;
+            glob = this;
         }
 
         glob.SparkMD5 = factory();

@@ -58,6 +58,7 @@ try
     // load the tests
     load('js/core/test_util.js');
     load('js/core/test_hash.js');
+    load('js/core/test_multimap.js');
     load('js/core/test_observer.js');
     load('js/core/test_path.js');
     load('js/core/test_string_format.js');

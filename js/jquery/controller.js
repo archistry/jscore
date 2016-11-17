@@ -171,21 +171,21 @@ archistry.ui.Action = function(callback, options)
 	{
 		_sensitive = true;
 	}
-	self.sensitive(_sensitive);
+	_self.sensitive(_sensitive);
 
 	var _active = this.active();
 	if(_active === undefined)
 	{
 		_active = false;
 	}
-	self.active(_active);
+	_self.active(_active);
 
 	var _visible = this.visible();
 	if(_visible === undefined)
 	{
 		_visible = true;
 	}
-	self.visible(_visible);
+	_self.visible(_visible);
 };
 
 /**

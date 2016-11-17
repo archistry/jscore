@@ -17,6 +17,7 @@
 - js/core/array.js
 - js/core/string.js
 - js/core/hash.js
+- js/core/multimap.js
 - js/core/util.js
 - js/core/path.js
 - js/core/observer.js

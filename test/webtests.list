@@ -13,6 +13,7 @@
 - lib/tree.js
 - js/core/test_util.js
 - js/core/test_hash.js
+- js/core/test_multimap.js
 - js/core/test_observer.js
 - js/core/test_path.js
 - js/core/test_string_format.js
