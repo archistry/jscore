@@ -70,6 +70,16 @@ Jester.testing("MultiMap functionality", {
                     expect: 0 
                 });
 
+				result.check("#hasKey for existing key", {
+					actual: mm.hasKey("k"),
+					expect: true
+				});
+
+				result.check("#hasKey for bogus key", {
+					actual: mm.hasKey("xyzzy"),
+					expect: false
+				});
+
 				mm.clear();
 				result.check("clear clears map", {
 					actual: [ mm.size(), mm.count("k"), mm.count("l") ],

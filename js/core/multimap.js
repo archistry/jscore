@@ -122,6 +122,16 @@ archistry.core.MultiMap = function()
 		}, includeMethods);
     };
 
+	/**
+	 * This method is used to determine if the given key is
+	 * present in the MultiMap.
+	 */
+
+	this.hasKey = function(key)
+	{
+		return _hash.hasKey(key);
+	};
+
     /**
      * This method returns the object keys for the values set
      * in the map.  It DOES NOT enumerate the property keys

@@ -125,6 +125,16 @@ archistry.core.Hash = function()
         }
     };
 
+	/**
+	 * This method is used to determine if the given key
+	 * exists in the hash instance.
+	 */
+
+	this.hasKey = function(key)
+	{
+		return _index[key] !== undefined;
+	};
+
     /**
      * This method returns the object keys for the values set
      * in the hash.  It DOES NOT enumerate the property keys

@@ -130,6 +130,16 @@ Jester.testing("Hash functionality", {
                     actual: arr.length,
                     expect: 10
                 });
+
+				result.check("#hasKey method for existing key", {
+					actual: obj.hasKey("key1"),
+					expect: true
+				});
+
+				result.check("#hasKey method for non-existant key", {
+					actual: obj.hasKey("xyzzy"),
+					expect: false
+				});
 			}
 		},
 		{
