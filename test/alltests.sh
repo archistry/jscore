@@ -6,7 +6,6 @@ MINIFIY=-m
 
 # run the console tests
 (cd ..;jspkg $MINIFY)
-jspkg $MINIFY rhino.list
 jspkg $MINIFY rhinotests.list
 rhino jrunner.js
 

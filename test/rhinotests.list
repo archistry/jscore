@@ -6,7 +6,9 @@
 :package: rhinotests.js
 :version_date: "2010-02-13T19:13:27Z"
 :version_major: 0
-:files: 
+:files:
+- lib/env.rhino.js
+- ../archistry-core.min.js
 - ../jester-min.js
 - ../js/jester/web_reporter.js
 - lib/util.js

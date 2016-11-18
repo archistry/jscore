@@ -39,7 +39,6 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
 function println(fmt)
 {
     args = [];
@@ -50,14 +49,10 @@ function println(fmt)
     print(String.format(fmt, args));
 }
 
-// load the core libraries
-load('../archistry-core.min.js');
-load('rhino-core-min.js');
-
 try
 {
 	load('rhinotests.js');
-    
+
 	// print the results
     print(Jester.reporter.toString());
     println("Tests run: {0} ({1}); Failures: {2}", 
