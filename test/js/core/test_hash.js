@@ -39,6 +39,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+var Hash = archistry.core.Hash;
+
 Jester.testing("Hash functionality", {
 	tests: [
 		{
@@ -47,7 +49,7 @@ Jester.testing("Hash functionality", {
 			{
 				$A(this);
 				$A(result);
-                var obj = new archistry.core.Hash();
+                var obj = new Hash();
                 var o1 = obj.set("key1", "val1");
                 var o2 = obj.set("context", this);
                 var o3 = obj.set("one", 1);
@@ -135,7 +137,7 @@ Jester.testing("Hash functionality", {
 			how: function(result)
 			{
 				$A(this);
-                var obj = new archistry.core.Hash();
+                var obj = new Hash();
                 obj.set("key1", true);
                 obj.set("context", this);
                 obj.set("key2", true);
@@ -172,6 +174,42 @@ Jester.testing("Hash functionality", {
                     actual: keys,
                     expect: []
                 });
+			}
+		},
+		{
+			what: "Hash#merge works for object",
+			how: function(result)
+			{
+				$A(this);
+                var obj = new Hash();
+                obj.set("key1", true);
+                obj.set("context", this);
+                obj.set("key2", true);
+
+				obj.merge({key1: "aaa", key2: function() { return this; }});
+				result.check("non-functional properties merged", {
+					actual: [ obj.get("key1"), obj.get("context"), obj.get("key2") ],
+					expect: [ "aaa", this, true ]
+				});
+			}
+		},
+		{
+			what: "Hash#merge works for other hash",
+			how: function(result)
+			{
+				var h1 = new Hash();
+				h1.set("k1", 1);
+				h1.set("k2", "value");
+
+				var h2 = new Hash();
+				h2.set("k1", "X");
+				h2.set("k4", "Y");
+				h1.merge(h2);
+
+				result.check("hash merged for existing and new keys", {
+					actual: [ h1.get("k1"), h1.get("k2"), h1.get("h4") ],
+					expect: [ "X", "value", "Y" ]
+				});
 			}
 		}
 	]

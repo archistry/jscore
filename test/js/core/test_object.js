@@ -382,6 +382,18 @@ Jester.testing("AObject mixin functionality", {
                     expect: "one"
                 });
             }
-        }
+        },
+		{
+			what: "ensure merge works correctly",
+			how: function(result)
+			{
+				var a = $A({a: "X"}).merge({a: "A", b: "B"});
+
+				result.check("merged properties overwrite instance", {
+					actual: [ a.a, a.b ],
+					expect: [ "A", "B" ]
+				});
+			}
+		}
     ]
 });

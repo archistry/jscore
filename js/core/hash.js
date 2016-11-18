@@ -50,6 +50,7 @@ namespace("archistry.core");
 archistry.core.Hash = function()
 {
 	$A(this);
+	var _self = this;
     var _index = $A();
     var _size = 0;
 
@@ -138,6 +139,38 @@ archistry.core.Hash = function()
         _index.keys().each(function() { ks.add(_index[this]); });
         return ks;
     };
+
+	/**
+	 * This method is used to merge in the contents of an
+	 * object or hash into this instance, overwriting any
+	 * existing values.
+	 *
+	 * @param source
+	 * @return this
+	 */
+
+	this.merge = function(source)
+	{
+		if(source.get === undefined)
+		{
+			// treat it as a regular object
+			for(var k in source)
+			{
+				if(typeof source[k] !== 'function')
+				{
+					_self.set(k, source[k]);
+				}
+			}
+		}
+		else
+		{
+			source.keys().each(function() {
+				_self.set(this, source.get(this));
+			});
+		}
+
+		return this;
+	};
 
     /**
      * This method is used to set a hash entry that can properly

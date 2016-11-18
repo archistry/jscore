@@ -105,7 +105,7 @@ archistry.core.extend = function(targ, src, inPrototype)
 
 archistry.core.merge = function(target, src, callback)
 {
-	for(k in src)
+	for(var k in src)
 	{
 		if(target[k] !== undefined && callback)
 		{
@@ -323,7 +323,22 @@ archistry.core.arrayCompare = function(lhs, rhs)
  * accordingly.
  */
 
-archistry.core.AObject = function() {
+archistry.core.AObject = function()
+{
+	/**
+	 * This method is used to merge an additional object into
+	 * this object, overwritig the properties.  The primary
+	 * purpose of this is to more easily manage option
+	 * defaults, but it's also useful in other cases as well.
+	 *
+	 * @param source the source object whose properties should
+	 *				be merged into this instance.
+	 */
+
+	this.merge = function(source)
+	{
+		return archistry.core.merge(this, source);
+	};
 
 	/**
 	 * This method functions similarly to the Ruby include

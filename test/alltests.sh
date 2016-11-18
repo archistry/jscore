@@ -2,12 +2,14 @@
 #
 # Created: Fri Nov 18 12:01:08 SAST 2016
 
+MINIFIY=-m
+
 # run the console tests
-(cd ..;jspkg -m)
-jspkg -m rhino.list
-jspkg -m rhinotests.list
+(cd ..;jspkg $MINIFY)
+jspkg $MINIFY rhino.list
+jspkg $MINIFY rhinotests.list
 rhino jrunner.js
 
 # run the web tests
-jspkg -m webtests.list
+jspkg $MINIFY webtests.list
 open webtests.html
