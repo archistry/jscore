@@ -93,6 +93,32 @@ archistry.core.extend = function(targ, src, inPrototype)
 };
 
 /**
+ * This is a static function that will merge two object
+ * instances, replacing any property in the original with the
+ * value from the source.
+ *
+ * @param target the target of the merge
+ * @param src the source of the properties
+ * @param callback optional callback triggered prior to the
+ *			original property being replaced.
+ */
+
+archistry.core.merge = function(target, src, callback)
+{
+	for(k in src)
+	{
+		if(target[k] !== undefined && callback)
+		{
+			callback.apply(target, [ k, target[k]]);
+		}
+
+		target[k] = src[k];
+	}
+
+	return target;
+};
+
+/**
  * This is a static function that compares objects for
  * equality.  If the objects implement the
  * <code>#equals</code> method, that is used in favor of the

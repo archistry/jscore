@@ -119,7 +119,7 @@ archistry.core.MultiMap = function()
 				if((rc = callback.apply(_self, [ key, this ])) !== undefined)
 					return rc;
 			});
-		});
+		}, includeMethods);
     };
 
     /**
@@ -204,7 +204,7 @@ archistry.core.MultiMap = function()
     this.remove = function(key, value)
     {
 		if(!value)
-			return _hash.remove(key);
+			return $Array([ _hash.remove(key) ]);
 
 		var _vals = _hash.get(key);
 		return _vals.remove(value);
