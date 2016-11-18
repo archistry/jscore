@@ -33,7 +33,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Name:        jrunner.js
+// Name:        jester.js
 // Created:     Mon Dec  7 17:39:41 GMT 2009
 // Renamed:		Fri Nov 18 11:12:45 SAST 2016
 //
