@@ -394,6 +394,17 @@ Jester.testing("AObject mixin functionality", {
 					expect: [ "A", "B" ]
 				});
 			}
+		},
+		{
+			what: "ensure #merge exclude works correctly",
+			how: function(result)
+			{
+				var a = $A({a: "X", b: "Y"}).merge({a: "A", b: "B"}, {a:1});
+				result.check("excluded properties not merged", {
+					actual: [ a.a, a.b ],
+					expect: [ "X", "B" ]
+				});
+			}
 		}
     ]
 });

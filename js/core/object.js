@@ -101,12 +101,19 @@ archistry.core.extend = function(targ, src, inPrototype)
  * @param src the source of the properties
  * @param callback optional callback triggered prior to the
  *			original property being replaced.
+ * @param options the set of properties that will be excluded
+ *			from modification (optional)
  */
 
-archistry.core.merge = function(target, src, callback)
+archistry.core.merge = function(target, src, callback, exclude)
 {
 	for(var k in src)
 	{
+		if(exclude && exclude[k] !== undefined)
+		{
+			continue;
+		}
+
 		if(target[k] !== undefined && callback)
 		{
 			callback.apply(target, [ k, target[k]]);
@@ -333,11 +340,12 @@ archistry.core.AObject = function()
 	 *
 	 * @param source the source object whose properties should
 	 *				be merged into this instance.
+	 * @param excludes the properties to not be overwritten
 	 */
 
-	this.merge = function(source)
+	this.merge = function(source, excludes)
 	{
-		return archistry.core.merge(this, source);
+		return archistry.core.merge(this, source, null, excludes);
 	};
 
 	/**
