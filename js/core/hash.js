@@ -194,7 +194,7 @@ archistry.core.Hash = function()
     this.set = function(key, val)
     {
         var k = key;
-        if(typeof key === 'object')
+        if(typeof key === 'object' && typeof key.objectId === 'function')
             k = key.objectId();
 
         if(this[k] === undefined)
@@ -215,8 +215,13 @@ archistry.core.Hash = function()
     this.get = function(key)
     {
         var k = key;
-        if(typeof key === 'object')
-            k = key.objectId();
+        if(typeof key === 'object' && typeof key.objectId === 'function')
+		{
+			if((k = this[key.objectId()]))
+			{
+				return k;
+			}
+		}
 
         return this[k];
     };
