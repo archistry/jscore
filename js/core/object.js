@@ -332,6 +332,8 @@ archistry.core.arrayCompare = function(lhs, rhs)
 
 archistry.core.AObject = function()
 {
+	var _self = this;
+
 	/**
 	 * This method is used to merge an additional object into
 	 * this object, overwritig the properties.  The primary
@@ -699,7 +701,18 @@ archistry.core.AObject = function()
 	
 	this.toString = function()
 	{
-		return "[object: " + this.objectId() + "]";
+		var s = "[object: " + this.objectId() + " { ";
+		var keys = this.keys();
+		keys.each(function(i) {
+			if(!this.match(/^__ajs/))
+			{
+				s += this + ": " + _self[this];
+				if(i < keys.length - 2)
+					s += ", "
+			}
+		});
+
+		return s += " } ]";
 	};
 };
 
@@ -746,7 +759,7 @@ var $A = function(targ)
 	}
 
 	// prevent double wrapping
-	if(targ.__ajs_id === undefined)
+	if(targ.objectId === undefined)
 	{
 		return archistry.core.extend(targ, new archistry.core.AObject());
 	}
