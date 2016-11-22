@@ -157,5 +157,62 @@ archistry.core.Util = {
     label2key: function(label)
     {
         return label.replace(/\s+/g, "-").toLowerCase();
-    }
+    },
+
+	/**
+	 * This method is used to resolve a scoped object based on
+	 * a string value.
+	 */
+
+	resolve: function(nspath)
+	{
+		if(!nspath.match(/^[_a-zA-Z]+[_.a-zA-Z0-9]*$/))
+		{
+			throw new Error("ArgumentError: illegal object name '{0}'".format(nspath));
+		}
+
+		var global = (function() { return this; }).call();
+		var path = nspath.split(".");
+		var obj = global;
+		for(var i = 0; i < path.length; ++i)
+		{
+			if((obj = obj[path[i]]) === undefined)
+				return undefined;
+		}
+
+		if(obj === global)
+			return undefined;
+
+		return obj;
+	}
+};
+
+/**
+ * This function defines a mechanism to correctly unmarshal
+ * user-defined types stored as JSON.  The value of the
+ * marshalled object must have a __jsonClass key to trigger
+ * this function, and the resolved class identifier must have
+ * a #fromJSON method defined on the object/class (not the
+ * class instance).
+ *
+ * @param key the JSON#parse callback key
+ * @param val the JSON#parse callback value
+ * @return the object or value
+ */
+
+archistry.core.Util.unmarshalJSON = function(key, val)
+{
+	if(!val || !val.__jsonClass)
+		return val;
+
+	var jcn = val.__jsonClass;
+	var jci = null
+	if((jci = archistry.core.Util.resolve(jcn)))
+	{
+		if(jci.fromJSON && typeof jci.fromJSON === 'function')
+		{
+			return jci.fromJSON(val);
+		}
+	}
+	return val;
 };
