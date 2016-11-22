@@ -2,7 +2,7 @@
 #
 # Created: Fri Nov 18 12:01:08 SAST 2016
 
-MINIFIY=-m
+# MINIFY=-m
 
 # run the console tests
 (cd ..;jspkg $MINIFY)

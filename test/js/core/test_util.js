@@ -38,6 +38,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
+var Util = archistry.core.Util;
+
 Jester.testing("Core library functionality", {
     tests: [
         {
@@ -192,6 +194,52 @@ Jester.testing("Core library functionality", {
 					expect: [ b.a, b.b, b.d ]
 				});
             }
+		},
+		{
+			what: "#resolve method works correctly",
+			how: function(result)
+			{
+				var obj = Util.resolve("archistry.core.Hash");
+
+				result.check("object is resoled", {
+					actual: obj,
+					expect: archistry.core.Hash
+				});
+
+				var hash = new obj();
+				hash.set("k", "v");
+				result.check("hash created from resolved name", {
+					actual: hash.get("k"),
+					expect: "v"
+				});
+			}
+		},
+		{
+			what: "custom JSON marshalling round-trip",
+			how: function(result)
+			{
+				archistry.A = function(val)
+				{
+					this.foo = function() { return val; };
+					this.toJSON = function()
+					{
+						return { __jsonClass: "archistry.A", value: val };
+					};
+				};
+				archistry.A.fromJSON = function(val) {
+					return new archistry.A(val.value);
+				};
+
+				var s = JSON.stringify(new archistry.A("xyz"));
+				var a = JSON.parse(s, archistry.core.Util.unmarshalJSON);
+
+				result.check("instance value round-tripped", {
+					actual: a.foo(),
+					expect: "xyz"
+				});
+
+				delete archistry.A;
+			}
 		}
     ]
 });

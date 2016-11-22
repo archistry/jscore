@@ -405,6 +405,23 @@ Jester.testing("AObject mixin functionality", {
 					expect: [ "X", "B" ]
 				});
 			}
+		},
+		{
+			what: "merge with new object (possibly undefined)",
+			how: function(result)
+			{
+				var x = $A({}).merge({a: "A"});
+				result.check("empty merge target", {
+					actual: x.a,
+					expect: "A"
+				});
+
+				var x = $A(a).merge({a: "A"});
+				result.check("undefined merge target", {
+					actual: x.a,
+					expect: "A"
+				});
+			}
 		}
     ]
 });
