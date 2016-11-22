@@ -83,7 +83,18 @@ jester.reporter.YAMLReporter = function()
         }
         else
         {
-            s += val;
+			if(val.valueOf)
+			{
+				s += val.valueOf();
+			}
+			else if(val.toString)
+			{
+				s += val.toString();
+			}
+			else
+			{
+				s += val;
+			}
         }
         return s;
     }
