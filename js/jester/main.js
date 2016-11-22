@@ -56,6 +56,7 @@ jester.JesterRunner = function()
     this.SYNC = "sync";
     this.ASYNC = "async";
     this.reporter = new jester.reporter.YAMLReporter();
+	this.config = { catchExceptions: true };
 
     var sync = new jester.runner.SyncStrategy();
     var async = new jester.runner.AsyncStrategy();

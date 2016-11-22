@@ -379,14 +379,21 @@ jester.runner.SyncStrategy = function()
             
             if(ctx.tests[i].how)
             {
-                try
-                {
-                    ctx.tests[i].how.apply(ctx, [ result ]);
-                }
-                catch(e)
-                {
-                    result.fail(e);
-                }
+				if(Jester.config.catchExceptions)
+				{
+					try
+					{
+						ctx.tests[i].how.apply(ctx, [ result ]);
+					}
+					catch(e)
+					{
+						result.fail(e);
+					}
+				}
+				else
+				{
+					ctx.tests[i].how.apply(ctx, [ result ]);
+				}
             }
             if(ctx.teardown)
                 ctx.teardown.apply(ctx);
