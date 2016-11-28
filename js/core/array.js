@@ -299,6 +299,17 @@ archistry.core.Array = function()
 		return rval;
 	};
 
+	this.unique = function()
+	{
+		var uniq = $Array();
+		this.each(function() {
+			if(!uniq.include(this))
+				uniq.add(this);
+		});
+
+		return uniq;
+	};
+
 	this.toString = function()
 	{
 		var s = "[";

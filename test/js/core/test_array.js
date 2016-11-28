@@ -333,6 +333,45 @@ Jester.testing("Array mixin functionality", {
                     expect: 0
                 });
             }
-        }
+        },
+        {
+            what: "ensure Array#unique works correctly",
+            how: function(result)
+            {
+				var a = $Array([ 1, 2, 3, 4, 1, 3, 4, 5, 7, 2 ]);
+				result.check("unique integers", {
+					actual: a.unique(),
+					expect: [ 1, 2, 3, 4, 5, 7 ]
+				});
+
+				function A(obj)
+				{
+					$A(this);
+					for(k in obj)
+					{
+						this[k] = obj[k];
+					}
+
+					this.valueOf = function()
+					{
+						return this.toString();
+					};
+				}
+
+				var a = new A({one: 1, a: "A" });
+				var b = new A({one: 1, a: "A" });
+
+				a = $Array([ a, b, 2 ]);
+				result.check("unique objects", {
+					actual: a.unique(),
+					expect: [ { one: 1, a: "A" },  2 ]
+				});
+
+				result.check("unique strings", {
+					actual: $Array([ "a", "a", "a", "b", "c" ]).unique(),
+					expect: [ "a", "b", "c" ]
+				});
+			}
+		}
     ]
 });
