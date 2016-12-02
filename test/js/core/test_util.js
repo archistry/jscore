@@ -103,6 +103,41 @@ Jester.testing("Core library functionality", {
                     expect: true
                 });
                 
+				result.check("left null vs. object", {
+                    actual: eq(null, {}),
+                    expect: false
+                });
+				
+				result.check("right null vs. literal", {
+                    actual: eq(1, null),
+                    expect: false
+                });
+                
+				result.check("left undefined vs. literal", {
+                    actual: eq(undefined, 1),
+                    expect: false
+                });
+                
+				result.check("right undefined vs. literal", {
+                    actual: eq("hello", undefined),
+                    expect: false
+                });
+                
+				result.check("undefined vs. undefined", {
+                    actual: eq(undefined, undefined),
+                    expect: true
+                });
+                
+				result.check("undefined vs. AObject", {
+                    actual: eq(undefined, $A()),
+                    expect: false
+                });
+                
+				result.check("AObject vs. undefined", {
+                    actual: eq($A(), undefined),
+                    expect: false
+                });
+                
                 result.check("simple object equals with various literal initializers", {
                     actual: eq({ one: 1, "two": "two", three: { x: 3 }}, { one: 1, "two": "two", three: { x: 3 }}),
                     expect: true

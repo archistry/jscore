@@ -155,7 +155,8 @@ jester.util.objectEquals = function(lhs, rhs)
 	var flatten = jester.util.flatten;
     var l = lhs, r = rhs;
 
-	if((l === undefined || r === undefined) && l !== r)
+	if((l === undefined || r === undefined || l === null || r === null )
+			&& l !== r)
 	{
 		return false;
 	}
