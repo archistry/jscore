@@ -131,7 +131,7 @@ jester.util.objectEquals = function(lhs, rhs)
 
     if(l !== r)
     {
-        if(l && l.length !== undefined)
+        if(l && l.sort !== undefined && r && r.sort !== undefined)
         {
             // maybe it's an array, so try that
             return jester.util.arrayEquals(lhs, rhs);
@@ -191,7 +191,7 @@ jester.util.arrayEquals = function(lhs, rhs)
     if(lhs.length != rhs.length)
         return false;
     
-    for(var i = 0; i < this.length; ++i)
+    for(var i = 0; i < lhs.length; ++i)
     {
         if(!jester.util.objectEquals(lhs[i], rhs[i]))
             return false;
