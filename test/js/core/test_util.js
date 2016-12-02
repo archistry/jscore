@@ -43,6 +43,54 @@ var Util = archistry.core.Util;
 Jester.testing("Core library functionality", {
     tests: [
         {
+            what: "archistry.core#typeHint works correctly",
+            how: function(result)
+            {
+				var th = archistry.core.typeHint;
+
+				result.check("hint for number values", {
+					actual: th(1),
+					expect: "Number"
+				});
+
+				result.check("hint for string literals", {
+					actual: th("hello"),
+					expect: "String"
+				});
+
+				result.check("hint for string instances", {
+					actual: th(new String("hello")),
+					expect: "String"
+				});
+
+				result.check("hint for array literals", {
+					actual: th([]),
+					expect: "Array"
+				});
+
+				result.check("hint for boolean literals", {
+					actual: th(true),
+					expect: "Boolean"
+				});
+
+				result.check("hint for object literals", {
+					actual: th({}),
+					expect: "Object"
+				});
+
+				var a = $Array([ 1, "hello", [], true, {} ]);
+				var b = [];
+				a.each(function(i) {
+					b.push(th(this));
+				});
+
+				result.check("array element iteration boxing hints", {
+					actual: b,
+					expect: [ "Number", "String", "Array", "Boolean", "Object" ]
+				});
+			}
+		},
+		{
             what: "archistry.core#objectEquals works correctly",
             how: function(result)
             {
@@ -52,12 +100,12 @@ Jester.testing("Core library functionality", {
 
                 result.check("simple object equals with empty literal initializers", {
                     actual: eq({}, {}),
-                    expect: false
+                    expect: true
                 });
                 
                 result.check("simple object equals with various literal initializers", {
                     actual: eq({ one: 1, "two": "two", three: { x: 3 }}, { one: 1, "two": "two", three: { x: 3 }}),
-                    expect: false
+                    expect: true
                 });
 
                 result.check("object identity equals (empty object)", {

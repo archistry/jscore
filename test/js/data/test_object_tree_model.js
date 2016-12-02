@@ -176,7 +176,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
                 var node = $A({ key: "New node", value: "X" });
-                
+
                 model.immediate = true;
                 model.signalConnect("tree-nodes-inserted", function(event) {
                     fired = true;
@@ -187,7 +187,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
 
                     var e = event[0];
                     var refs = e.refs();
-                    result.check("tree-nodes-inserted event data", {
+                    result.check("callback tree-nodes-inserted event data", {
                         actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
                         expect: [ model, [0], data[0], node, 0 ]
                     });
@@ -233,7 +233,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     var refs = e.refs();
                     result.check("tree-nodes-inserted event data", {
                         actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
-                        expect: [ model, [0], data[0], node, 0 ]
+                        expect: [ model, [0], data[0], node, 5 ]
                     });
                 });
 
@@ -257,6 +257,8 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
+                var dnode = data[4];
+
                 model.immediate = true;
                 model.signalConnect("tree-nodes-removed", function(event) {
                     fired = true;
@@ -268,15 +270,26 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     var e = event[0];
                     var refs = e.refs();
                     result.check("tree-nodes-removed event data", {
-                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
-                        expect: [ model, [], root, { key: "key4", value: "value4" }, 4 ]
+                        actual: [ 
+							this, 
+							e.path(), 
+							e.parent(), 
+							refs[0].node().valueOf(), 
+							refs[0].index()
+						],
+                        expect: [ 
+							model, 
+							[], 
+							root, 
+							dnode,
+							4
+						]
                     });
                 });
 
-                var dnode = data[4];
                 var node = model.removeNode([ 4 ]);
                 result.check("node removed at correct location", {
-                    actual: node,
+                    actual: node.valueOf(),
                     expect: dnode
                 });
 
@@ -284,7 +297,7 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     actual: data,
                     expect: buildObjectArray(["key", "value"], 4)
                 });
-                
+ 
                 result.check("signal was actually fired", {
                     actual: fired,
                     expect: true
@@ -297,6 +310,8 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
             {
                 var fired = false;
 				var model = buildTreeModel();
+				var dnode = model.nodeForPath([ 1, 0 ]);
+
 				model.immediate = true;
                 model.signalConnect("tree-nodes-removed", function(event) {
                     fired = true;
@@ -308,12 +323,22 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     var e = event[0];
                     var refs = e.refs();
                     result.check("tree-nodes-removed event data", {
-                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
-                        expect: [ model, [1, 0], model.nodeForPath([]), { key: "CC1", value: "CCV #1" }, 0 ]
+                        actual: [ 
+							this, 
+							e.path(), 
+							e.parent(), 
+							refs[0].node(), 
+							refs[0].index()
+						],
+                        expect: [ 
+							model, 
+							[1], 
+							model.nodeForPath([1]), 
+							dnode,
+							0 ]
                     });
                 });
 
-				var dnode = model.nodeForPath([ 1, 0 ]);
                 var node = model.removeNode([ 1, 0 ]);
                 result.check("node removed at correct location", {
                     actual: node,
@@ -345,8 +370,20 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     var e = event[0];
                     var refs = e.refs();
                     result.check("tree-nodes-changed event data", {
-                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
-                        expect: [ model, [0], root, data[4], 5 ]
+                        actual: [ 
+							this, 
+							e.path(), 
+							e.parent(), 
+							refs[0].node(), 
+							refs[0].index()
+						],
+                        expect: [ 
+							model, 
+							[], 
+							root, 
+							data[4], 
+							4
+						]
                     });
                 });
 
@@ -365,6 +402,8 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                 var root = $A({ key: "Root", children: data });
                 var model = new ObjectTreeModel(root, "children");
                 var fired = false;
+                var added = buildObjectArray([ "key", "value" ], 2, "foo");
+
                 model.immediate = true;
                 model.signalConnect("tree-nodes-inserted", function(event) {
                     fired = true;
@@ -376,13 +415,24 @@ Jester.testing("Concrete ObjectTreeModel functionality", {
                     var e = event[0];
                     var refs = e.refs();
                     result.check("tree-nodes-inserted event data", {
-                        actual: [ this, e.path(), e.parent(), refs[0].node(), refs[0].index() ],
-                        expect: [ model, [0], root, data[5], 5 ]
+                        actual: [ 
+							this, 
+							e.path(), 
+							e.parent(), 
+							refs[0].node(), 
+							refs[0].index()
+						],
+                        expect: [ 
+							model, 
+							[], 
+							root, 
+							data[5], 
+							5
+						]
                     });
                 });
 
            
-                var added = buildObjectArray([ "key", "value" ], 2, "foo");
                 model.insertNode([], -1, added);
                 result.check("node inserted at correct location", {
                     actual: data,

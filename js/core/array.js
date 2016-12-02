@@ -101,7 +101,11 @@ archistry.core.Array = function()
 		var idx = -1;
 		for(var i = 0; i < this.length; ++i)
 		{
-			if(archistry.core.objectEquals(this[i], obj))
+			if(this[i] === obj)
+			{
+				return i;
+			}
+			else if(archistry.core.objectEquals(this[i], obj))
 			{
 				return i;
 			}

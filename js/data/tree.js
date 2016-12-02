@@ -232,6 +232,7 @@ archistry.data.Tree = {
             return;
         
 //        Console.println("child count for [{0}] is {1}", root.path(), root.childCount());
+
         for(var i = 0; i < root.childCount(); ++i)
         {
             var child = root.child(i);

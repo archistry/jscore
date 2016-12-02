@@ -122,7 +122,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     var _self = this;
     var _root = new archistry.data.ObjectAdapter(_self)
-    var _nodes = new archistry.data.ObjectAdapterManager(this.useAdapter, this.getter, this.setter);
+    var _nodes = new archistry.data.ObjectAdapterManager(
+						this.useAdapter, this.getter, this.setter);
 
     /**
      * @private
@@ -137,7 +138,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
     function __adapter(node)
     {
-        _nodes.adapterForNode(node);
+        return _nodes.adapterForNode(node);
     }
 
     /**
@@ -172,7 +173,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         var node = _nodes.getKey(idx);
         if(node === undefined || node === null)
         {
-            Console.println("********** No node for index: " + idx);
+//            Console.println("********** No node for index: " + idx);
             node = __addNode(idx, data[idx]);
         }
 
@@ -214,8 +215,8 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
         if(!obj)
             return;
 
-        Console.println("path: [{0}]; oldval: '{1}'; newval: '{2}'", path, oldval, newval);
-        Console.println("Node: {0}; objectId: {1}", archistry.core.Util.toHashString(obj), obj.objectId());
+//        Console.println("path: [{0}]; oldval: '{1}'; newval: '{2}'", path, oldval, newval);
+//        Console.println("Node: {0}; objectId: {1}", archistry.core.Util.toHashString(obj), obj.objectId());
         if((oldval && !oldval.equals(newval))
                 || (newval && !newval.equals(oldval)))
         {
@@ -413,7 +414,7 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
     this.insertRow = function(index, node)
     {
         var idx = Indexer.mapIndex(index, data.length + 1);
-        Console.println("ArrayTreeModel#insertRow({0} [{2}], {1})", index, node, idx);
+//        Console.println("ArrayTreeModel#insertRow({0} [{2}], {1})", index, node, idx);
         data.splice(idx, 0, node);
 
         var obj = __addNode(idx, node);
@@ -505,11 +506,13 @@ archistry.data.tree.ArrayTreeModel = function(data, options)
 
         var idx = Indexer.mapIndex((index < 0 ? index - count + 1 : index), data.length);
         var nodes = $Array(data.splice(idx, count));
+
         if(nodes.length > 0)
         {
             var refs = $Array();
             nodes.each(function(i) {
                 var obj = __removeNode(idx + i);
+
                 // NOTE:  the 'this' reference IS NOT used here on
                 // purpose because it converts primitive values
                 // into objects (boxes them), so it makes simple

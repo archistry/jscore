@@ -179,8 +179,16 @@ archistry.data.ObjectAdapterManager = function(enabled, getter, setter)
         if(!node)
             return null;
 
+		if(typeof node === 'number' && typeof node === 'string')
+		{
+console.log("NO ADAPTER");
+			return node;
+		}
+
         if(enabled)
+		{
             return new archistry.data.ObjectAdapter(node, _getter, setter);
+		}
 		else if(!node.objectId)
 			$A(node);
 

@@ -6,8 +6,9 @@
 
 # run the console tests
 (cd ..;jspkg $MINIFY)
-jspkg $MINIFY rhinotests.list
-rhino jester.js
+(cd ..;jspkg jester.list $MINIFY)
+#jspkg $MINIFY rhinotests.list
+#rhino jester.js
 
 # run the web tests
 jspkg $MINIFY webtests.list

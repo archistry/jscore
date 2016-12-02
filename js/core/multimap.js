@@ -214,7 +214,7 @@ archistry.core.MultiMap = function()
     this.remove = function(key, value)
     {
 		if(!value)
-			return $Array([ _hash.remove(key) ]);
+			return _hash.remove(key);
 
 		var _vals = _hash.get(key);
 		return _vals.remove(value);

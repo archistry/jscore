@@ -245,24 +245,50 @@ Jester.testing("ChangeSet functionality", {
             what: "CompactChangeSet fires object-changed on insert",
             how: function(result)
             {
+				var sender = $A(this);
                 var changes = new CompactChangeSet();
                 var fired = false;
                 var change = new ChangeMemento(this, 
-                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
+                        ChangeOp.PROPERTY_ADDED, "sam", "spade");
+                var change2 = new ChangeMemento(this, 
+                        ChangeOp.PROPERTY_CHANGED, "sam", "xyzzy");
 
+
+				var cs = $Array([ change, change2 ]);
+				var i = 0;
                 changes.immediate = true;
                 changes.signalConnect("object-changed", function(memento) {
                     fired = true;
 
-                    result.check("memento values are correct", {
+                    result.check("callback memento values are correct", {
                         actual:  memento.valueOf(),
-                        expect: [ changes, ChangeOp.PROPERTY_ADDED, this, change, undefined ]
+                        expect: [ 
+							changes, 
+							cs[i].change(),
+							sender,
+							cs[i],
+							cs[i-1]
+						]
                     });
                     
-                    result.check("memento accessor values are correct", {
-                        actual:  [ memento.object(), memento.change(), memento.key(), memento.value(), memento.oldValue() ],
-                        expect: [ changes, ChangeOp.PROPERTY_ADDED, this, change, undefined ]
+                    result.check("callback memento accessor values are correct", {
+                        actual:  [ 
+							memento.object(), 
+							memento.change(), 
+							memento.key(), 
+							memento.value(), 
+							memento.oldValue()
+						],
+                        expect: [ 
+							changes, 
+							cs[i].change(),
+							sender,
+							cs[i],
+							cs[i-1]
+						]
                     });
+
+					++i;
                 });
 
                 result.check("size is correctly initialized", {
@@ -271,6 +297,7 @@ Jester.testing("ChangeSet functionality", {
                 });
                 
                 changes.add(change);
+                changes.add(change2);
                 
                 result.check("size is correctly incremented", {
                     actual: changes.size(),
@@ -280,7 +307,7 @@ Jester.testing("ChangeSet functionality", {
                 var m = changes.get(0);
                 result.check("memento retrieved correctly", {
                     actual:  [ m.object(), m.change(), m.key(), m.value() ],
-                    expect: [ changes, ChangeOp.PROPERTY_ADDED, this, change ]
+                    expect: [ this, ChangeOp.PROPERTY_CHANGED, "sam", "xyzzy" ]
                 });
 
                 result.check("signal was actually fired", {
@@ -293,30 +320,17 @@ Jester.testing("ChangeSet functionality", {
             what: "CompactChangeSet fires object-changed on remove",
             how: function(result)
             {
+				var sender = $A(this);
                 var changes = new CompactChangeSet();
                 var fired = false;
                 var change = new ChangeMemento(this, 
                         ChangeOp.PROPERTY_CHANGED, "sam", "spade");
-
-                changes.immediate = true;
-                changes.signalConnect("object-changed", function(memento) {
-                    fired = true;
-                    result.check("memento values are correct", {
-                        actual:  memento.valueOf(),
-                        expect: [ changes, ChangeOp.PROPERTY_REMOVED, this, change, undefined ]
-                    });
-                    
-                    result.check("memento accessor values are correct", {
-                        actual:  [ memento.object(), memento.change(), memento.key(), memento.value() ],
-                        expect: [ changes, ChangeOp.PROPERTY_REMOVED, this, change ]
-                    });
-                });
-
-                result.check("size is correctly initialized", {
+                
+				result.check("size is correctly initialized", {
                     actual: changes.size(),
                     expect: 0
                 });
-                
+
                 changes.add(new ChangeMemento(this,
                         ChangeOp.PROPERTY_CHANGED, "xxx", "xxx"));
 
@@ -327,6 +341,20 @@ Jester.testing("ChangeSet functionality", {
                     expect: 1
                 });
                 
+                changes.immediate = true;
+                changes.signalConnect("object-changed", function(memento) {
+                    fired = true;
+                    result.check("memento values are correct", {
+                        actual:  memento.valueOf(),
+                        expect: [ changes, ChangeOp.PROPERTY_REMOVED, sender, change, undefined ]
+                    });
+                    
+                    result.check("memento accessor values are correct", {
+                        actual:  [ memento.object(), memento.change(), memento.key(), memento.value() ],
+                        expect: [ changes, ChangeOp.PROPERTY_REMOVED, sender, change ]
+                    });
+                });
+
                 var val = changes.remove(change);
                 
                 result.check("value returned correctly", {
@@ -337,58 +365,6 @@ Jester.testing("ChangeSet functionality", {
                 result.check("size is correctly decremented", {
                     actual: changes.size(),
                     expect: 0
-                });
-                
-                result.check("signal was actually fired", {
-                    actual: fired,
-                    expect: true
-                });
-            }
-        },
-        {
-            what: "CompactChangeSet fires object-changed on add same key",
-            how: function(result)
-            {
-                var changes = new CompactChangeSet();
-                var fired = false;
-                var change1 = new ChangeMemento(this, 
-                        ChangeOp.PROPERTY_CHANGED, "sam", "xxx");
-                var change2 = new ChangeMemento(this, 
-                        ChangeOp.PROPERTY_CHANGED, "sam", "spade");
-
-                changes.immediate = true;
-                changes.signalConnect("object-changed", function(memento) {
-                    fired = true;
-
-                    result.check("memento values are correct", {
-                        actual:  memento.valueOf(),
-                        expect: [ changes, ChangeOp.PROPERTY_CHANGED, this, change2, change1 ]
-                    });
-                    
-                    result.check("memento accessor values are correct", {
-                        actual:  [ memento.object(), memento.change(), memento.key(), memento.value(), memento.oldValue() ],
-                        expect: [ changes, ChangeOp.PROPERTY_CHANGED, this, change2, change1 ]
-                    });
-                });
-
-                result.check("size is correctly initialized", {
-                    actual: changes.size(),
-                    expect: 0
-                });
-                
-                changes.add(change1);
-                changes.add(change2);
-                
-                result.check("size is correctly incremented", {
-                    actual: changes.size(),
-                    expect: 1
-                });
-                
-                var val = changes.get(0);
-                
-                result.check("value returned correctly", {
-                    actual: change2,
-                    expect: val
                 });
                 
                 result.check("signal was actually fired", {

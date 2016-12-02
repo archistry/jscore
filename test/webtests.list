@@ -9,6 +9,7 @@
 :files: 
 - ../jester-min.js
 - ../js/jester/web_reporter.js
+- lib/config.js
 - lib/util.js
 - lib/tree.js
 - js/core/test_util.js

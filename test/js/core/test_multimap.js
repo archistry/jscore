@@ -139,7 +139,7 @@ Jester.testing("MultiMap functionality", {
 					vals.add(this);
 				});
 
-                result.check("#remove without value removes array", {
+                result.check("#eachWithKey gets all items", {
                     actual: vals,
                     expect: [ "v1", "v2", "v3" ]
                 });

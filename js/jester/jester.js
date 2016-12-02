@@ -106,6 +106,30 @@ var jester = {
 };
 
 /**
+ * This is borrowed directly from the archistry.core
+ * library.
+ */
+
+jester.util.flatten = function(object, values)
+{
+	var a = [];
+	var v = null;
+
+	for(var k in object)
+	{
+		v = object[k];
+
+		if(((!values || values) && typeof v !== 'function')
+			|| (values !== undefined && values === false))
+		{
+			a.push(k, v);
+		}
+	}
+
+	return a;
+};
+
+/**
  * This is a static function that compares objects for
  * equality.  If the objects implement the
  * <code>#equals</code> method, that is used in favor of the
@@ -127,43 +151,76 @@ var jester = {
 
 jester.util.objectEquals = function(lhs, rhs)
 {
+	var arreq = jester.util.arrayEquals;
+	var flatten = jester.util.flatten;
     var l = lhs, r = rhs;
+
+	if((l === undefined || r === undefined) && l !== r)
+	{
+		return false;
+	}
 
     if(l !== r)
     {
-        if(l && l.sort !== undefined && r && r.sort !== undefined)
+        if(l instanceof Array)
         {
-            // maybe it's an array, so try that
-            return jester.util.arrayEquals(lhs, rhs);
+            return arreq(lhs, rhs);
         }
 
-        // it's an object or a literal
-        if(l && l.equals !== undefined && l.equals(r))
+        if(l.equals !== undefined && l.equals(r))
         {
             return true;
         }
-        else if(r && r.equals !== undefined && r.equals(l))
+        else if(r.equals !== undefined && r.equals(l))
         {
             return true;
         }
         else
         {
-            if(l && l.valueOf)
+            if(l.valueOf)
             {
                 l = l.valueOf();
             }
-            if(r && r.valueOf)
+
+            if(r.valueOf)
             {
                 r = r.valueOf();
             }
 
-            if(l === r)
+			if(l === r)
             {
                 return true;
             }
+
+//			if(archistry.core.typeHint(l) === "Object")
+			if(typeof(l) === 'object')
+			{
+				l = flatten(l);
+			}
+			else
+			{
+				return false;
+			}
+
+//			if(archistry.core.typeHint(r) === "Object")
+			if(typeof(r) === 'object')
+			{
+				r = flatten(r);
+				if(l.length && l.length !== r.length
+					&& (l.length === 0 || r.lenth === 0))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+
+			return arreq(r, l);
         }
 
-        return false;
+		return false;
     }
 
     return true;
@@ -188,7 +245,7 @@ jester.util.objectEquals = function(lhs, rhs)
 
 jester.util.arrayEquals = function(lhs, rhs)
 {
-    if(lhs.length != rhs.length)
+    if(!rhs || lhs.length != rhs.length)
         return false;
     
     for(var i = 0; i < lhs.length; ++i)

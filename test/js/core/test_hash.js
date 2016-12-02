@@ -83,8 +83,8 @@ Jester.testing("Hash functionality", {
 
                 var g1 = obj.get("key1");
                 result.check("get of string key returns original value", {
-                    actual: [ g1, g1.objectId() ],
-                    expect: [ o1, o1.objectId() ]
+                    actual: g1,
+                    expect: o1
                 });
 
                 var g2 = obj.get("context");
@@ -217,7 +217,7 @@ Jester.testing("Hash functionality", {
 				h1.merge(h2);
 
 				result.check("hash merged for existing and new keys", {
-					actual: [ h1.get("k1"), h1.get("k2"), h1.get("h4") ],
+					actual: [ h1.get("k1"), h1.get("k2"), h1.get("k4") ],
 					expect: [ "X", "value", "Y" ]
 				});
 			}

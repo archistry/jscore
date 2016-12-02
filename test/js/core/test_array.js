@@ -361,10 +361,15 @@ Jester.testing("Array mixin functionality", {
 				var a = new A({one: 1, a: "A" });
 				var b = new A({one: 1, a: "A" });
 
-				a = $Array([ a, b, 2 ]);
+				result.check("a.equals(b)", {
+					actual: a.equals(b),
+					expect: true
+				});
+
+				c = $Array([ a, b, 2 ]);
 				result.check("unique objects", {
-					actual: a.unique(),
-					expect: [ { one: 1, a: "A" },  2 ]
+					actual: c.unique(),
+					expect: [ new A({ one: 1, a: "A" }),  2 ]
 				});
 
 				result.check("unique strings", {

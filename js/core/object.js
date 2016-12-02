@@ -42,6 +42,23 @@
 namespace("archistry.core");
 
 /**
+ * This method is used to try and figure out the actual
+ * type of the given object.  It isn't 100%, but it is
+ * better than trying to code this again and again.
+ *
+ * @param obj
+ * @return string representation of the type based on the
+ * {}.toString method.
+ */
+
+archistry.core.typeHint = function(obj)
+{
+	var ts = {}.toString;
+	var s = ts.apply(obj).replace("[object ", "");
+	return s.substring(0, s.length - 1);
+};
+
+/**
  * This method is used to extend the given object with the properties
  * and methods of the source object.  It is the basis of the
  * AObject#mixin method, but generalized.
@@ -126,6 +143,36 @@ archistry.core.merge = function(target, src, callback, exclude)
 };
 
 /**
+ * This is a static function to flatten an object into an
+ * array.  It will either work on just the non-function
+ * properties of the object or it will include all
+ * properties.
+ *
+ * @param obj the object to flatten
+ * @param values false to include values and functions
+ * @return an array of the key and values
+ */
+
+archistry.core.flatten = function(obj, values)
+{
+	var a = [];
+	var v = null;
+
+	for(var k in obj)
+	{
+		v = obj[k];
+
+		if(((!values || values) && typeof v !== 'function')
+			|| (values !== undefined && values === false))
+		{
+			a.push(k, v);
+		}
+	}
+
+	return a;
+};
+
+/**
  * This is a static function that compares objects for
  * equality.  If the objects implement the
  * <code>#equals</code> method, that is used in favor of the
@@ -141,44 +188,87 @@ archistry.core.merge = function(target, src, callback, exclude)
 
 archistry.core.objectEquals = function(lhs, rhs)
 {
+	var arrayEquals = archistry.core.arrayEquals;
+	var flatten = archistry.core.flatten;
+	var typeHint = archistry.core.typeHint;
     var l = lhs, r = rhs;
+
+	if((l === undefined || r === undefined) && l !== r)
+	{
+		return false;
+	}
 
     if(l !== r)
     {
-        if(l && l instanceof Array)
+        if(l instanceof Array)
         {
-            return archistry.core.arrayEquals(lhs, rhs);
+            return arrayEquals(lhs, rhs);
         }
 
-        // it's an object or a literal
-        if(l && l.equals !== undefined && l.equals(r))
+        if(l.equals !== undefined && l.equals(r))
         {
+//console.log("a");
             return true;
         }
-        else if(r && r.equals !== undefined && r.equals(l))
+        else if(r.equals !== undefined && r.equals(l))
         {
+//console.log("b");
             return true;
         }
         else
         {
-            if(l && l.valueOf)
+            if(l.valueOf)
             {
                 l = l.valueOf();
             }
-            if(r && r.valueOf)
+            if(r.valueOf)
             {
                 r = r.valueOf();
             }
 
+//console.log("l vs. r");
+//console.log("typeof l: " + typeof l);
+//console.log(l);
+//console.log("typeof r: " + typeof r);
+//console.log(r);
+
             if(l === r)
             {
+//console.log("c");
                 return true;
-            }
+			}
+
+			if(typeHint(l) === 'Object')
+			{
+				l = flatten(l);
+			}
+			else
+			{
+				return false;
+			}
+
+			if(typeHint(r) === 'Object')
+			{
+				r = flatten(r);
+				if(typeHint(l) === 'Array' && l.length !== r.length
+						&& (l.length === 0 || r.length === 0))
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+			
+			return arrayEquals(l, r);
         }
 
-        return false;
+//console.log("f");
+		return false;
     }
 
+//console.log("g");
     return true;
 };
 
@@ -198,7 +288,7 @@ archistry.core.arrayEquals = function(lhs, rhs)
     if(!rhs || lhs.length != rhs.length)
         return false;
     
-    for(var i = 0; i < this.length; ++i)
+    for(var i = 0; i < lhs.length; ++i)
     {
         if(!archistry.core.objectEquals(lhs[i], rhs[i]))
             return false;
@@ -332,6 +422,8 @@ archistry.core.arrayCompare = function(lhs, rhs)
 
 archistry.core.AObject = function()
 {
+	var flatten = archistry.core.flatten;
+	var arrayEquals = archistry.core.arrayEquals;
 	var _self = this;
 
 	/**
@@ -596,13 +688,35 @@ archistry.core.AObject = function()
 
 		var lval = this;
 		var rval = rhs;
+		var fl = false;
 		if(this.valueOf)
+		{
 			lval = this.valueOf();
+		}
+		else
+		{
+			fl = true;
+			lval = flatten(this);
+		}
 
 		if(rhs.valueOf)
+		{
 			rval = rhs.valueOf();
+		}
+		else
+		{
+			fl = true;
+			rval = flatten(rhs);
+		}
 
-		return lval === rval;
+		if(fl)
+		{
+			return arrayEquals(lval, rval);
+		}
+		else
+		{
+			return lval === rval;
+		}
 	};
 
 	/**

@@ -54,6 +54,25 @@ archistry.core.Hash = function()
     var _index = $A();
     var _size = 0;
 
+	function getKey(val)
+	{
+		k = val;
+
+        switch(typeof val)
+		{
+			case "string":
+			case "number":
+				break;
+			default:
+				if(k.substring === undefined)
+				{
+					k = val.objectId();
+				}
+		}
+
+		return k;
+	}
+
     /**
      * This method provides "clearing" of object properties which
      * are not methods/functions.  It is intended mainly for use
@@ -193,9 +212,7 @@ archistry.core.Hash = function()
 
     this.set = function(key, val)
     {
-        var k = key;
-        if(typeof key === 'object' && typeof key.objectId === 'function')
-            k = key.objectId();
+        var k = getKey(key);
 
         if(this[k] === undefined)
             _size++;
@@ -214,15 +231,7 @@ archistry.core.Hash = function()
 
     this.get = function(key)
     {
-        var k = key;
-        if(typeof key === 'object' && typeof key.objectId === 'function')
-		{
-			if((k = this[key.objectId()]))
-			{
-				return k;
-			}
-		}
-
+        var k = getKey(key);
         return this[k];
     };
 
@@ -235,9 +244,7 @@ archistry.core.Hash = function()
 
     this.remove = function(key)
     {
-        var k = key;
-        if(typeof key === 'object')
-            k = key.objectId();
+        var k = getKey(key);
 
         var rval = this[k];
         _size--;

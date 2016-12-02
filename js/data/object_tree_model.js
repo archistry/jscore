@@ -516,7 +516,9 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
             refs.add(new TreeNodeRef(__node(ref.children[idx + i]), idx + i));
         });
 
-        this.fireNodesInserted([ new TreeChange(parentPath, ref.parent, refs) ]);
+        this.fireNodesInserted([ 
+			new TreeChange(parentPath, ref.parent, refs)
+		]);
     };
 
     /**
@@ -533,10 +535,10 @@ archistry.data.tree.ObjectTreeModel = function(obj, childKey, options)
         var ppath = parentPath(path);
         var ref = childArray(ppath);
         var idx = path[path.length - 1];
-Console.println("#removeNode: {0}", path);
-Console.println("#removeNode parent path: {0}", ppath);
-Console.println("#removeNode idx: {0}", idx);
-Console.println("child array: {0}", ref);
+//Console.println("#removeNode: {0}", path);
+//Console.println("#removeNode parent path: {0}", ppath);
+//Console.println("#removeNode idx: {0}", idx);
+//Console.println("child array: {0}", ref);
         var child = ref.children.removeAtIndex(idx);
         
         var node = __removeNode(child);
