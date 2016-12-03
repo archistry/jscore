@@ -144,6 +144,26 @@ Jester.testing("MultiMap functionality", {
                     expect: [ "v1", "v2", "v3" ]
                 });
 			}
+		},
+		{
+			what: "Bug:  string key converted to function reference",
+			how: function(result)
+			{
+				var h1 = new archistry.core.MultiMap();
+				h1.set("size", 1);
+				h1.set("size", 2);
+				h1.set("size", 3);
+			
+				var x = $Array();
+				h1.eachWithKey("size", function() {
+					x.add(this);
+				});
+
+				result.check("string keys works", {
+					actual: x,
+					expect: [ 1, 2, 3 ]
+				});
+			}
 		}
 	]
 });
