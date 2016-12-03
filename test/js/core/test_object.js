@@ -422,6 +422,27 @@ Jester.testing("AObject mixin functionality", {
 					expect: "A"
 				});
 			}
+		},
+		{
+			what: "#each traversal",
+			how: function(result)
+			{
+				var x = $A({a: "A", b: 1, c: this})
+				var a = [];
+
+				x.each(function(k, v, i) {
+					a.push(i, k, v);
+				});
+
+				result.check("iteration values", {
+					actual: a,
+					expect: [
+						0, "a", "A",
+						1, "b", 1,
+						2, "c", this
+					]
+				});
+			}
 		}
     ]
 });

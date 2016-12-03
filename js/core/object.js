@@ -807,6 +807,23 @@ archistry.core.AObject = function()
 	};
 
 	/**
+	 * This method is used to traverse all of the "normal",
+	 * e.g. non-function values in the object.  The
+	 * callback is given the key, value and count of the
+	 * elments.
+	 *
+	 * @param callback
+	 */
+
+	this.each = function(callback)
+	{
+		var x = this;
+		this.keys().each(function(i) {
+			callback.apply(x, [ this, x[this], i ]);
+		});
+	};
+
+	/**
 	 * This method redefines the default toString to display the
 	 * object id rather than the meaningless [object Object]
 	 * toString that's the default implementation.
@@ -817,7 +834,7 @@ archistry.core.AObject = function()
 	this.toString = function()
 	{
 		var s = "[object: " + this.objectId() + " { ";
-		var keys = this.keys();
+		var keys = _self.keys();
 		keys.each(function(i) {
 			if(!this.match(/^__ajs/))
 			{
