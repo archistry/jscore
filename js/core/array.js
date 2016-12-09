@@ -314,6 +314,11 @@ archistry.core.Array = function()
 		return uniq;
 	};
 
+	this.last = function()
+	{
+		return this[this.length - 1]
+	};
+
 	this.toString = function()
 	{
 		var s = "[";

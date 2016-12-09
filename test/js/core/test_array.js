@@ -377,6 +377,22 @@ Jester.testing("Array mixin functionality", {
 					expect: [ "a", "b", "c" ]
 				});
 			}
+		},
+        {
+            what: "ensure Array#last works correctly",
+            how: function(result)
+            {
+				var a = $Array([ 1, 2, 3, 4, 1, 3, 4, 5, 7, 2 ]);
+				result.check("unique integers", {
+					actual: a.last(),
+					expect: 2
+				});
+
+				result.check("empty array", {
+					actual: $Array().last(),
+					expect: undefined
+				});
+			}
 		}
     ]
 });
