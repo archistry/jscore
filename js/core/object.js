@@ -906,10 +906,18 @@ var $A = function(targ)
 
 var $AObject = $A;
 
-// include AObject methods for basic types except Object so we don't
-// collide with jQuery's assinie assumptions about vanilla objects.
-$A(Boolean.prototype);
-$A(Number.prototype);
-$A(String.prototype);
-$A(Date.prototype);
-$A(Function.prototype);
+/**
+ * Shield these from being done by default since it really
+ * doesn't play well with others... :(
+ */
+
+function archistry_object_extend_builtins()
+{
+	// include AObject methods for basic types except Object so we don't
+	// collide with jQuery's assinie assumptions about vanilla objects.
+	$A(Boolean.prototype);
+	$A(Number.prototype);
+	$A(String.prototype);
+	$A(Date.prototype);
+	$A(Function.prototype);
+}

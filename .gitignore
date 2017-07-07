@@ -2,3 +2,5 @@
 *.swp
 webtests.js
 rhinotests.js
+dist
+out

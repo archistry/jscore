@@ -33,4 +33,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+// File:	index.js
+// Created:	Fri Jul  7 12:26:36 AST 2017
+//
 ///////////////////////////////////////////////////////////////////////
+
+var fs = require("fs");
+eval(fs.readFileSync("./node_modules/archistry-core/core.min.js", "utf8"));
+
+global.$A = $A;
+global.$Array = $Array;
+global.archistry = archistry;
+global.namespace = namespace;
+
+module.exports = {
+	Array: archistry.core.Array,
+	Hash: archistry.core.Hash,
+	MultiMap: archistry.core.MultiMap,
+	Observer: archistry.core.Observer,
+	Path: archistry.core.Path,
+	Util: archistry.core.Util,
+	Version: archistry.core.Version
+};
+

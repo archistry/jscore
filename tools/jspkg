@@ -26,11 +26,16 @@ parser.add_options(OptionGroup.new(
       :description => "increment the build count for official builds"),
 
   Option.new("yui-jar",
+      :has_arg => true,
       :description => "specify an alternative location of the YUI jar file",
       :default => "${YUIHOME}/yuicompressor.jar"),
 
   Option.new("minify", "m",
-      :description => "minify the generated JavaScript using the YUI compressor")
+      :description => "minify the generated JavaScript using the YUI compressor"),
+
+  Option.new("output", "o",
+      :has_arg => true,
+      :description => "the location where the completed package should be placed (default is current directory).")
   )
 )
 
@@ -76,6 +81,13 @@ parser.execute(ARGV) do |args|
   file.flush
   file.close
 
+  pn = @pkg[:package]
+  if parser["output"].matched?
+    ofn = File.join(parser["output"].value, pn)
+  else
+    ofn = pn
+  end
+
   if parser["minify"].matched?
     if (jar = parser["yui-jar"]).matched?
       yuicjar = jar.value
@@ -92,15 +104,14 @@ parser.execute(ARGV) do |args|
       end
     end
 
-    ofn = @pkg[:package]
     ext = File.extname(ofn)[1..-1]
-    if (rc = system("java -jar #{yuicjar} --type #{ext} #{file.path} -o #{@pkg[:package]}"))
+    if (rc = system("java -jar #{yuicjar} --type #{ext} #{file.path} -o #{ofn}"))
       File.delete(file.path)
       File.open(packagelist, "w+") { |f| f.write @pkg.to_yaml } if @count
     else
       parser.error "java process exited with status: #{rc}", rc
     end
   else
-    FileUtils.install(file.path, @pkg[:package], :mode => 0644)
+    FileUtils.install(file.path, ofn, :mode => 0644)
   end
 end

@@ -1,0 +1,27 @@
+--- 
+:version_minor: 9
+:version_release: 0-dev
+:package_name: Archistry Core JavaScript Library
+:version_count: 13
+:package: core.min.js
+:version_date: "2010-02-13T19:13:27Z"
+:files: 
+- ../../js/core/core.js
+- ../../js/ext/Math.uuid.js
+- ../../js/ext/stacktrace.js
+- ../../js/ext/json2.js
+- ../../js/ext/spark-md5.js
+- ../../js/ext/date.format.js
+- ../../js/ext/base64.js
+- ../../js/core/object.js
+- ../../js/core/array.js
+- ../../js/core/string.js
+- ../../js/core/hash.js
+- ../../js/core/multimap.js
+- ../../js/core/util.js
+- ../../js/core/path.js
+- ../../js/core/observer.js
+- ../../js/core/version.js
+- ../../js/core/element.js
+- ../../js/core/xhr.js
+:version_major: 0
