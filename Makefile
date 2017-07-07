@@ -64,7 +64,7 @@ NPMPKG		= $(DISTDIR)/$(PKGNAME).npm
 NPMCOREDIR	= $(CWD)/npm/$(PKGNAME)
 
 
-all: distdir package.list browserjs # npm
+all: distdir package.list browserjs npm
 
 distdir:
 	- mkdir $(DISTDIR)

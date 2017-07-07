@@ -39,7 +39,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 var fs = require("fs");
-eval(fs.readFileSync("./node_modules/archistry-core/core.min.js", "utf8"));
+eval(fs.readFileSync(__dirname + "/core.min.js", "utf8"));
 
 global.$A = $A;
 global.$Array = $Array;

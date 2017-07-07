@@ -37,12 +37,15 @@ JavaScript file.  This requires the 'jspkg' command from the
 To build the unimimized package, execute the following
 command:
 
-    $ jspkg
+    $ make cleartext
 
-To build a minimized version of the package, add the '-m'
-parameter:
+To build a minimized version of the package, execute the following
+command:
 
-    $ jspkg -m
+    $ make
+
+By default, both the browser bundle and the NPM packages are built.
+There are multiple NPM packages for each of the separate packages.
 
 Running the Tests
 -----------------

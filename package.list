@@ -1,6 +1,6 @@
 --- 
-:version_minor: 9
-:version_release: 0-dev
+:version_minor: 0
+:version_release: 0
 :package_name: Archistry Core JavaScript Library
 :version_count: 13
 :package: archistry-core.min.js
@@ -48,4 +48,4 @@
 - js/ui/tree_selection.js
 - js/jquery/controller.js
 - js/jquery/menu.js
-:version_major: 0
+:version_major: 1
