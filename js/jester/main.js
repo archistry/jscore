@@ -120,3 +120,12 @@ jester.JesterRunner = function()
 
 /** This the global Jester object used by the tests */
 var Jester = new jester.JesterRunner();
+
+if(typeof require === 'function')
+{
+	global.Jester = Jester;
+	function printStackTrace(e)
+	{
+		console.error(e);
+	}
+}

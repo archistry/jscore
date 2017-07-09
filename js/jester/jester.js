@@ -369,6 +369,51 @@ jester.runner.TestResult = function(name)
     };
 
     /**
+	 * This function is used to check for exceptions being
+	 * thrown.  The syntax is similar, but slightly different
+	 * to the normal #check method because you are passing
+	 * functions for actual and expected, e.g:
+     *
+     *   checkException("check #1", { 
+	 *		actual: function() { throw new Error("test"); },
+	 *		expect: function(e) {
+	 *			return e.message.match(/expected message/);
+	 *		}
+	 *	 });
+	 *
+	 * The expect function MUST return false if the test case
+	 * should fail.
+     *
+     * @param desc the description of the check
+     * @param params the object contining the actual and
+     *        expected functions to call.
+     */
+
+    this.checkException = function(desc, args)
+    {
+		try
+		{
+			args.actual();
+			this.check(desc, {
+				expect: "exception thrown",
+				actual: "no exception thrown"
+			});
+		}
+		catch(e)
+		{
+			var rc = args.expect(e);
+			if(rc !== false)
+			{
+				new Check(desc, rc, rc);
+			}
+			else
+			{
+				new Check(desc, rc, true);
+			}
+		}
+    };
+
+    /**
      * This method is used to log an exception/error
      * during execution.  It marks the test as failed
      */

@@ -57,6 +57,11 @@ archistry.core.Hash = function()
 
 	function getKey(val)
 	{
+		if(!val)
+		{
+			throw new Error("ArgumentException: key value cannot be null");
+		}
+
 		k = val;
 
 		switch(typeof val)
@@ -67,7 +72,18 @@ archistry.core.Hash = function()
 			default:
 				if(k.substring === undefined)
 				{
-					k = val.objectId();
+					if(typeof val.objectId !== 'function')
+					{
+						var s = "";
+						Object.keys(val).forEach(function() {
+							s += [ this, val[this] ].join(":");
+						});
+						k = SparkMD5.hash(s);
+					}
+					else
+					{
+						k = val.objectId();
+					}
 				}
 		}
 
@@ -147,7 +163,7 @@ archistry.core.Hash = function()
 
 	this.hasKey = function(key)
 	{
-		return _index[key] !== undefined;
+		return _index[getKey(key)] !== undefined;
 	};
 
 	/**

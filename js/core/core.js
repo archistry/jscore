@@ -117,7 +117,7 @@ function namespace(ns)
         throw new Error("Syntax error:  Illegal namespace declaration");
     }
 
-	var _global = (function(){return this;}).call();
+	var _global = global || (function(){return this;}).call();
 	var global = __ajs_ns;
 	var nspath = ns.split(".");
     var base = nspath[0];

@@ -48,13 +48,14 @@
 #######################################################################
 
 CWD		= $(shell pwd)
-PKG		= package.list
 JSFILES 	= $(shell find js -name \*.js -print)
+PKG		= package.list
 YUIC		= --yui-jar $(CWD)/tools/yuicompressor-2.4.5.jar
 DISTDIR 	= $(CWD)/dist
 JSPKG 		= $(CWD)/tools/jspkg
 JSPKG_FLAGS	= --output $(DISTDIR)
 JSDOC		= $(CWD)/tools/jsdoc
+#JSMIN_FLAGS	= -m $(YUIC)
 NPM		= npm
 RM		= rm
 RMDIR		= rmdir
@@ -69,12 +70,13 @@ all: distdir package.list browserjs npm
 distdir:
 	- mkdir $(DISTDIR)
 
-browserjs: JSPKG_FLAGS += -m $(YUIC)
+browserjs: JSPKG_FLAGS += $(JSMIN_FLAGS)
 browserjs: $(PKG) $(JSCORE) $(JSCORE)
 
 npm: distdir $(NPMCOREDIR)/package.json $(NPMCOREDIR)/index.js $(JSFILES)
-	cd $(NPMCOREDIR) && $(JSPKG) -m $(YUIC)
+	cd $(NPMCOREDIR) && $(JSPKG) $(JSMIN_FLAGS)
 	(cd $(NPMCOREDIR)/.. && tar -cvf $(NPMPKG) \
+		--exclude=*node_modules* \
 		$(PKGNAME)/package.json \
 		$(PKGNAME)/index.js \
 		$(PKGNAME)/core.min.js )
@@ -89,3 +91,4 @@ clean:
 	- $(RM) $(NPMPKG)
 	- $(RMDIR) $(DISTDIR)
 	- $(RM) $(NPMCOREDIR)/core.min.js
+

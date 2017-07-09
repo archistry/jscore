@@ -46,6 +46,11 @@ global.$Array = $Array;
 global.archistry = archistry;
 global.namespace = namespace;
 
+// FIXME: not quite sure how to get around this problem since
+// we can't include it and have it visible to libraries since
+// it's designed for node/commonJS
+global.SparkMD5 = require("spark-md5");
+
 module.exports = {
 	Array: archistry.core.Array,
 	Hash: archistry.core.Hash,
